@@ -1,21 +1,26 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+
+import InventoryTable from '../components/inventoryTable/InventoryTable';
 
 export default function InventoryView() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Inventory</Text>
-    </View>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <InventoryTable
+        productName="Jogging Pants"
+        colors={['Black', 'Blue', 'Red', 'White', 'Green', 'Yellow', 'Pink', 'Purple']}
+        sizes={['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL']}
+      />
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
+    backgroundColor: '#F5F7FA',
   },
 
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
+  content: {
+    padding: 24,
   },
 });

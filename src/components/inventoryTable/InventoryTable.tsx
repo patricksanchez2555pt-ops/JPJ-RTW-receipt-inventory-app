@@ -5,10 +5,10 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ROW_HEIGHT, SIZE_COLUMN_WIDTH, TABLE_HEIGHT } from './constants';
 import { DraggableColorHeader } from './DraggableColorHeader';
 import { InventoryCell } from './InventoryCell';
-import type { InventoryTableProps } from './types';
+import type { ColorItem, InventoryTableProps } from './types';
 
 export default function InventoryTable({ productName, colors, sizes }: InventoryTableProps) {
-  const [columnOrder, setColumnOrder] = useState(colors);
+  const [columnOrder, setColumnOrder] = useState<ColorItem[]>(colors);
 
   const colorHeaderRef = useRef<ScrollView>(null);
   const sizeColumnRef = useRef<ScrollView>(null);
@@ -102,7 +102,7 @@ export default function InventoryTable({ productName, colors, sizes }: Inventory
             <View style={styles.colorHeaderRow}>
               {columnOrder.map((color, index) => (
                 <DraggableColorHeader
-                  key={color}
+                  key={color.name}
                   color={color}
                   index={index}
                   totalColumns={columnOrder.length}
@@ -151,7 +151,7 @@ export default function InventoryTable({ productName, colors, sizes }: Inventory
                 {sizes.map((size) => (
                   <View key={size} style={styles.row}>
                     {columnOrder.map((color) => (
-                      <InventoryCell key={`${size}-${color}`} />
+                      <InventoryCell key={`${size}-${color.name}`} hexValue={color.hexValue} />
                     ))}
                   </View>
                 ))}

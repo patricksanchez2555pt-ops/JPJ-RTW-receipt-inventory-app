@@ -2,8 +2,13 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { COLOR_COLUMN_WIDTH, ROW_HEIGHT } from './constants';
+import { getSubtleBgColor } from './utils';
 
-export function InventoryCell() {
+type InventoryCellProps = {
+  hexValue: string;
+};
+
+export function InventoryCell({ hexValue }: InventoryCellProps) {
   const [quantity, setQuantity] = useState(0);
 
   const decrease = () => {
@@ -19,8 +24,10 @@ export function InventoryCell() {
     setQuantity(numericValue === '' ? 0 : Number(numericValue));
   };
 
+  const subtleBg = getSubtleBgColor(hexValue);
+
   return (
-    <View style={styles.inventoryCell}>
+    <View style={[styles.inventoryCell, { backgroundColor: subtleBg }]}>
       <Pressable style={styles.quantityButton} onPress={decrease}>
         <Text style={styles.quantityButtonText}>−</Text>
       </Pressable>
@@ -48,7 +55,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#FFFFFF',
     borderRightWidth: 1,
     borderBottomWidth: 1,
     borderColor: '#D9DEE8',

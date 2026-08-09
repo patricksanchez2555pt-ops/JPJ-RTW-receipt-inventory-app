@@ -5,6 +5,7 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-na
 
 import { COLOR_COLUMN_WIDTH, ROW_HEIGHT } from './constants';
 import type { DraggableColorHeaderProps } from './types';
+import { getSubtleBgColor } from './utils';
 
 export function DraggableColorHeader({
   color,
@@ -14,6 +15,9 @@ export function DraggableColorHeader({
 }: DraggableColorHeaderProps) {
   const translateX = useSharedValue(0);
   const isDragging = useSharedValue(false);
+
+  // Safe fallback to empty string if hexValue is missing
+  const subtleBg = getSubtleBgColor(color?.hexValue);
 
   const panGesture = Gesture.Pan()
     .runOnJS(true)
@@ -53,9 +57,13 @@ export function DraggableColorHeader({
 
   return (
     <GestureDetector gesture={panGesture}>
-      <Animated.View style={[styles.colorHeaderCell, animatedStyle]}>
+      <Animated.View style={[styles.colorHeaderCell, { backgroundColor: subtleBg }, animatedStyle]}>
         <Text style={styles.dragIndicator}>⋮⋮</Text>
-        <Text style={styles.headerText}>{color}</Text>
+
+        {/* Visual Color Circle Pill */}
+        <Animated.View style={[styles.colorDot, { backgroundColor: color.hexValue }]} />
+
+        <Text style={styles.headerText}>{color.name}</Text>
       </Animated.View>
     </GestureDetector>
   );
@@ -68,7 +76,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F3F5F8',
     borderRightWidth: 1,
     borderBottomWidth: 1,
     borderColor: '#D9DEE8',
@@ -79,6 +86,14 @@ const styles = StyleSheet.create({
     color: '#8A93A3',
     marginRight: 6,
     letterSpacing: -2,
+  },
+  colorDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
   },
   headerText: {
     fontSize: 15,

@@ -7,7 +7,16 @@ export default function InventoryView() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <InventoryTable
         productName="Jogging Pants"
-        colors={['Black', 'Blue', 'Red', 'White', 'Green', 'Yellow', 'Pink', 'Purple']}
+        colors={[
+          { name: 'Black', hexValue: '#000000' },
+          { name: 'Blue', hexValue: '#0000FF' },
+          { name: 'Red', hexValue: '#FF0000' },
+          { name: 'White', hexValue: '#FFFFFF' },
+          { name: 'Green', hexValue: '#008000' },
+          { name: 'Yellow', hexValue: '#FFFF00' },
+          { name: 'Pink', hexValue: '#FFC0CB' },
+          { name: 'Purple', hexValue: '#800080' },
+        ]}
         sizes={['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL']}
       />
     </ScrollView>

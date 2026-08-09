@@ -46,7 +46,7 @@ const NAV_ITEMS: SidebarItem[] = [
 export default function Sidebar() {
   const pathname = usePathname();
 
-  const activeItem = NAV_ITEMS.find((item) => item.route === pathname)?.label ?? 'Inventory';
+  const activeItem = NAV_ITEMS.find((item) => item.route === pathname)?.label ?? '';
 
   const handleNavigation = (route: Href) => {
     router.push(route);
@@ -59,11 +59,11 @@ export default function Sidebar() {
   return (
     <View style={styles.container}>
       {/* Logo */}
-      <View style={styles.logoContainer}>
+      <Pressable style={styles.logoContainer} onPress={() => handleNavigation('/')}>
         <View style={styles.logoBox}>
           <Text style={styles.logoText}>JPJ RTW</Text>
         </View>
-      </View>
+      </Pressable>
 
       {/* Navigation */}
       <View style={styles.navigation}>

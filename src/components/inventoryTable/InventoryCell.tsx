@@ -2,26 +2,41 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { COLOR_COLUMN_WIDTH, ROW_HEIGHT } from './constants';
+import type { InventoryCellProps } from './types';
 import { getSubtleBgColor } from './utils';
 
-type InventoryCellProps = {
-  hexValue: string;
-};
+export function InventoryCell({
+  size,
+  colorName,
+  hexValue,
+  initialQuantity = 0,
+  onQuantityChange,
+}: InventoryCellProps) {
+  const [quantity, setQuantity] = useState(initialQuantity);
 
-export function InventoryCell({ hexValue }: InventoryCellProps) {
-  const [quantity, setQuantity] = useState(0);
+  const updateQuantity = (newQuantity: number) => {
+    setQuantity(newQuantity);
+    onQuantityChange?.({
+      size,
+      color: colorName,
+      quantity: newQuantity,
+    });
+  };
 
   const decrease = () => {
-    setQuantity((current) => Math.max(0, current - 1));
+    const nextValue = Math.max(0, quantity - 1);
+    updateQuantity(nextValue);
   };
 
   const increase = () => {
-    setQuantity((current) => current + 1);
+    const nextValue = quantity + 1;
+    updateQuantity(nextValue);
   };
 
   const handleChange = (value: string) => {
     const numericValue = value.replace(/[^0-9]/g, '');
-    setQuantity(numericValue === '' ? 0 : Number(numericValue));
+    const nextValue = numericValue === '' ? 0 : Number(numericValue);
+    updateQuantity(nextValue);
   };
 
   const subtleBg = getSubtleBgColor(hexValue);

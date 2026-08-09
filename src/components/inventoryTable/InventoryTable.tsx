@@ -67,6 +67,10 @@ export default function InventoryTable({ productName, colors, sizes }: Inventory
     });
   };
 
+  const handleCellChange = ({ size, color, quantity }: QuantityChangeEvent) => {
+    console.log(`Updated ${productName} inventory: ${size} / ${color} = ${quantity}`);
+  };
+
   return (
     <View style={styles.container}>
       {/* HEADER */}
@@ -151,7 +155,13 @@ export default function InventoryTable({ productName, colors, sizes }: Inventory
                 {sizes.map((size) => (
                   <View key={size} style={styles.row}>
                     {columnOrder.map((color) => (
-                      <InventoryCell key={`${size}-${color.name}`} hexValue={color.hexValue} />
+                      <InventoryCell
+                        key={`${size}-${color.name}`}
+                        size={size}
+                        colorName={color.name}
+                        hexValue={color.hexValue}
+                        onQuantityChange={handleCellChange}
+                      />
                     ))}
                   </View>
                 ))}

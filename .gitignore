@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# Expo generated environment types
+expo-env.d.ts
+
+# Native build artifacts
+*.xcworkspace
+*.xcuserstate
+DerivedData/
+build/
+
+# Android
+.gradle/
+local.properties
+*.jks
+*.keystore
+
+# iOS
+Pods/
+*.xcuserdatad/
+xcuserdata/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Temporary files
+*.tmp
+*.temp

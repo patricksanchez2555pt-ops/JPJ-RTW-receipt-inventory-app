@@ -1,9 +1,9 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function Index() {
+export default function InventoryView() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>JPJ RTW</Text>
+      <Text style={styles.title}>Inventory</Text>
     </View>
   );
 }
@@ -11,8 +11,11 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 24,
   },
-  text: {
-    fontSize: 32,
+
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
   },
 });

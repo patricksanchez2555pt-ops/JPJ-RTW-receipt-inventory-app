@@ -8,11 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		204AFEA5C965A5D3D63B4696 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 345ADA953E298A69938D1752 /* ExpoModulesProvider.swift */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		8A16FD2E49AF79F3C7710457 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 21D9315DEEED7559CD84A523 /* PrivacyInfo.xcprivacy */; };
+		5ABA46446CA0738120503F18 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 187C79432CA237B2CA771BBE /* PrivacyInfo.xcprivacy */; };
+		79A114D51FB9A903432FDF67 /* libPods-JPJRTW.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 282CDD4367234B344133E9CE /* libPods-JPJRTW.a */; };
+		B4B40DEDF5FD5743D089DC64 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA6A4FD6D3ED780E744674CE /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		D5FEC2C07388440C8ECF2D45 /* libPods-JPJRTW.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 301A277BA46816AD5604194F /* libPods-JPJRTW.a */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -20,13 +20,13 @@
 		13B07F961A680F5B00A75B9A /* JPJRTW.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JPJRTW.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = JPJRTW/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = JPJRTW/Info.plist; sourceTree = "<group>"; };
-		21D9315DEEED7559CD84A523 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = JPJRTW/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		301A277BA46816AD5604194F /* libPods-JPJRTW.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-JPJRTW.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		345ADA953E298A69938D1752 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-JPJRTW/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		9A55BAF0669A5E89AF058EEC /* Pods-JPJRTW.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-JPJRTW.release.xcconfig"; path = "Target Support Files/Pods-JPJRTW/Pods-JPJRTW.release.xcconfig"; sourceTree = "<group>"; };
+		187C79432CA237B2CA771BBE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = JPJRTW/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		282CDD4367234B344133E9CE /* libPods-JPJRTW.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-JPJRTW.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F27975998F7C8AC5837107B /* Pods-JPJRTW.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-JPJRTW.debug.xcconfig"; path = "Target Support Files/Pods-JPJRTW/Pods-JPJRTW.debug.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = JPJRTW/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		E92685A21D74655B391C9BA3 /* Pods-JPJRTW.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-JPJRTW.debug.xcconfig"; path = "Target Support Files/Pods-JPJRTW/Pods-JPJRTW.debug.xcconfig"; sourceTree = "<group>"; };
+		DC4A489F19FB5E8FF65BA347 /* Pods-JPJRTW.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-JPJRTW.release.xcconfig"; path = "Target Support Files/Pods-JPJRTW/Pods-JPJRTW.release.xcconfig"; sourceTree = "<group>"; };
+		EA6A4FD6D3ED780E744674CE /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-JPJRTW/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = JPJRTW/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* JPJRTW-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "JPJRTW-Bridging-Header.h"; path = "JPJRTW/JPJRTW-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D5FEC2C07388440C8ECF2D45 /* libPods-JPJRTW.a in Frameworks */,
+				79A114D51FB9A903432FDF67 /* libPods-JPJRTW.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,7 +53,15 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				21D9315DEEED7559CD84A523 /* PrivacyInfo.xcprivacy */,
+				187C79432CA237B2CA771BBE /* PrivacyInfo.xcprivacy */,
+			);
+			name = JPJRTW;
+			sourceTree = "<group>";
+		};
+		1CFE2439AC9685E6D6D0C0E8 /* JPJRTW */ = {
+			isa = PBXGroup;
+			children = (
+				EA6A4FD6D3ED780E744674CE /* ExpoModulesProvider.swift */,
 			);
 			name = JPJRTW;
 			sourceTree = "<group>";
@@ -62,26 +70,9 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				301A277BA46816AD5604194F /* libPods-JPJRTW.a */,
+				282CDD4367234B344133E9CE /* libPods-JPJRTW.a */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		4E95B732A2A74E8AC5F4030A /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				E92685A21D74655B391C9BA3 /* Pods-JPJRTW.debug.xcconfig */,
-				9A55BAF0669A5E89AF058EEC /* Pods-JPJRTW.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		5430F0B8E80C2FBB344DA4BD /* JPJRTW */ = {
-			isa = PBXGroup;
-			children = (
-				345ADA953E298A69938D1752 /* ExpoModulesProvider.swift */,
-			);
-			name = JPJRTW;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -98,8 +89,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				4E95B732A2A74E8AC5F4030A /* Pods */,
-				B751F22BBD0284D3C91A02CB /* ExpoModulesProviders */,
+				959334EEFE02BBB8263A3490 /* Pods */,
+				F2C79B546EA7F26EF046C865 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -114,12 +105,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		B751F22BBD0284D3C91A02CB /* ExpoModulesProviders */ = {
+		959334EEFE02BBB8263A3490 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				5430F0B8E80C2FBB344DA4BD /* JPJRTW */,
+				4F27975998F7C8AC5837107B /* Pods-JPJRTW.debug.xcconfig */,
+				DC4A489F19FB5E8FF65BA347 /* Pods-JPJRTW.release.xcconfig */,
 			);
-			name = ExpoModulesProviders;
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
@@ -131,6 +124,14 @@
 			path = JPJRTW/Supporting;
 			sourceTree = "<group>";
 		};
+		F2C79B546EA7F26EF046C865 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				1CFE2439AC9685E6D6D0C0E8 /* JPJRTW */,
+			);
+			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -139,14 +140,14 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "JPJRTW" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				EA4BD5364B467F6C58DAEE92 /* [Expo] Configure project */,
+				BEBDB23E2979589A8A1F0421 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				44D2586513C64E79AC057A78 /* [Expo Dev Launcher] Strip Local Network Keys for Release */,
-				F04CD57A50BA7A680395CA7D /* [CP] Embed Pods Frameworks */,
+				69270BEECCED4B2AA320BB7B /* [Expo Dev Launcher] Strip Local Network Keys for Release */,
+				D7ACFCACE626A078BDC9E5C4 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -196,7 +197,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				8A16FD2E49AF79F3C7710457 /* PrivacyInfo.xcprivacy in Resources */,
+				5ABA46446CA0738120503F18 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -242,7 +243,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		44D2586513C64E79AC057A78 /* [Expo Dev Launcher] Strip Local Network Keys for Release */ = {
+		69270BEECCED4B2AA320BB7B /* [Expo Dev Launcher] Strip Local Network Keys for Release */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -292,7 +293,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-JPJRTW/Pods-JPJRTW-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		EA4BD5364B467F6C58DAEE92 /* [Expo] Configure project */ = {
+		BEBDB23E2979589A8A1F0421 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -316,7 +317,7 @@
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-JPJRTW/expo-configure-project.sh\"\n";
 		};
-		F04CD57A50BA7A680395CA7D /* [CP] Embed Pods Frameworks */ = {
+		D7ACFCACE626A078BDC9E5C4 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -346,7 +347,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				204AFEA5C965A5D3D63B4696 /* ExpoModulesProvider.swift in Sources */,
+				B4B40DEDF5FD5743D089DC64 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -355,13 +356,12 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E92685A21D74655B391C9BA3 /* Pods-JPJRTW.debug.xcconfig */;
+			baseConfigurationReference = 4F27975998F7C8AC5837107B /* Pods-JPJRTW.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = JPJRTW/JPJRTW.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NA4L9WM9T6;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -385,20 +385,19 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "JPJRTW/JPJRTW-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9A55BAF0669A5E89AF058EEC /* Pods-JPJRTW.release.xcconfig */;
+			baseConfigurationReference = DC4A489F19FB5E8FF65BA347 /* Pods-JPJRTW.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = JPJRTW/JPJRTW.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = NA4L9WM9T6;
 				INFOPLIST_FILE = JPJRTW/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -416,7 +415,7 @@
 				PRODUCT_NAME = JPJRTW;
 				SWIFT_OBJC_BRIDGING_HEADER = "JPJRTW/JPJRTW-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;

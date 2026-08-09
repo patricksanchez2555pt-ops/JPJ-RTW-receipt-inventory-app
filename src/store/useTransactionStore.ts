@@ -21,7 +21,7 @@ type TransactionStore = {
     transactionData: Omit<Transaction, 'id' | 'date'> & {
       id?: string;
       date?: string;
-    }
+    },
   ) => Transaction;
   deleteTransaction: (id: string) => void;
   setAllTransactions: (transactions: Transaction[]) => void;
@@ -46,8 +46,7 @@ export const useTransactionStore = create<TransactionStore>()(
 
         // Calculate subtotal & total if not provided
         const items = data.items ?? [];
-        const subtotal =
-          data.subtotal ?? items.reduce((sum, item) => sum + item.total, 0);
+        const subtotal = data.subtotal ?? items.reduce((sum, item) => sum + item.total, 0);
         const discount = data.discount ?? 0;
         const total = data.total ?? Math.max(0, subtotal - discount);
 
@@ -64,19 +63,10 @@ export const useTransactionStore = create<TransactionStore>()(
         // 1. DEDUCT SOLD QUANTITIES FROM GLOBAL INVENTORY STORE
         const inventoryStore = useInventoryStore.getState();
         items.forEach((item: TransactionItem) => {
-          const currentQty = inventoryStore.getQuantity(
-            item.productId,
-            item.colorId,
-            item.sizeId
-          );
+          const currentQty = inventoryStore.getQuantity(item.productId, item.colorId, item.sizeId);
           const updatedQty = Math.max(0, currentQty - item.quantity);
 
-          inventoryStore.setQuantity(
-            item.productId,
-            item.colorId,
-            item.sizeId,
-            updatedQty
-          );
+          inventoryStore.setQuantity(item.productId, item.colorId, item.sizeId, updatedQty);
         });
 
         // 2. SAVE TRANSACTION LOCALLY (Latest transactions first)
@@ -101,6 +91,6 @@ export const useTransactionStore = create<TransactionStore>()(
     {
       name: 'global-transaction-storage',
       storage: createJSONStorage(() => mmkvStorage),
-    }
-  )
+    },
+  ),
 );

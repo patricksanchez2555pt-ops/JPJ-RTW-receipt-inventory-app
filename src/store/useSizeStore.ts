@@ -38,9 +38,7 @@ export const useSizeStore = create<SizeStore>()(
 
       updateSize: (id, name, price) =>
         set((state) => ({
-          sizes: state.sizes.map((s) =>
-            s.id === id ? { ...s, name, price } : s
-          ),
+          sizes: state.sizes.map((s) => (s.id === id ? { ...s, name, price } : s)),
         })),
 
       deleteSize: (id) =>
@@ -52,12 +50,11 @@ export const useSizeStore = create<SizeStore>()(
 
       getAllSizes: () => get().sizes,
 
-      getSizesByProductId: (productId) =>
-        get().sizes.filter((s) => s.productId === productId),
+      getSizesByProductId: (productId) => get().sizes.filter((s) => s.productId === productId),
     }),
     {
       name: 'global-size-storage',
       storage: createJSONStorage(() => mmkvStorage),
-    }
-  )
+    },
+  ),
 );

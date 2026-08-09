@@ -20,7 +20,7 @@
 		13B07F961A680F5B00A75B9A /* JPJRTW.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JPJRTW.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = JPJRTW/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = JPJRTW/Info.plist; sourceTree = "<group>"; };
-		187C79432CA237B2CA771BBE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = JPJRTW/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		187C79432CA237B2CA771BBE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = JPJRTW/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		282CDD4367234B344133E9CE /* libPods-JPJRTW.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-JPJRTW.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4F27975998F7C8AC5837107B /* Pods-JPJRTW.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-JPJRTW.debug.xcconfig"; path = "Target Support Files/Pods-JPJRTW/Pods-JPJRTW.debug.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = JPJRTW/SplashScreen.storyboard; sourceTree = "<group>"; };
@@ -111,7 +111,6 @@
 				4F27975998F7C8AC5837107B /* Pods-JPJRTW.debug.xcconfig */,
 				DC4A489F19FB5E8FF65BA347 /* Pods-JPJRTW.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -362,6 +361,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = JPJRTW/JPJRTW.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NA4L9WM9T6;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -398,6 +398,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = JPJRTW/JPJRTW.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NA4L9WM9T6;
 				INFOPLIST_FILE = JPJRTW/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (

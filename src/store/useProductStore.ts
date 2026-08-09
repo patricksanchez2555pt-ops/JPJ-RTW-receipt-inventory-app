@@ -33,17 +33,12 @@ export const useProductStore = create<ProductStore>()(
 
       addProduct: (productData) =>
         set((state) => ({
-          products: [
-            ...state.products,
-            { ...productData, createdAt: new Date().toISOString() },
-          ],
+          products: [...state.products, { ...productData, createdAt: new Date().toISOString() }],
         })),
 
       updateProduct: (id, name) =>
         set((state) => ({
-          products: state.products.map((p) =>
-            p.id === id ? { ...p, name } : p
-          ),
+          products: state.products.map((p) => (p.id === id ? { ...p, name } : p)),
         })),
 
       deleteProduct: (id) =>
@@ -60,6 +55,6 @@ export const useProductStore = create<ProductStore>()(
     {
       name: 'global-product-storage',
       storage: createJSONStorage(() => mmkvStorage),
-    }
-  )
+    },
+  ),
 );

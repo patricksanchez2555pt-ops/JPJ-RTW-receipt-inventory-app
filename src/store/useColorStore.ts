@@ -39,9 +39,7 @@ export const useColorStore = create<ColorStore>()(
 
       updateColor: (id, name, hexValue) =>
         set((state) => ({
-          colors: state.colors.map((c) =>
-            c.id === id ? { ...c, name, hexValue } : c
-          ),
+          colors: state.colors.map((c) => (c.id === id ? { ...c, name, hexValue } : c)),
         })),
 
       deleteColor: (id) =>
@@ -59,12 +57,11 @@ export const useColorStore = create<ColorStore>()(
 
       getAllColors: () => get().colors,
 
-      getColorsByProductId: (productId) =>
-        get().colors.filter((c) => c.productId === productId),
+      getColorsByProductId: (productId) => get().colors.filter((c) => c.productId === productId),
     }),
     {
       name: 'global-color-storage',
       storage: createJSONStorage(() => mmkvStorage),
-    }
-  )
+    },
+  ),
 );

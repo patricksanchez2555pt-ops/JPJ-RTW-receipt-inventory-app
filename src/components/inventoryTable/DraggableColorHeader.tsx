@@ -3,9 +3,16 @@ import { StyleSheet, Text } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
+import type { Color } from '../../types/localModels';
 import { COLOR_COLUMN_WIDTH, ROW_HEIGHT } from './constants';
-import type { DraggableColorHeaderProps } from './types';
 import { getSubtleBgColor } from './utils';
+
+type DraggableColorHeaderProps = {
+  color: Color;
+  index: number;
+  totalColumns: number;
+  onDrop: (fromIndex: number, toIndex: number) => void;
+};
 
 export function DraggableColorHeader({
   color,
@@ -16,7 +23,6 @@ export function DraggableColorHeader({
   const translateX = useSharedValue(0);
   const isDragging = useSharedValue(false);
 
-  // Safe fallback to empty string if hexValue is missing
   const subtleBg = getSubtleBgColor(color?.hexValue);
 
   const panGesture = Gesture.Pan()
@@ -60,7 +66,6 @@ export function DraggableColorHeader({
       <Animated.View style={[styles.colorHeaderCell, { backgroundColor: subtleBg }, animatedStyle]}>
         <Text style={styles.dragIndicator}>⋮⋮</Text>
 
-        {/* Visual Color Circle Pill */}
         <Animated.View style={[styles.colorDot, { backgroundColor: color.hexValue }]} />
 
         <Text style={styles.headerText}>{color.name}</Text>

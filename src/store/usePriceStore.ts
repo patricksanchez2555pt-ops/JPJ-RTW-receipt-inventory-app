@@ -16,7 +16,9 @@ type PriceStore = {
   prices: Price[];
 
   // Setters
-  addPrice: (priceData: Omit<Price, 'id' | 'createdAt'> & { id?: string; createdAt?: string }) => void;
+  addPrice: (
+    priceData: Omit<Price, 'id' | 'createdAt'> & { id?: string; createdAt?: string },
+  ) => void;
   updatePrice: (id: string, newPrice: number) => void;
   deletePrice: (id: string) => void;
   setAllPrices: (prices: Price[]) => void;
@@ -37,7 +39,8 @@ export const usePriceStore = create<PriceStore>()(
             ...state.prices,
             {
               ...priceData,
-              id: priceData.id ?? `price-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+              id:
+                priceData.id ?? `price-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
               createdAt: priceData.createdAt ?? new Date().toISOString(),
             },
           ],
@@ -45,9 +48,7 @@ export const usePriceStore = create<PriceStore>()(
 
       updatePrice: (id, newPrice) =>
         set((state) => ({
-          prices: state.prices.map((p) =>
-            p.id === id ? { ...p, price: newPrice } : p
-          ),
+          prices: state.prices.map((p) => (p.id === id ? { ...p, price: newPrice } : p)),
         })),
 
       deletePrice: (id) =>
@@ -68,13 +69,13 @@ export const usePriceStore = create<PriceStore>()(
 
         // Sort by createdAt descending to return the newest active price
         return matches.sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         )[0];
       },
     }),
     {
       name: 'global-price-storage',
       storage: createJSONStorage(() => mmkvStorage),
-    }
-  )
+    },
+  ),
 );

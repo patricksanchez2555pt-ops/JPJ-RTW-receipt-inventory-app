@@ -12,80 +12,60 @@ const mmkvStorage = {
   getItem: (name: string) => mmkv.getString(name) ?? null,
   removeItem: (name: string) => mmkv.remove(name), // Use .remove() for MMKV v3+
 };
+// Helper function to build deterministic key lookups
+export const getInventoryKey = (productId: string, colorId: string, sizeId: string) =>
+  `${productId}:${colorId}:${sizeId}`;
 
 type InventoryStore = {
-  inventory: Inventory[];
+  // Keyed dictionary for O(1) reads and updates
+  inventory: Record<string, Inventory>;
 
-  // Setters
+  // Actions
   setQuantity: (productId: string, colorId: string, sizeId: string, quantity: number) => void;
   setAllInventory: (records: Inventory[]) => void;
-
-  // Getters
-  getQuantity: (productId: string, colorId: string, sizeId: string) => number;
-  getMapByProductId: (productId: string) => Record<string, number>;
+  getInventoryArray: () => Inventory[];
+  getQuantity: (key: string) => number;
 };
 
 export const useInventoryStore = create<InventoryStore>()(
   persist(
     (set, get) => ({
-      inventory: [],
+      inventory: {},
 
-      /**
-       * Updates quantity for a specific product, color, and size.
-       * Automatically persists to disk and updates reactive state across the app.
-       */
+      // O(1) State Update
       setQuantity: (productId, colorId, sizeId, quantity) =>
         set((state) => {
+          const key = getInventoryKey(productId, colorId, sizeId);
           const safeQty = Math.max(0, quantity);
-          const index = state.inventory.findIndex(
-            (item) =>
-              item.productId === productId && item.colorId === colorId && item.sizeId === sizeId,
-          );
-
-          const updatedAt = new Date().toISOString();
-
-          if (index >= 0) {
-            const updated = [...state.inventory];
-            updated[index] = { ...updated[index], quantity: safeQty, updatedAt };
-            return { inventory: updated };
-          }
 
           return {
-            inventory: [
+            inventory: {
               ...state.inventory,
-              { productId, colorId, sizeId, quantity: safeQty, updatedAt },
-            ],
+              [key]: {
+                productId,
+                colorId,
+                sizeId,
+                quantity: safeQty,
+                updatedAt: new Date().toISOString(),
+              },
+            },
           };
         }),
 
-      /**
-       * Bulk replaces or initializes the inventory array.
-       */
-      setAllInventory: (records) => set({ inventory: records }),
-
-      /**
-       * Retrieves quantity for a specific productId, colorId, and sizeId.
-       */
-      getQuantity: (productId, colorId, sizeId) => {
-        const match = get().inventory.find(
-          (item) =>
-            item.productId === productId && item.colorId === colorId && item.sizeId === sizeId,
-        );
-        return match ? match.quantity : 0;
-      },
-
-      /**
-       * Returns a lookup map keyed by `${sizeId}-${colorId}` for fast O(1) rendering in tables.
-       */
-      getMapByProductId: (productId) => {
-        const productItems = get().inventory.filter((item) => item.productId === productId);
-
-        const map: Record<string, number> = {};
-        for (const item of productItems) {
-          map[`${item.sizeId}-${item.colorId}`] = item.quantity;
+      // Converts API/Database Array into Map
+      setAllInventory: (records) => {
+        const dict: Record<string, Inventory> = {};
+        for (const item of records) {
+          const key = getInventoryKey(item.productId, item.colorId, item.sizeId);
+          dict[key] = item;
         }
-        return map;
+        set({ inventory: dict });
       },
+
+      // Utility to export state back as an array for API payloads
+      getInventoryArray: () => Object.values(get().inventory),
+
+      getQuantity: (key) => get().inventory[key]?.quantity ?? 0,
     }),
     {
       name: 'global-inventory-storage',

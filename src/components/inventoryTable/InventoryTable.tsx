@@ -1,15 +1,43 @@
 import React, { useRef, useState } from 'react';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useShallow } from 'zustand/react/shallow';
 
+import { useColorStore } from '../../store/useColorStore';
+import { getInventoryKey } from '../../store/useInventoryStore';
+import { useProductStore } from '../../store/useProductStore';
+import { useSizeStore } from '../../store/useSizeStore';
+import type { Color } from '../../types/localModels';
 import { ROW_HEIGHT, SIZE_COLUMN_WIDTH, TABLE_HEIGHT } from './constants';
 import { DraggableColorHeader } from './DraggableColorHeader';
 import { InventoryCell } from './InventoryCell';
-import type { ColorItem, InventoryTableProps } from './types';
 
-export default function InventoryTable({ productName, colors, sizes }: InventoryTableProps) {
-  const [columnOrder, setColumnOrder] = useState<ColorItem[]>(colors);
+type InventoryTableProps = {
+  productId: string;
+};
 
+export default function InventoryTable({ productId }: InventoryTableProps) {
+  // 1. STORE HOOKS (REACTIVE STATE WITH STABLE SELECTORS)
+  const product = useProductStore((state) => state.getProductById(productId));
+
+  const rawColors = useColorStore(
+    useShallow((state) => state.colors.filter((c) => c.productId === productId)),
+  );
+
+  const sizes = useSizeStore(
+    useShallow((state) => state.sizes.filter((s) => s.productId === productId)),
+  );
+
+  // Store actions
+  const reorderColorsInStore = useColorStore((state) => state.reorderColors);
+
+  // Local reorder override state (holds manual drag adjustments)
+  const [reorderedColors, setReorderedColors] = useState<Color[] | null>(null);
+
+  // Derive column order directly without useEffect
+  const columnOrder = reorderedColors ?? rawColors;
+
+  // 2. SCROLL REFS & SYNC
   const colorHeaderRef = useRef<ScrollView>(null);
   const sizeColumnRef = useRef<ScrollView>(null);
   const inventoryVerticalRef = useRef<ScrollView>(null);
@@ -56,31 +84,35 @@ export default function InventoryTable({ productName, colors, sizes }: Inventory
     });
   };
 
+  // 3. HANDLERS
   const reorderColumns = (fromIndex: number, toIndex: number) => {
     if (fromIndex === toIndex) return;
 
-    setColumnOrder((currentOrder) => {
-      const newOrder = [...currentOrder];
-      const [movedColumn] = newOrder.splice(fromIndex, 1);
-      newOrder.splice(toIndex, 0, movedColumn);
-      return newOrder;
-    });
+    const newOrder = [...columnOrder];
+    const [movedColumn] = newOrder.splice(fromIndex, 1);
+    newOrder.splice(toIndex, 0, movedColumn);
+
+    setReorderedColors(newOrder);
+    reorderColorsInStore(productId, newOrder);
   };
 
-  const handleCellChange = ({ size, color, quantity }: QuantityChangeEvent) => {
-    console.log(`Updated ${productName} inventory: ${size} / ${color} = ${quantity}`);
-  };
+  if (!product) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Product not found.</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       {/* HEADER */}
       <View style={styles.header}>
-        <Text style={styles.productName}>{productName}</Text>
+        <Text style={styles.productName}>{product.name}</Text>
         <Pressable
           style={({ pressed }) => [styles.saveButton, pressed && styles.pressed]}
           onPress={() => {
-            console.log(`Saving ${productName} inventory`);
-            console.log('Column order:', columnOrder);
+            console.log(`Inventory saved locally for ${product.name}`);
           }}
         >
           <Text style={styles.saveButtonText}>Save</Text>
@@ -106,7 +138,7 @@ export default function InventoryTable({ productName, colors, sizes }: Inventory
             <View style={styles.colorHeaderRow}>
               {columnOrder.map((color, index) => (
                 <DraggableColorHeader
-                  key={color.name}
+                  key={color.id}
                   color={color}
                   index={index}
                   totalColumns={columnOrder.length}
@@ -128,8 +160,8 @@ export default function InventoryTable({ productName, colors, sizes }: Inventory
             scrollEventThrottle={16}
           >
             {sizes.map((size) => (
-              <View key={size} style={styles.sizeCell}>
-                <Text style={styles.sizeText}>{size}</Text>
+              <View key={size.id} style={styles.sizeCell}>
+                <Text style={styles.sizeText}>{size.name}</Text>
               </View>
             ))}
           </ScrollView>
@@ -153,14 +185,14 @@ export default function InventoryTable({ productName, colors, sizes }: Inventory
             >
               <View>
                 {sizes.map((size) => (
-                  <View key={size} style={styles.row}>
+                  <View key={size.id} style={styles.row}>
                     {columnOrder.map((color) => (
                       <InventoryCell
-                        key={`${size}-${color.name}`}
-                        size={size}
-                        colorName={color.name}
+                        key={getInventoryKey(productId, color.id, size.id)}
+                        productId={productId}
+                        sizeId={size.id}
+                        colorId={color.id}
                         hexValue={color.hexValue}
-                        onQuantityChange={handleCellChange}
                       />
                     ))}
                   </View>
@@ -268,6 +300,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#06132F',
   },
+  priceSubtext: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 2,
+  },
   saveButton: {
     paddingHorizontal: 28,
     height: 44,
@@ -283,5 +320,10 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.7,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#DC2626',
+    textAlign: 'center',
   },
 });

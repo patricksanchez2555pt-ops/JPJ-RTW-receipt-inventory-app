@@ -3,6 +3,7 @@ node_modules/
 
 # Expo
 .expo/
+.expo/*.log
 dist/
 web-build/
 
@@ -14,9 +15,12 @@ expo-env.d.ts
 *.xcuserstate
 DerivedData/
 build/
+**/build/
+**/DerivedData/
 
 # Android
 .gradle/
+**/android/.gradle/
 local.properties
 *.jks
 *.keystore
@@ -27,6 +31,7 @@ Pods/
 xcuserdata/
 
 # Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

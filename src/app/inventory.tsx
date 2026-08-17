@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 
 import InventoryTable from '../components/inventoryTable/InventoryTable';
@@ -6,12 +6,16 @@ import { useColorStore } from '../store/useColorStore';
 import { useProductStore } from '../store/useProductStore';
 import { useSizeStore } from '../store/useSizeStore';
 
-seedInitialInventoryData();
-
 const DEFAULT_PRODUCT_ID = 'prod-jogging-pants';
+// seedInitialInventoryData();
 
 export default function InventoryView() {
   const products = useProductStore((state) => state.products);
+
+  useEffect(() => {
+    console.log('inn');
+    seedInitialInventoryData();
+  }, []);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -75,8 +79,11 @@ function seedInitialInventoryData() {
       productId,
       name: sizeName,
       order: index,
+      price: 100,
     });
   });
+
+  console.log(initialSizes);
 }
 
 const styles = StyleSheet.create({

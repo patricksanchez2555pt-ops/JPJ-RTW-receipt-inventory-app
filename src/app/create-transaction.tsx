@@ -1,21 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import CreateTransaction from '../components/transactions/create/CreateTransaction';
 
-export default function CreateTransactionView() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create Transaction</Text>
-    </View>
-  );
+export default function CreateTransactionScreen() {
+  return <CreateTransaction />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-  },
-
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-  },
-});

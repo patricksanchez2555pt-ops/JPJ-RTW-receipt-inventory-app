@@ -145,6 +145,10 @@ export default function CreateTransaction() {
     setSelectedSizes([]);
   }
 
+  const itemCount = useMemo(() => {
+    return items.reduce((sum, item) => sum + item.quantity, 0);
+  }, [items]);
+
   function updateQuantity(itemId: string, amount: number) {
     setItems((current) =>
       current.map((item) => {
@@ -328,6 +332,7 @@ export default function CreateTransaction() {
 
         <TransactionSummary
           buyerName={buyerName}
+          itemCount={itemCount}
           discount={discount}
           subtotal={subtotal}
           total={total}

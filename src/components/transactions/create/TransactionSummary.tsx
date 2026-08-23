@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 type Props = {
   buyerName: string;
+  itemCount: number;
   discount: number;
   subtotal: number;
   total: number;
@@ -15,6 +16,7 @@ type Props = {
 
 export default function TransactionSummary({
   buyerName,
+  itemCount,
   discount,
   subtotal,
   total,
@@ -40,6 +42,7 @@ export default function TransactionSummary({
       {/* CONTENT */}
       {!collapsed && (
         <View style={styles.content}>
+
           {/* BUYER NAME */}
           <Text style={styles.label}>Buyer Name</Text>
 
@@ -50,6 +53,15 @@ export default function TransactionSummary({
             placeholderTextColor="#9AA2AF"
             style={styles.input}
           />
+          
+          {/* TOTAL ITEMS */}
+          <View style={styles.row}>
+            <Text style={styles.label}>Total Items</Text>
+
+            <Text style={styles.amount}>
+              {itemCount} {itemCount === 1 ? 'pc' : 'pcs'}
+            </Text>
+          </View>
 
           {/* SUBTOTAL */}
           <View style={styles.row}>

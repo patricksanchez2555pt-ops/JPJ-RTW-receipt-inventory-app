@@ -9,17 +9,33 @@ type Props = {
   sizes: Size[];
   selectedSizes: Size[];
   onToggle: (size: Size) => void;
+  onDeselectAll: () => void;
 };
 
-export default function SizeSelector({ sizes, selectedSizes, onToggle }: Props) {
+export default function SizeSelector({ sizes, selectedSizes, onToggle, onDeselectAll }: Props) {
   const itemLayouts = useRef<{
-    [key: string]: { x: number; y: number; width: number; height: number };
+    [key: string]: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
   }>({});
+
   const processedInCurrentDrag = useRef<Set<string>>(new Set());
+
   const [panGesture, setPanGesture] = useState<PanGesture | null>(null);
 
   const saveLayout = useCallback(
-    (id: string, layout: { x: number; y: number; width: number; height: number }) => {
+    (
+      id: string,
+      layout: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      },
+    ) => {
       itemLayouts.current[id] = layout;
     },
     [],
@@ -29,16 +45,19 @@ export default function SizeSelector({ sizes, selectedSizes, onToggle }: Props) 
     const handleTouchAtPoint = (touchX: number, touchY: number) => {
       sizes.forEach((size) => {
         const layout = itemLayouts.current[size.id];
-        if (!layout) return;
+
+        if (!layout) {
+          return;
+        }
 
         const isInsideX = touchX >= layout.x && touchX <= layout.x + layout.width;
+
         const isInsideY = touchY >= layout.y && touchY <= layout.y + layout.height;
 
-        if (isInsideX && isInsideY) {
-          if (!processedInCurrentDrag.current.has(size.id)) {
-            processedInCurrentDrag.current.add(size.id);
-            onToggle(size);
-          }
+        if (isInsideX && isInsideY && !processedInCurrentDrag.current.has(size.id)) {
+          processedInCurrentDrag.current.add(size.id);
+
+          onToggle(size);
         }
       });
     };
@@ -48,18 +67,22 @@ export default function SizeSelector({ sizes, selectedSizes, onToggle }: Props) 
     };
 
     const gesture = Gesture.Pan()
-      .runOnJS(true) // Directs gesture callbacks to run directly on the JS thread
-      .minDistance(0)
-      .onStart((event) => {
+      .runOnJS(true)
+
+      // Allows normal single presses to be handled by Pressable.
+      // Dragging must move at least 10px before this gesture activates.
+      .minDistance(10)
+
+      .onBegin((event) => {
         resetDragSession();
+
         handleTouchAtPoint(event.x, event.y);
       })
+
       .onUpdate((event) => {
         handleTouchAtPoint(event.x, event.y);
       })
-      .onEnd(() => {
-        resetDragSession();
-      })
+
       .onFinalize(() => {
         resetDragSession();
       });
@@ -67,10 +90,26 @@ export default function SizeSelector({ sizes, selectedSizes, onToggle }: Props) 
     setPanGesture(gesture);
   }, [sizes, onToggle]);
 
+  const hasSelectedSizes = selectedSizes.length > 0;
+
   return (
     <View>
-      <Text style={styles.title}>3. Select Size</Text>
-      <Text style={styles.subtitle}>Select multiple sizes</Text>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.title}>3. Select Size</Text>
+
+          <Text style={styles.subtitle}>Tap or drag across multiple sizes</Text>
+        </View>
+
+        {hasSelectedSizes && (
+          <Pressable
+            onPress={onDeselectAll}
+            style={({ pressed }) => [styles.deselectButton, pressed && styles.pressed]}
+          >
+            <Text style={styles.deselectText}>Deselect All</Text>
+          </Pressable>
+        )}
+      </View>
 
       {panGesture ? (
         <GestureDetector gesture={panGesture}>
@@ -81,7 +120,6 @@ export default function SizeSelector({ sizes, selectedSizes, onToggle }: Props) 
               return (
                 <Pressable
                   key={size.id}
-                  onPress={() => onToggle(size)}
                   onLayout={(event) => {
                     saveLayout(size.id, event.nativeEvent.layout);
                   }}
@@ -101,8 +139,9 @@ export default function SizeSelector({ sizes, selectedSizes, onToggle }: Props) 
             const selected = selectedSizes.some((item) => item.id === size.id);
 
             return (
-              <View
+              <Pressable
                 key={size.id}
+                onPress={() => onToggle(size)}
                 onLayout={(event) => {
                   saveLayout(size.id, event.nativeEvent.layout);
                 }}
@@ -111,7 +150,7 @@ export default function SizeSelector({ sizes, selectedSizes, onToggle }: Props) 
                 <Text style={[styles.sizeText, selected && styles.selectedSizeText]}>
                   {size.name}
                 </Text>
-              </View>
+              </Pressable>
             );
           })}
         </View>
@@ -121,20 +160,46 @@ export default function SizeSelector({ sizes, selectedSizes, onToggle }: Props) 
 }
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+
   title: {
     fontSize: 16,
     fontWeight: '700',
   },
+
   subtitle: {
     color: '#7A8495',
     marginTop: 4,
     marginBottom: 12,
   },
+
+  deselectButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 6,
+    backgroundColor: '#F1F3F6',
+  },
+
+  deselectText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#D14343',
+  },
+
+  pressed: {
+    opacity: 0.7,
+  },
+
   sizes: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
+
   sizeButton: {
     minWidth: 64,
     height: 48,
@@ -144,14 +209,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+
   selectedSizeButton: {
     backgroundColor: '#1745D1',
     borderColor: '#1745D1',
   },
+
   sizeText: {
     fontSize: 15,
     fontWeight: '600',
   },
+
   selectedSizeText: {
     color: '#FFFFFF',
   },

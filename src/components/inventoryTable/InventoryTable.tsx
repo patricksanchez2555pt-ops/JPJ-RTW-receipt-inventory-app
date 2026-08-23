@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useRef, useState } from 'react';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -17,7 +18,6 @@ type InventoryTableProps = {
 };
 
 export default function InventoryTable({ productId }: InventoryTableProps) {
-  // 1. STORE HOOKS (REACTIVE STATE WITH STABLE SELECTORS)
   const product = useProductStore((state) => state.getProductById(productId));
 
   const rawColors = useColorStore(
@@ -28,16 +28,16 @@ export default function InventoryTable({ productId }: InventoryTableProps) {
     useShallow((state) => state.sizes.filter((s) => s.productId === productId)),
   );
 
-  // Store actions
   const reorderColorsInStore = useColorStore((state) => state.reorderColors);
 
-  // Local reorder override state (holds manual drag adjustments)
   const [reorderedColors, setReorderedColors] = useState<Color[] | null>(null);
 
-  // Derive column order directly without useEffect
+  // Collapsed state
+  const [collapsed, setCollapsed] = useState(false);
+
   const columnOrder = reorderedColors ?? rawColors;
 
-  // 2. SCROLL REFS & SYNC
+  // Scroll refs
   const colorHeaderRef = useRef<ScrollView>(null);
   const sizeColumnRef = useRef<ScrollView>(null);
   const inventoryVerticalRef = useRef<ScrollView>(null);
@@ -49,9 +49,13 @@ export default function InventoryTable({ productId }: InventoryTableProps) {
     if (syncingHorizontal.current) return;
 
     const x = event.nativeEvent.contentOffset.x;
+
     syncingHorizontal.current = true;
 
-    colorHeaderRef.current?.scrollTo({ x, animated: false });
+    colorHeaderRef.current?.scrollTo({
+      x,
+      animated: false,
+    });
 
     requestAnimationFrame(() => {
       syncingHorizontal.current = false;
@@ -62,9 +66,13 @@ export default function InventoryTable({ productId }: InventoryTableProps) {
     if (syncingVertical.current) return;
 
     const y = event.nativeEvent.contentOffset.y;
+
     syncingVertical.current = true;
 
-    sizeColumnRef.current?.scrollTo({ y, animated: false });
+    sizeColumnRef.current?.scrollTo({
+      y,
+      animated: false,
+    });
 
     requestAnimationFrame(() => {
       syncingVertical.current = false;
@@ -75,24 +83,30 @@ export default function InventoryTable({ productId }: InventoryTableProps) {
     if (syncingVertical.current) return;
 
     const y = event.nativeEvent.contentOffset.y;
+
     syncingVertical.current = true;
 
-    inventoryVerticalRef.current?.scrollTo({ y, animated: false });
+    inventoryVerticalRef.current?.scrollTo({
+      y,
+      animated: false,
+    });
 
     requestAnimationFrame(() => {
       syncingVertical.current = false;
     });
   };
 
-  // 3. HANDLERS
   const reorderColumns = (fromIndex: number, toIndex: number) => {
     if (fromIndex === toIndex) return;
 
     const newOrder = [...columnOrder];
+
     const [movedColumn] = newOrder.splice(fromIndex, 1);
+
     newOrder.splice(toIndex, 0, movedColumn);
 
     setReorderedColors(newOrder);
+
     reorderColorsInStore(productId, newOrder);
   };
 
@@ -108,7 +122,25 @@ export default function InventoryTable({ productId }: InventoryTableProps) {
     <View style={styles.container}>
       {/* HEADER */}
       <View style={styles.header}>
-        <Text style={styles.productName}>{product.name}</Text>
+        <Pressable
+          onPress={() => setCollapsed((current) => !current)}
+          style={({ pressed }) => [styles.productHeaderButton, pressed && styles.pressed]}
+        >
+          <Ionicons
+            name={collapsed ? 'chevron-forward' : 'chevron-down'}
+            size={24}
+            color="#06132F"
+          />
+
+          <View style={styles.productTitleContainer}>
+            <Text style={styles.productName}>{product.name}</Text>
+
+            <Text style={styles.productInfo}>
+              {sizes.length} sizes • {columnOrder.length} colors
+            </Text>
+          </View>
+        </Pressable>
+
         <Pressable
           style={({ pressed }) => [styles.saveButton, pressed && styles.pressed]}
           onPress={() => {
@@ -120,88 +152,90 @@ export default function InventoryTable({ productId }: InventoryTableProps) {
       </View>
 
       {/* TABLE */}
-      <View style={styles.tableContainer}>
-        {/* FIXED CORNER HEADER */}
-        <View style={styles.cornerCell}>
-          <Text style={styles.headerText}>Size</Text>
-        </View>
+      {!collapsed && (
+        <View style={styles.tableContainer}>
+          {/* FIXED CORNER HEADER */}
+          <View style={styles.cornerCell}>
+            <Text style={styles.headerText}>Size</Text>
+          </View>
 
-        {/* COLOR HEADER */}
-        <View style={styles.colorHeaderContainer}>
-          <ScrollView
-            ref={colorHeaderRef}
-            horizontal
-            scrollEnabled={false}
-            showsHorizontalScrollIndicator={false}
-            bounces={false}
-          >
-            <View style={styles.colorHeaderRow}>
-              {columnOrder.map((color, index) => (
-                <DraggableColorHeader
-                  key={color.id}
-                  color={color}
-                  index={index}
-                  totalColumns={columnOrder.length}
-                  onDrop={reorderColumns}
-                />
-              ))}
-            </View>
-          </ScrollView>
-        </View>
-
-        {/* FIXED SIZE COLUMN */}
-        <View style={styles.sizeColumnContainer}>
-          <ScrollView
-            ref={sizeColumnRef}
-            showsVerticalScrollIndicator={false}
-            showsHorizontalScrollIndicator={false}
-            bounces={false}
-            onScroll={handleSizeColumnScroll}
-            scrollEventThrottle={16}
-          >
-            {sizes.map((size) => (
-              <View key={size.id} style={styles.sizeCell}>
-                <Text style={styles.sizeText}>{size.name}</Text>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* INVENTORY BODY */}
-        <View style={styles.inventoryContainer}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator
-            bounces={false}
-            onScroll={handleHorizontalScroll}
-            scrollEventThrottle={16}
-          >
+          {/* COLOR HEADER */}
+          <View style={styles.colorHeaderContainer}>
             <ScrollView
-              ref={inventoryVerticalRef}
-              showsVerticalScrollIndicator
+              ref={colorHeaderRef}
+              horizontal
+              scrollEnabled={false}
+              showsHorizontalScrollIndicator={false}
               bounces={false}
-              onScroll={handleInventoryVerticalScroll}
-              scrollEventThrottle={16}
             >
-              <View>
-                {sizes.map((size) => (
-                  <View key={size.id} style={styles.row}>
-                    {columnOrder.map((color) => (
-                      <InventoryCell
-                        key={getInventoryKey(productId, color.id, size.id)}
-                        productId={productId}
-                        sizeId={size.id}
-                        colorId={color.id}
-                        hexValue={color.hexValue}
-                      />
-                    ))}
-                  </View>
+              <View style={styles.colorHeaderRow}>
+                {columnOrder.map((color, index) => (
+                  <DraggableColorHeader
+                    key={color.id}
+                    color={color}
+                    index={index}
+                    totalColumns={columnOrder.length}
+                    onDrop={reorderColumns}
+                  />
                 ))}
               </View>
             </ScrollView>
-          </ScrollView>
+          </View>
+
+          {/* FIXED SIZE COLUMN */}
+          <View style={styles.sizeColumnContainer}>
+            <ScrollView
+              ref={sizeColumnRef}
+              showsVerticalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
+              bounces={false}
+              onScroll={handleSizeColumnScroll}
+              scrollEventThrottle={16}
+            >
+              {sizes.map((size) => (
+                <View key={size.id} style={styles.sizeCell}>
+                  <Text style={styles.sizeText}>{size.name}</Text>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* INVENTORY BODY */}
+          <View style={styles.inventoryContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator
+              bounces={false}
+              onScroll={handleHorizontalScroll}
+              scrollEventThrottle={16}
+            >
+              <ScrollView
+                ref={inventoryVerticalRef}
+                showsVerticalScrollIndicator
+                bounces={false}
+                onScroll={handleInventoryVerticalScroll}
+                scrollEventThrottle={16}
+              >
+                <View>
+                  {sizes.map((size) => (
+                    <View key={size.id} style={styles.row}>
+                      {columnOrder.map((color) => (
+                        <InventoryCell
+                          key={getInventoryKey(productId, color.id, size.id)}
+                          productId={productId}
+                          sizeId={size.id}
+                          colorId={color.id}
+                          hexValue={color.hexValue}
+                        />
+                      ))}
+                    </View>
+                  ))}
+                </View>
+              </ScrollView>
+            </ScrollView>
+          </View>
         </View>
-      </View>
+      )}
     </View>
   );
 }
@@ -213,26 +247,48 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 24,
   },
+
   header: {
-    marginBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+
+  productHeaderButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    marginRight: 16,
+  },
+
+  productTitleContainer: {
+    marginLeft: 10,
+    flex: 1,
+  },
+
   productName: {
     fontSize: 22,
     fontWeight: '700',
     color: '#06132F',
-    flex: 1,
   },
+
+  productInfo: {
+    marginTop: 3,
+    fontSize: 13,
+    color: '#64748B',
+  },
+
   tableContainer: {
     height: TABLE_HEIGHT,
+    marginTop: 16,
     borderWidth: 1,
     borderColor: '#D9DEE8',
     borderRadius: 8,
     overflow: 'hidden',
     position: 'relative',
   },
+
   cornerCell: {
     position: 'absolute',
     top: 0,
@@ -247,6 +303,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#D9DEE8',
   },
+
   colorHeaderContainer: {
     position: 'absolute',
     top: 0,
@@ -256,9 +313,11 @@ const styles = StyleSheet.create({
     zIndex: 10,
     backgroundColor: '#F3F5F8',
   },
+
   colorHeaderRow: {
     flexDirection: 'row',
   },
+
   sizeColumnContainer: {
     position: 'absolute',
     top: ROW_HEIGHT,
@@ -268,6 +327,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
     backgroundColor: '#FFFFFF',
   },
+
   sizeCell: {
     width: SIZE_COLUMN_WIDTH,
     height: ROW_HEIGHT,
@@ -278,6 +338,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#D9DEE8',
   },
+
   inventoryContainer: {
     position: 'absolute',
     top: ROW_HEIGHT,
@@ -286,25 +347,24 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 1,
   },
+
   row: {
     height: ROW_HEIGHT,
     flexDirection: 'row',
   },
+
   headerText: {
     fontSize: 15,
     fontWeight: '700',
     color: '#06132F',
   },
+
   sizeText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#06132F',
   },
-  priceSubtext: {
-    fontSize: 11,
-    color: '#64748B',
-    marginTop: 2,
-  },
+
   saveButton: {
     paddingHorizontal: 28,
     height: 44,
@@ -313,14 +373,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   saveButtonText: {
     color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '700',
   },
+
   pressed: {
     opacity: 0.7,
   },
+
   errorText: {
     fontSize: 16,
     color: '#DC2626',

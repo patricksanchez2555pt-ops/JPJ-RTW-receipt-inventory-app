@@ -1,6 +1,6 @@
 cd /Users/patricksanchez/Projects/JPJ-RTW-receipt-inventory-app/Code/macrozone
 npx expo prebuild --platform ios
-npx pod-install
+npx pod-install / npx expo run:ios
 open ios/JPJRTW.xcworkspace
 
 In Xcode

@@ -66,11 +66,9 @@ export default function CreateTransaction() {
     setSelectedSizes((current) => {
       const exists = current.some((item) => item.id === size.id);
 
-      if (exists) {
-        return current.filter((item) => item.id !== size.id);
-      }
+      const updated = exists ? current.filter((item) => item.id !== size.id) : [...current, size];
 
-      return [...current, size];
+      return [...updated].sort((a, b) => a.price - b.price);
     });
   }
 
@@ -244,6 +242,7 @@ export default function CreateTransaction() {
               sizes={productSizes}
               selectedSizes={selectedSizes}
               onToggle={handleSizeToggle}
+              onDeselectAll={() => setSelectedSizes([])}
             />
           </View>
 
@@ -375,6 +374,7 @@ const styles = StyleSheet.create({
 
   selectedSizes: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 6,
     marginTop: 8,
   },

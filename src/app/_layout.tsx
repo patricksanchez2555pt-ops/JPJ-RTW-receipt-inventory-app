@@ -91,5 +91,23 @@ function seedInitialInventoryData() {
     });
   });
 
+  const leothardsColors = [
+    { name: 'Black', hexValue: '#000000' },
+    { name: 'White', hexValue: '#FFFFFF' },
+    { name: 'Skin tone', hexValue: '#f2c08e' },
+  ];
+  
+  PRODUCTS.forEach((product) => {
+    if (product.id === 'jogging-pants') return;
+    leothardsColors.forEach((col, index) => {
+      colorStore.addColor({
+        id: `color-${product.id}-${index}`,
+        productId: product.id,
+        name: col.name,
+        hexValue: col.hexValue,
+      });
+    });
+  });
+
   sizeStore.setAllSizes(SIZES);
 }

@@ -7,10 +7,13 @@ type Props = {
   onIncrease: (itemId: string) => void;
   onDecrease: (itemId: string) => void;
   onRemove: (itemId: string) => void;
+  onRemoveGroup: (productId: string, colorId: string) => void;
 };
 
 type GroupedItems = {
   key: string;
+  productId: string;
+  colorId: string;
   productName: string;
   colorName: string;
   colorHex: string;
@@ -26,6 +29,8 @@ function groupItems(items: AddedTransactionItem[]): GroupedItems[] {
     if (!groups.has(key)) {
       groups.set(key, {
         key,
+        productId: item.productId,
+        colorId: item.colorId,
         productName: item.product?.name ?? 'Unknown Product',
         colorName: item.color?.name ?? 'Unknown Color',
         colorHex: item.color?.hexValue ?? '#CCCCCC',
@@ -36,11 +41,51 @@ function groupItems(items: AddedTransactionItem[]): GroupedItems[] {
     groups.get(key)!.items.push(item);
   }
 
-  return Array.from(groups.values());
+  // Sort sizes inside each group by price
+  for (const group of groups.values()) {
+    group.items.sort((a, b) => {
+      const priceA = typeof a.unitPrice === 'number' ? a.unitPrice : 0;
+      const priceB = typeof b.unitPrice === 'number' ? b.unitPrice : 0;
+
+      return priceA - priceB;
+    });
+  }
+
+  // Sort groups by their lowest price
+  return Array.from(groups.values()).sort((a, b) => {
+    const priceA =
+      a.items.length > 0 && typeof a.items[0].unitPrice === 'number'
+        ? a.items[0].unitPrice
+        : 0;
+
+    const priceB =
+      b.items.length > 0 && typeof b.items[0].unitPrice === 'number'
+        ? b.items[0].unitPrice
+        : 0;
+
+    return priceA - priceB;
+  });
 }
 
-export default function AddedItemsPanel({ items, onIncrease, onDecrease, onRemove }: Props) {
+export default function AddedItemsPanel({
+  items,
+  onIncrease,
+  onDecrease,
+  onRemove,
+}: Props) {
   const groups = groupItems(items);
+
+  function onRemoveGroup(key: string) {
+    const group = groups.find((g) => g.key === key);
+
+    if (!group) {
+      return;
+    }
+
+    group.items.forEach((item) => {
+      onRemove(item.id);
+    });
+  }
 
   return (
     <View style={styles.container}>
@@ -70,27 +115,46 @@ export default function AddedItemsPanel({ items, onIncrease, onDecrease, onRemov
                 ]}
               />
 
-              <View>
+              <View style={styles.groupInfo}>
                 <Text style={styles.productName}>{group.productName}</Text>
 
                 <Text style={styles.colorName}>{group.colorName}</Text>
               </View>
+
+              {/* Delete entire group */}
+              <Pressable
+                onPress={() => onRemoveGroup(group.key)}
+                style={({ pressed }) => [
+                  styles.deleteGroupButton,
+                  pressed && styles.pressed,
+                ]}
+              >
+                <Text style={styles.deleteGroupText}>Delete</Text>
+              </Pressable>
             </View>
 
             {/* Sizes */}
             {group.items.map((item) => {
-              const unitPriceNumber = typeof item.unitPrice === 'number' ? item.unitPrice : 0;
+              const unitPriceNumber =
+                typeof item.unitPrice === 'number' ? item.unitPrice : 0;
 
               return (
                 <View key={item.id} style={styles.itemRow}>
                   <View style={styles.sizeContainer}>
-                    <Text style={styles.sizeName}>{item.size?.name ?? 'Unknown Size'}</Text>
+                    <Text style={styles.sizeName}>
+                      {item.size?.name ?? 'Unknown Size'}
+                    </Text>
 
-                    <Text style={styles.price}>₱{unitPriceNumber.toFixed(2)} each</Text>
+                    <Text style={styles.price}>
+                      ₱{unitPriceNumber.toFixed(2)} each
+                    </Text>
                   </View>
 
                   <View style={styles.actions}>
-                    <Pressable style={styles.quantityButton} onPress={() => onDecrease(item.id)}>
+                    <Pressable
+                      style={styles.quantityButton}
+                      onPress={() => onDecrease(item.id)}
+                    >
                       <Text style={styles.buttonText}>−</Text>
                     </Pressable>
 
@@ -98,11 +162,18 @@ export default function AddedItemsPanel({ items, onIncrease, onDecrease, onRemov
                       <Text style={styles.quantityText}>{item.quantity}</Text>
                     </View>
 
-                    <Pressable style={styles.quantityButton} onPress={() => onIncrease(item.id)}>
+                    <Pressable
+                      style={styles.quantityButton}
+                      onPress={() => onIncrease(item.id)}
+                    >
                       <Text style={styles.buttonText}>+</Text>
                     </Pressable>
 
-                    <Pressable style={styles.deleteButton} onPress={() => onRemove(item.id)}>
+                    {/* Delete individual item */}
+                    <Pressable
+                      style={styles.deleteButton}
+                      onPress={() => onRemove(item.id)}
+                    >
                       <Text style={styles.deleteText}>×</Text>
                     </Pressable>
                   </View>
@@ -178,6 +249,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FB',
   },
 
+  groupInfo: {
+    flex: 1,
+  },
+
   colorDot: {
     width: 22,
     height: 22,
@@ -195,6 +270,25 @@ const styles = StyleSheet.create({
     marginTop: 3,
     color: '#687284',
     fontSize: 13,
+  },
+
+  deleteGroupButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#F1B5B5',
+    backgroundColor: '#FFF5F5',
+  },
+
+  deleteGroupText: {
+    color: '#E53935',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+
+  pressed: {
+    opacity: 0.6,
   },
 
   itemRow: {

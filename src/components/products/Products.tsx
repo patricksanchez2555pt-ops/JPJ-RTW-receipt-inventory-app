@@ -4,10 +4,9 @@ import { StyleSheet, View } from 'react-native';
 import { useColorStore } from '../../store/useColorStore';
 import { useProductStore } from '../../store/useProductStore';
 import { useSizeStore } from '../../store/useSizeStore';
-import type { Product } from '../../types/localModels';
+import ProductCreate from './components/create/ProductCreate';
 import ProductEdit from './components/edit/ProductEdit';
 import ProductList from './components/list/ProductList';
-import ProductCreate from './components/create/ProductCreate';
 
 export default function Products() {
   const products = useProductStore((state) => state.products);

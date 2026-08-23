@@ -96,7 +96,7 @@ function seedInitialInventoryData() {
     { name: 'White', hexValue: '#FFFFFF' },
     { name: 'Skin tone', hexValue: '#f2c08e' },
   ];
-  
+
   PRODUCTS.forEach((product) => {
     if (product.id === 'jogging-pants') return;
     leothardsColors.forEach((col, index) => {

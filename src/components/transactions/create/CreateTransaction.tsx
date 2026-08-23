@@ -29,6 +29,7 @@ export default function CreateTransaction() {
   const [items, setItems] = useState<AddedTransactionItem[]>([]);
   const [buyerName, setBuyerName] = useState('');
   const [discount, setDiscount] = useState(0);
+  const [highlightedItemIds, setHighlightedItemIds] = useState<string[]>([]);
 
   const productColors = useMemo(() => {
     if (!selectedProduct) {
@@ -88,6 +89,8 @@ export default function CreateTransaction() {
       return;
     }
 
+    const newItemIds: string[] = [];
+
     setItems((current) => {
       const updated = [...current];
 
@@ -107,9 +110,14 @@ export default function CreateTransaction() {
             quantity: existing.quantity + quantity,
             total: (existing.quantity + quantity) * existing.unitPrice,
           };
+
+          // Existing item was updated
+          newItemIds.push(existing.id);
         } else {
+          const newItemId = `${Date.now()}-${size.id}`;
+
           updated.push({
-            id: `${Date.now()}-${size.id}`,
+            id: newItemId,
             transactionId: '',
             productId: selectedProduct.id,
             colorId: selectedColor.id,
@@ -122,11 +130,16 @@ export default function CreateTransaction() {
             color: selectedColor,
             size,
           });
+
+          newItemIds.push(newItemId);
         }
       }
 
       return updated;
     });
+
+    // Tell AddedItemsPanel which items to highlight
+    setHighlightedItemIds(newItemIds);
 
     setSelectedSizes([]);
   }
@@ -289,6 +302,7 @@ export default function CreateTransaction() {
       <View style={styles.right}>
         <AddedItemsPanel
           items={items}
+          highlightedItemIds={highlightedItemIds}
           onIncrease={(id) => updateQuantity(id, 1)}
           onDecrease={(id) => updateQuantity(id, -1)}
           onRemove={removeItem}

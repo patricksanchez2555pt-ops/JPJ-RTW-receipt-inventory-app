@@ -1,13 +1,14 @@
+import { useEffect, useRef } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { AddedTransactionItem } from './types';
 
 type Props = {
   items: AddedTransactionItem[];
+  highlightedItemIds?: string[];
   onIncrease: (itemId: string) => void;
   onDecrease: (itemId: string) => void;
   onRemove: (itemId: string) => void;
-  onRemoveGroup: (productId: string, colorId: string) => void;
 };
 
 type GroupedItems = {
@@ -54,14 +55,10 @@ function groupItems(items: AddedTransactionItem[]): GroupedItems[] {
   // Sort groups by their lowest price
   return Array.from(groups.values()).sort((a, b) => {
     const priceA =
-      a.items.length > 0 && typeof a.items[0].unitPrice === 'number'
-        ? a.items[0].unitPrice
-        : 0;
+      typeof a.items[0]?.unitPrice === 'number' ? a.items[0].unitPrice : 0;
 
     const priceB =
-      b.items.length > 0 && typeof b.items[0].unitPrice === 'number'
-        ? b.items[0].unitPrice
-        : 0;
+      typeof b.items[0]?.unitPrice === 'number' ? b.items[0].unitPrice : 0;
 
     return priceA - priceB;
   });
@@ -69,13 +66,128 @@ function groupItems(items: AddedTransactionItem[]): GroupedItems[] {
 
 export default function AddedItemsPanel({
   items,
+  highlightedItemIds = [],
   onIncrease,
   onDecrease,
   onRemove,
 }: Props) {
   const groups = groupItems(items);
 
-  function onRemoveGroup(key: string) {
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  /*
+   * Store the Y position of each item relative to its group.
+   * We mainly use this to identify whether the item exists.
+   */
+  const itemLayouts = useRef<Record<string, number>>({});
+
+  /*
+   * Store the current ScrollView content height.
+   */
+  const contentHeight = useRef(0);
+
+  /*
+   * Store the visible height of the ScrollView.
+   */
+  const viewportHeight = useRef(0);
+
+  const highlightedSet = new Set(highlightedItemIds);
+
+  useEffect(() => {
+    if (highlightedItemIds.length === 0) {
+      return;
+    }
+
+    /*
+     * Wait for React Native to finish:
+     * 1. Rendering the new item
+     * 2. Measuring the item
+     * 3. Updating ScrollView content size
+     *
+     * Using multiple frames makes this much more reliable when
+     * several groups/items are added at once.
+     */
+    let frame1: number | null = null;
+    let frame2: number | null = null;
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+
+    const scrollToNewItem = () => {
+      const firstItemId = highlightedItemIds[0];
+
+      if (itemLayouts.current[firstItemId] === undefined) {
+        return;
+      }
+
+      const maxScrollY = Math.max(
+        0,
+        contentHeight.current - viewportHeight.current,
+      );
+
+      /*
+       * If there is enough content to scroll, go toward the bottom.
+       *
+       * This is especially important when the newly added group is
+       * the bottom-most group. Scrolling directly to the item's local
+       * layout.y is not reliable because layout.y is relative to its
+       * group, not the ScrollView.
+       */
+      const isBottomItem =
+        groups.length > 0 &&
+        groups[groups.length - 1].items.some(
+          (item) => item.id === firstItemId,
+        );
+
+      if (isBottomItem) {
+        scrollViewRef.current?.scrollTo({
+          y: maxScrollY,
+          animated: true,
+        });
+
+        return;
+      }
+
+      /*
+       * For items that aren't at the bottom, scroll to the top
+       * of the list first. The bottom-most case above is the
+       * important one because its absolute Y isn't available
+       * from the item's local layout.
+       */
+      scrollViewRef.current?.scrollTo({
+        y: 0,
+        animated: false,
+      });
+    };
+
+    frame1 = requestAnimationFrame(() => {
+      frame2 = requestAnimationFrame(() => {
+        scrollToNewItem();
+
+        /*
+         * One additional delayed attempt handles cases where the
+         * ScrollView content size is updated slightly later.
+         */
+        timeout = setTimeout(() => {
+          scrollToNewItem();
+        }, 100);
+      });
+    });
+
+    return () => {
+      if (frame1 !== null) {
+        cancelAnimationFrame(frame1);
+      }
+
+      if (frame2 !== null) {
+        cancelAnimationFrame(frame2);
+      }
+
+      if (timeout !== null) {
+        clearTimeout(timeout);
+      }
+    };
+  }, [highlightedItemIds, groups]);
+
+  function onRemoveGroupHandler(key: string) {
     const group = groups.find((g) => g.key === key);
 
     if (!group) {
@@ -98,13 +210,20 @@ export default function AddedItemsPanel({
       </View>
 
       <ScrollView
+        ref={scrollViewRef}
         style={styles.list}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        onContentSizeChange={(_, height) => {
+          contentHeight.current = height;
+        }}
+        onLayout={(event) => {
+          viewportHeight.current = event.nativeEvent.layout.height;
+        }}
       >
         {groups.map((group) => (
           <View key={group.key} style={styles.group}>
-            {/* Group header */}
+            {/* GROUP HEADER */}
             <View style={styles.groupHeader}>
               <View
                 style={[
@@ -121,9 +240,8 @@ export default function AddedItemsPanel({
                 <Text style={styles.colorName}>{group.colorName}</Text>
               </View>
 
-              {/* Delete entire group */}
               <Pressable
-                onPress={() => onRemoveGroup(group.key)}
+                onPress={() => onRemoveGroupHandler(group.key)}
                 style={({ pressed }) => [
                   styles.deleteGroupButton,
                   pressed && styles.pressed,
@@ -133,13 +251,25 @@ export default function AddedItemsPanel({
               </Pressable>
             </View>
 
-            {/* Sizes */}
+            {/* ITEMS */}
             {group.items.map((item) => {
               const unitPriceNumber =
                 typeof item.unitPrice === 'number' ? item.unitPrice : 0;
 
+              const isHighlighted = highlightedSet.has(item.id);
+
               return (
-                <View key={item.id} style={styles.itemRow}>
+                <View
+                  key={item.id}
+                  onLayout={(event) => {
+                    itemLayouts.current[item.id] =
+                      event.nativeEvent.layout.y;
+                  }}
+                  style={[
+                    styles.itemRow,
+                    isHighlighted && styles.highlightedItemRow,
+                  ]}
+                >
                   <View style={styles.sizeContainer}>
                     <Text style={styles.sizeName}>
                       {item.size?.name ?? 'Unknown Size'}
@@ -159,7 +289,9 @@ export default function AddedItemsPanel({
                     </Pressable>
 
                     <View style={styles.quantity}>
-                      <Text style={styles.quantityText}>{item.quantity}</Text>
+                      <Text style={styles.quantityText}>
+                        {item.quantity}
+                      </Text>
                     </View>
 
                     <Pressable
@@ -169,7 +301,6 @@ export default function AddedItemsPanel({
                       <Text style={styles.buttonText}>+</Text>
                     </Pressable>
 
-                    {/* Delete individual item */}
                     <Pressable
                       style={styles.deleteButton}
                       onPress={() => onRemove(item.id)}
@@ -230,6 +361,7 @@ const styles = StyleSheet.create({
 
   listContent: {
     padding: 12,
+    paddingBottom: 32,
     gap: 12,
   },
 
@@ -299,6 +431,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderTopWidth: 1,
     borderTopColor: '#E5E8ED',
+  },
+
+  highlightedItemRow: {
+    backgroundColor: '#FFF4B8',
   },
 
   sizeContainer: {

@@ -12,7 +12,7 @@ import { useSizeStore } from '@/store/useSizeStore';
 import Sidebar from '../components/layout/Sidebar/Sidebar';
 
 export default function RootLayout() {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
   // remove in future
   useEffect(() => {

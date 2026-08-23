@@ -32,17 +32,29 @@ export default function TransactionSummary({
       {/* HEADER */}
       <Pressable
         onPress={() => setCollapsed((current) => !current)}
-        style={({ pressed }) => [styles.header, pressed && styles.headerPressed]}
+        style={({ pressed }) => [
+          styles.header,
+          pressed && styles.headerPressed,
+        ]}
       >
-        <View>{collapsed && <Text style={styles.collapsedTotal}>₱{total.toFixed(2)}</Text>}</View>
+        <View>
+          {collapsed && (
+            <Text style={styles.collapsedTotal}>
+              ₱{total.toFixed(2)}
+            </Text>
+          )}
+        </View>
 
-        <Ionicons name={collapsed ? 'chevron-up' : 'chevron-down'} size={24} color="#4D5665" />
+        <Ionicons
+          name={collapsed ? 'chevron-up' : 'chevron-down'}
+          size={24}
+          color="#4D5665"
+        />
       </Pressable>
 
       {/* CONTENT */}
       {!collapsed && (
         <View style={styles.content}>
-
           {/* BUYER NAME */}
           <Text style={styles.label}>Buyer Name</Text>
 
@@ -53,7 +65,7 @@ export default function TransactionSummary({
             placeholderTextColor="#9AA2AF"
             style={styles.input}
           />
-          
+
           {/* TOTAL ITEMS */}
           <View style={styles.row}>
             <Text style={styles.label}>Total Items</Text>
@@ -67,32 +79,62 @@ export default function TransactionSummary({
           <View style={styles.row}>
             <Text style={styles.label}>Subtotal</Text>
 
-            <Text style={styles.amount}>₱{subtotal.toFixed(2)}</Text>
+            <Text style={styles.amount}>
+              ₱{subtotal.toFixed(2)}
+            </Text>
           </View>
 
           {/* DISCOUNT */}
           <View style={styles.row}>
             <Text style={styles.label}>Discount</Text>
 
-            <TextInput
-              value={discount === 0 ? '' : String(discount)}
-              onChangeText={(value) => {
-                const numeric = Number(value.replace(/[^0-9.]/g, ''));
+            <View style={styles.discountControls}>
+              <Pressable
+                onPress={() => onDiscountChange(2*itemCount)}
+                style={({ pressed }) => [
+                  styles.lessButton,
+                  pressed && styles.buttonPressed,
+                ]}
+              >
+                <Text style={styles.lessButtonText}>Less 2</Text>
+              </Pressable>
 
-                onDiscountChange(Number.isNaN(numeric) ? 0 : numeric);
-              }}
-              keyboardType="decimal-pad"
-              placeholder="0"
-              placeholderTextColor="#9AA2AF"
-              style={styles.discountInput}
-            />
+              <Pressable
+                onPress={() => onDiscountChange(5*itemCount)}
+                style={({ pressed }) => [
+                  styles.lessButton,
+                  pressed && styles.buttonPressed,
+                ]}
+              >
+                <Text style={styles.lessButtonText}>Less 5</Text>
+              </Pressable>
+
+              <TextInput
+                value={discount === 0 ? '' : String(discount)}
+                onChangeText={(value) => {
+                  const numeric = Number(
+                    value.replace(/[^0-9.]/g, ''),
+                  );
+
+                  onDiscountChange(
+                    Number.isNaN(numeric) ? 0 : numeric,
+                  );
+                }}
+                keyboardType="decimal-pad"
+                placeholder="0"
+                placeholderTextColor="#9AA2AF"
+                style={styles.discountInput}
+              />
+            </View>
           </View>
 
           {/* TOTAL */}
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>TOTAL</Text>
 
-            <Text style={styles.total}>₱{total.toFixed(2)}</Text>
+            <Text style={styles.total}>
+              ₱{total.toFixed(2)}
+            </Text>
           </View>
 
           {/* BUTTONS */}
@@ -105,7 +147,9 @@ export default function TransactionSummary({
                 pressed && styles.buttonPressed,
               ]}
             >
-              <Text style={styles.buttonText}>Save Transaction</Text>
+              <Text style={styles.buttonText}>
+                Save Transaction
+              </Text>
             </Pressable>
 
             <Pressable
@@ -116,7 +160,9 @@ export default function TransactionSummary({
                 pressed && styles.buttonPressed,
               ]}
             >
-              <Text style={styles.buttonText}>Print Receipt</Text>
+              <Text style={styles.buttonText}>
+                Print Receipt
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -148,12 +194,6 @@ const styles = StyleSheet.create({
 
   headerPressed: {
     opacity: 0.7,
-  },
-
-  headerTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: '#151A23',
   },
 
   collapsedTotal: {
@@ -200,6 +240,32 @@ const styles = StyleSheet.create({
     color: '#151A23',
   },
 
+  /*
+   * Discount
+   */
+  discountControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  lessButton: {
+    height: 42,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: '#F0F3F8',
+    borderWidth: 1,
+    borderColor: '#D8DDE5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  lessButtonText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1745D1',
+  },
+
   discountInput: {
     width: 110,
     height: 42,
@@ -211,6 +277,9 @@ const styles = StyleSheet.create({
     color: '#151A23',
   },
 
+  /*
+   * Total
+   */
   totalRow: {
     marginTop: 12,
     paddingTop: 16,
@@ -233,6 +302,9 @@ const styles = StyleSheet.create({
     color: '#151A23',
   },
 
+  /*
+   * Action buttons
+   */
   buttonRow: {
     flexDirection: 'row',
     gap: 12,

@@ -54,11 +54,9 @@ function groupItems(items: AddedTransactionItem[]): GroupedItems[] {
 
   // Sort groups by their lowest price
   return Array.from(groups.values()).sort((a, b) => {
-    const priceA =
-      typeof a.items[0]?.unitPrice === 'number' ? a.items[0].unitPrice : 0;
+    const priceA = typeof a.items[0]?.unitPrice === 'number' ? a.items[0].unitPrice : 0;
 
-    const priceB =
-      typeof b.items[0]?.unitPrice === 'number' ? b.items[0].unitPrice : 0;
+    const priceB = typeof b.items[0]?.unitPrice === 'number' ? b.items[0].unitPrice : 0;
 
     return priceA - priceB;
   });
@@ -118,10 +116,7 @@ export default function AddedItemsPanel({
         return;
       }
 
-      const maxScrollY = Math.max(
-        0,
-        contentHeight.current - viewportHeight.current,
-      );
+      const maxScrollY = Math.max(0, contentHeight.current - viewportHeight.current);
 
       /*
        * If there is enough content to scroll, go toward the bottom.
@@ -133,9 +128,7 @@ export default function AddedItemsPanel({
        */
       const isBottomItem =
         groups.length > 0 &&
-        groups[groups.length - 1].items.some(
-          (item) => item.id === firstItemId,
-        );
+        groups[groups.length - 1].items.some((item) => item.id === firstItemId);
 
       if (isBottomItem) {
         scrollViewRef.current?.scrollTo({
@@ -242,10 +235,7 @@ export default function AddedItemsPanel({
 
               <Pressable
                 onPress={() => onRemoveGroupHandler(group.key)}
-                style={({ pressed }) => [
-                  styles.deleteGroupButton,
-                  pressed && styles.pressed,
-                ]}
+                style={({ pressed }) => [styles.deleteGroupButton, pressed && styles.pressed]}
               >
                 <Text style={styles.deleteGroupText}>Delete</Text>
               </Pressable>
@@ -253,8 +243,7 @@ export default function AddedItemsPanel({
 
             {/* ITEMS */}
             {group.items.map((item) => {
-              const unitPriceNumber =
-                typeof item.unitPrice === 'number' ? item.unitPrice : 0;
+              const unitPriceNumber = typeof item.unitPrice === 'number' ? item.unitPrice : 0;
 
               const isHighlighted = highlightedSet.has(item.id);
 
@@ -262,49 +251,30 @@ export default function AddedItemsPanel({
                 <View
                   key={item.id}
                   onLayout={(event) => {
-                    itemLayouts.current[item.id] =
-                      event.nativeEvent.layout.y;
+                    itemLayouts.current[item.id] = event.nativeEvent.layout.y;
                   }}
-                  style={[
-                    styles.itemRow,
-                    isHighlighted && styles.highlightedItemRow,
-                  ]}
+                  style={[styles.itemRow, isHighlighted && styles.highlightedItemRow]}
                 >
                   <View style={styles.sizeContainer}>
-                    <Text style={styles.sizeName}>
-                      {item.size?.name ?? 'Unknown Size'}
-                    </Text>
+                    <Text style={styles.sizeName}>{item.size?.name ?? 'Unknown Size'}</Text>
 
-                    <Text style={styles.price}>
-                      ₱{unitPriceNumber.toFixed(2)} each
-                    </Text>
+                    <Text style={styles.price}>₱{unitPriceNumber.toFixed(2)} each</Text>
                   </View>
 
                   <View style={styles.actions}>
-                    <Pressable
-                      style={styles.quantityButton}
-                      onPress={() => onDecrease(item.id)}
-                    >
+                    <Pressable style={styles.quantityButton} onPress={() => onDecrease(item.id)}>
                       <Text style={styles.buttonText}>−</Text>
                     </Pressable>
 
                     <View style={styles.quantity}>
-                      <Text style={styles.quantityText}>
-                        {item.quantity}
-                      </Text>
+                      <Text style={styles.quantityText}>{item.quantity}</Text>
                     </View>
 
-                    <Pressable
-                      style={styles.quantityButton}
-                      onPress={() => onIncrease(item.id)}
-                    >
+                    <Pressable style={styles.quantityButton} onPress={() => onIncrease(item.id)}>
                       <Text style={styles.buttonText}>+</Text>
                     </Pressable>
 
-                    <Pressable
-                      style={styles.deleteButton}
-                      onPress={() => onRemove(item.id)}
-                    >
+                    <Pressable style={styles.deleteButton} onPress={() => onRemove(item.id)}>
                       <Text style={styles.deleteText}>×</Text>
                     </Pressable>
                   </View>

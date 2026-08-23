@@ -19,10 +19,21 @@ export default function QuantitySelector({ quantity, onChange }: Props) {
   const isPresetQuantity = QUANTITIES.some((item) => item.value === quantity);
 
   const handleCustomQuantityChanged = (value: string) => {
+    // Allow completely empty input
+    if (value === '') {
+      setCustomQuantity('');
+      return;
+    }
+
+    // Numbers only
+    if (!/^\d+$/.test(value)) {
+      return;
+    }
+
     const parsed = Number(value);
 
-    if (!Number.isNaN(parsed) && Number.isInteger(parsed) && parsed > 0) {
-      setCustomQuantity(String(parsed));
+    if (parsed > 0) {
+      setCustomQuantity(value);
       onChange(parsed);
     }
   };
@@ -61,6 +72,7 @@ export default function QuantitySelector({ quantity, onChange }: Props) {
             placeholder="Qty"
             placeholderTextColor="#9AA3B2"
             keyboardType="number-pad"
+            inputMode="numeric"
             style={styles.input}
             selectTextOnFocus
           />

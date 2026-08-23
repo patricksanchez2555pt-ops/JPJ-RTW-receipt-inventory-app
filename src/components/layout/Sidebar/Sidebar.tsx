@@ -26,21 +26,21 @@ const NAV_ITEMS: SidebarItem[] = [
     icon: 'cart-outline',
     route: '/create-transaction',
   },
-  {
-    label: 'Transactions',
-    icon: 'receipt-outline',
-    route: '/transactions',
-  },
-  {
-    label: 'Products',
-    icon: 'pricetag-outline',
-    route: '/products',
-  },
-  {
-    label: 'Reports',
-    icon: 'bar-chart-outline',
-    route: '/reports',
-  },
+  // {
+  //   label: 'Transactions',
+  //   icon: 'receipt-outline',
+  //   route: '/transactions',
+  // },
+  // {
+  //   label: 'Products',
+  //   icon: 'pricetag-outline',
+  //   route: '/products',
+  // },
+  // {
+  //   label: 'Reports',
+  //   icon: 'bar-chart-outline',
+  //   route: '/reports',
+  // },
   {
     label: 'Settings',
     icon: 'settings-outline',

@@ -1,3 +1,5 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 type Props = {
@@ -21,65 +23,140 @@ export default function TransactionSummary({
   onSave,
   onPrint,
 }: Props) {
+  const [collapsed, setCollapsed] = useState(false);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Buyer Name</Text>
+      {/* HEADER */}
+      <Pressable
+        onPress={() => setCollapsed((current) => !current)}
+        style={({ pressed }) => [styles.header, pressed && styles.headerPressed]}
+      >
+        <View>{collapsed && <Text style={styles.collapsedTotal}>₱{total.toFixed(2)}</Text>}</View>
 
-      <TextInput
-        value={buyerName}
-        onChangeText={onBuyerNameChange}
-        placeholder="Enter buyer name"
-        style={styles.input}
-      />
+        <Ionicons name={collapsed ? 'chevron-up' : 'chevron-down'} size={24} color="#4D5665" />
+      </Pressable>
 
-      <View style={styles.row}>
-        <Text style={styles.label}>Subtotal</Text>
+      {/* CONTENT */}
+      {!collapsed && (
+        <View style={styles.content}>
+          {/* BUYER NAME */}
+          <Text style={styles.label}>Buyer Name</Text>
 
-        <Text style={styles.amount}>₱{subtotal.toFixed(2)}</Text>
-      </View>
+          <TextInput
+            value={buyerName}
+            onChangeText={onBuyerNameChange}
+            placeholder="Enter buyer name"
+            placeholderTextColor="#9AA2AF"
+            style={styles.input}
+          />
 
-      <View style={styles.row}>
-        <Text style={styles.label}>Discount</Text>
+          {/* SUBTOTAL */}
+          <View style={styles.row}>
+            <Text style={styles.label}>Subtotal</Text>
 
-        <TextInput
-          value={discount === 0 ? '' : String(discount)}
-          onChangeText={(value) => {
-            const numeric = Number(value.replace(/[^0-9.]/g, ''));
+            <Text style={styles.amount}>₱{subtotal.toFixed(2)}</Text>
+          </View>
 
-            onDiscountChange(Number.isNaN(numeric) ? 0 : numeric);
-          }}
-          keyboardType="decimal-pad"
-          placeholder="0"
-          style={styles.discountInput}
-        />
-      </View>
+          {/* DISCOUNT */}
+          <View style={styles.row}>
+            <Text style={styles.label}>Discount</Text>
 
-      <View style={styles.totalRow}>
-        <Text style={styles.totalLabel}>TOTAL</Text>
+            <TextInput
+              value={discount === 0 ? '' : String(discount)}
+              onChangeText={(value) => {
+                const numeric = Number(value.replace(/[^0-9.]/g, ''));
 
-        <Text style={styles.total}>₱{total.toFixed(2)}</Text>
-      </View>
+                onDiscountChange(Number.isNaN(numeric) ? 0 : numeric);
+              }}
+              keyboardType="decimal-pad"
+              placeholder="0"
+              placeholderTextColor="#9AA2AF"
+              style={styles.discountInput}
+            />
+          </View>
 
-      <View style={styles.buttonRow}>
-        <Pressable onPress={onSave} style={[styles.actionButton, styles.saveButton]}>
-          <Text style={styles.saveText}>Save Transaction</Text>
-        </Pressable>
+          {/* TOTAL */}
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>TOTAL</Text>
 
-        <Pressable onPress={onPrint} style={[styles.actionButton, styles.printButton]}>
-          <Text style={styles.saveText}>Print Receipt</Text>
-        </Pressable>
-      </View>
+            <Text style={styles.total}>₱{total.toFixed(2)}</Text>
+          </View>
+
+          {/* BUTTONS */}
+          <View style={styles.buttonRow}>
+            <Pressable
+              onPress={onSave}
+              style={({ pressed }) => [
+                styles.actionButton,
+                styles.saveButton,
+                pressed && styles.buttonPressed,
+              ]}
+            >
+              <Text style={styles.buttonText}>Save Transaction</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={onPrint}
+              style={({ pressed }) => [
+                styles.actionButton,
+                styles.printButton,
+                pressed && styles.buttonPressed,
+              ]}
+            >
+              <Text style={styles.buttonText}>Print Receipt</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 18,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#DCE1E9',
     borderRadius: 12,
+    overflow: 'hidden',
+  },
+
+  /*
+   * Collapsible header
+   */
+  header: {
+    minHeight: 64,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+
+  headerPressed: {
+    opacity: 0.7,
+  },
+
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#151A23',
+  },
+
+  collapsedTotal: {
+    marginTop: 2,
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1745D1',
+  },
+
+  /*
+   * Expanded content
+   */
+  content: {
+    paddingHorizontal: 18,
+    paddingBottom: 18,
   },
 
   label: {
@@ -95,6 +172,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     marginBottom: 18,
+    color: '#151A23',
   },
 
   row: {
@@ -107,6 +185,7 @@ const styles = StyleSheet.create({
   amount: {
     fontSize: 16,
     fontWeight: '600',
+    color: '#151A23',
   },
 
   discountInput: {
@@ -117,6 +196,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     textAlign: 'right',
+    color: '#151A23',
   },
 
   totalRow: {
@@ -132,11 +212,13 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 18,
     fontWeight: '700',
+    color: '#151A23',
   },
 
   total: {
     fontSize: 24,
     fontWeight: '800',
+    color: '#151A23',
   },
 
   buttonRow: {
@@ -161,9 +243,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#087F23',
   },
 
-  saveText: {
+  buttonText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
+  },
+
+  buttonPressed: {
+    opacity: 0.8,
   },
 });

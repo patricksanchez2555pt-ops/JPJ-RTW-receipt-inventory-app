@@ -10,6 +10,11 @@ type SidebarItem = {
   route: Href;
 };
 
+type SidebarProps = {
+  collapsed: boolean;
+  onToggle: () => void;
+};
+
 const NAV_ITEMS: SidebarItem[] = [
   {
     label: 'Inventory',
@@ -43,7 +48,7 @@ const NAV_ITEMS: SidebarItem[] = [
   },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
 
   const activeItem = NAV_ITEMS.find((item) => item.route === pathname)?.label ?? '';
@@ -57,14 +62,30 @@ export default function Sidebar() {
   };
 
   return (
-    <View style={styles.sidebar}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        {/* Logo */}
-        <Pressable style={styles.logoContainer} onPress={() => handleNavigation('/')}>
-          <View style={styles.logoBox}>
-            <Text style={styles.logoText}>JPJ RTW</Text>
-          </View>
-        </Pressable>
+    <View style={[styles.sidebar, collapsed ? styles.sidebarCollapsed : styles.sidebarExpanded]}>
+      <ScrollView
+        style={[styles.scrollView, collapsed && styles.scrollViewCollapsed]}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Logo and toggle button */}
+        <View style={styles.logoContainer}>
+          <Pressable style={styles.logoBox} onPress={() => handleNavigation('/inventory')}>
+            {!collapsed && <Text style={styles.logoText}>JPJ RTW</Text>}
+
+            {collapsed && <Text style={styles.logoShortText}>JPJ</Text>}
+          </Pressable>
+
+          <Pressable
+            onPress={onToggle}
+            style={({ pressed }) => [styles.toggleButton, pressed && styles.pressedNavItem]}
+          >
+            <Ionicons
+              name={collapsed ? 'chevron-forward-outline' : 'chevron-back-outline'}
+              size={24}
+              color="#FFFFFF"
+            />
+          </Pressable>
+        </View>
 
         {/* Navigation */}
         <View style={styles.navigation}>
@@ -77,13 +98,18 @@ export default function Sidebar() {
                 onPress={() => handleNavigation(item.route)}
                 style={({ pressed }) => [
                   styles.navItem,
+                  collapsed && styles.navItemCollapsed,
                   isActive && styles.activeNavItem,
                   pressed && styles.pressedNavItem,
                 ]}
               >
                 <Ionicons name={item.icon} size={27} color="#FFFFFF" />
 
-                <Text style={[styles.navText, isActive && styles.activeNavText]}>{item.label}</Text>
+                {!collapsed && (
+                  <Text style={[styles.navText, isActive && styles.activeNavText]}>
+                    {item.label}
+                  </Text>
+                )}
               </Pressable>
             );
           })}
@@ -91,14 +117,18 @@ export default function Sidebar() {
       </ScrollView>
 
       {/* Logout always at bottom */}
-      <View style={styles.bottomSection}>
+      <View style={[styles.bottomSection, collapsed && styles.bottomSectionCollapsed]}>
         <Pressable
           onPress={handleLogout}
-          style={({ pressed }) => [styles.logoutButton, pressed && styles.pressedNavItem]}
+          style={({ pressed }) => [
+            styles.logoutButton,
+            collapsed && styles.logoutButtonCollapsed,
+            pressed && styles.pressedNavItem,
+          ]}
         >
           <Ionicons name="log-out-outline" size={27} color="#FFFFFF" />
 
-          <Text style={styles.logoutText}>Logout</Text>
+          {!collapsed && <Text style={styles.logoutText}>Logout</Text>}
         </Pressable>
       </View>
     </View>
@@ -107,15 +137,26 @@ export default function Sidebar() {
 
 const styles = StyleSheet.create({
   sidebar: {
-    width: 220,
     flexGrow: 0,
     flexShrink: 0,
     backgroundColor: '#06132F',
   },
 
+  sidebarExpanded: {
+    width: 220,
+  },
+
+  sidebarCollapsed: {
+    width: 76,
+  },
+
   scrollView: {
     flex: 1,
     paddingHorizontal: 14,
+  },
+
+  scrollViewCollapsed: {
+    paddingHorizontal: 8,
   },
 
   scrollContent: {
@@ -139,6 +180,23 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 
+  logoShortText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+
+  toggleButton: {
+    position: 'absolute',
+    right: 8,
+    top: 16,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   navigation: {
     gap: 10,
   },
@@ -150,6 +208,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     gap: 16,
+  },
+
+  navItemCollapsed: {
+    justifyContent: 'center',
+    paddingHorizontal: 0,
   },
 
   activeNavItem: {
@@ -178,6 +241,10 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
 
+  bottomSectionCollapsed: {
+    paddingHorizontal: 8,
+  },
+
   logoutButton: {
     minHeight: 58,
     borderRadius: 11,
@@ -185,6 +252,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     gap: 16,
+  },
+
+  logoutButtonCollapsed: {
+    justifyContent: 'center',
+    paddingHorizontal: 0,
   },
 
   logoutText: {

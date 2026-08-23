@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import type { Transaction, TransactionItem } from '../types/localModels';
-import { useInventoryStore } from './useInventoryStore';
+import { getInventoryKey, useInventoryStore } from './useInventoryStore';
 
 const mmkv = createMMKV();
 
@@ -63,7 +63,9 @@ export const useTransactionStore = create<TransactionStore>()(
         // 1. DEDUCT SOLD QUANTITIES FROM GLOBAL INVENTORY STORE
         const inventoryStore = useInventoryStore.getState();
         items.forEach((item: TransactionItem) => {
-          const currentQty = inventoryStore.getQuantity(item.productId, item.colorId, item.sizeId);
+          const key = getInventoryKey(item.productId, item.colorId, item.sizeId);
+
+          const currentQty = inventoryStore.getQuantity(key);
           const updatedQty = Math.max(0, currentQty - item.quantity);
 
           inventoryStore.setQuantity(item.productId, item.colorId, item.sizeId, updatedQty);

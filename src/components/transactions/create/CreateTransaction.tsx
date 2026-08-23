@@ -8,6 +8,7 @@ import { printerService } from '@/service/printerService';
 import { useColorStore } from '../../../store/useColorStore';
 import { useProductStore } from '../../../store/useProductStore';
 import { useSizeStore } from '../../../store/useSizeStore';
+import { useTransactionStore } from '../../../store/useTransactionStore';
 import type { Color, Product, Size } from '../../../types/localModels.ts';
 import AddedItemsPanel from './AddedItemsPanel';
 import ColorSelector from './ColorSelector';
@@ -172,8 +173,10 @@ export default function CreateTransaction() {
       return;
     }
 
-    const transaction = {
-      id: Date.now().toString(),
+    const transactionId = `tx-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+
+    const transaction = useTransactionStore.getState().addTransaction({
+      id: transactionId,
       date: new Date().toISOString(),
       buyerName,
       subtotal,
@@ -182,7 +185,7 @@ export default function CreateTransaction() {
 
       items: items.map((item) => ({
         id: item.id,
-        transactionId: '',
+        transactionId,
         productId: item.productId,
         colorId: item.colorId,
         sizeId: item.sizeId,
@@ -190,11 +193,26 @@ export default function CreateTransaction() {
         unitPrice: item.unitPrice,
         total: item.total,
       })),
-    };
+    });
 
-    console.log('TRANSACTION:', transaction);
+    console.log('TRANSACTION SAVED:', transaction);
 
-    Alert.alert('Transaction Saved', `Total: ₱${total.toFixed(2)}`);
+    Alert.alert(
+      'Transaction Saved',
+      `Transaction #${transaction.id}\nTotal: ₱${transaction.total.toFixed(2)}`,
+    );
+
+    // Clear transaction form
+    setItems([]);
+    setBuyerName('');
+    setDiscount(0);
+    setSelectedSizes([]);
+    setQuantity(3);
+    setHighlightedItemIds([]);
+
+    // Reset selections
+    setSelectedProduct(PRODUCTS[0] ?? null);
+    setSelectedColor(null);
   }
 
   async function printTransaction() {

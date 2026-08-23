@@ -26,11 +26,11 @@ const NAV_ITEMS: SidebarItem[] = [
     icon: 'cart-outline',
     route: '/create-transaction',
   },
-  // {
-  //   label: 'Transactions',
-  //   icon: 'receipt-outline',
-  //   route: '/transactions',
-  // },
+  {
+    label: 'Transactions',
+    icon: 'receipt-outline',
+    route: '/transactions',
+  },
   // {
   //   label: 'Products',
   //   icon: 'pricetag-outline',

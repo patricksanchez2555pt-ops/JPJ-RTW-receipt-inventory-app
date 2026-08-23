@@ -31,11 +31,11 @@ const NAV_ITEMS: SidebarItem[] = [
     icon: 'receipt-outline',
     route: '/transactions',
   },
-  // {
-  //   label: 'Products',
-  //   icon: 'pricetag-outline',
-  //   route: '/products',
-  // },
+  {
+    label: 'Products',
+    icon: 'pricetag-outline',
+    route: '/products',
+  },
   // {
   //   label: 'Reports',
   //   icon: 'bar-chart-outline',

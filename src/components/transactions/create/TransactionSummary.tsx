@@ -32,24 +32,11 @@ export default function TransactionSummary({
       {/* HEADER */}
       <Pressable
         onPress={() => setCollapsed((current) => !current)}
-        style={({ pressed }) => [
-          styles.header,
-          pressed && styles.headerPressed,
-        ]}
+        style={({ pressed }) => [styles.header, pressed && styles.headerPressed]}
       >
-        <View>
-          {collapsed && (
-            <Text style={styles.collapsedTotal}>
-              ₱{total.toFixed(2)}
-            </Text>
-          )}
-        </View>
+        <View>{collapsed && <Text style={styles.collapsedTotal}>₱{total.toFixed(2)}</Text>}</View>
 
-        <Ionicons
-          name={collapsed ? 'chevron-up' : 'chevron-down'}
-          size={24}
-          color="#4D5665"
-        />
+        <Ionicons name={collapsed ? 'chevron-up' : 'chevron-down'} size={24} color="#4D5665" />
       </Pressable>
 
       {/* CONTENT */}
@@ -79,9 +66,7 @@ export default function TransactionSummary({
           <View style={styles.row}>
             <Text style={styles.label}>Subtotal</Text>
 
-            <Text style={styles.amount}>
-              ₱{subtotal.toFixed(2)}
-            </Text>
+            <Text style={styles.amount}>₱{subtotal.toFixed(2)}</Text>
           </View>
 
           {/* DISCOUNT */}
@@ -90,21 +75,15 @@ export default function TransactionSummary({
 
             <View style={styles.discountControls}>
               <Pressable
-                onPress={() => onDiscountChange(2*itemCount)}
-                style={({ pressed }) => [
-                  styles.lessButton,
-                  pressed && styles.buttonPressed,
-                ]}
+                onPress={() => onDiscountChange(2 * itemCount)}
+                style={({ pressed }) => [styles.lessButton, pressed && styles.buttonPressed]}
               >
                 <Text style={styles.lessButtonText}>Less 2</Text>
               </Pressable>
 
               <Pressable
-                onPress={() => onDiscountChange(5*itemCount)}
-                style={({ pressed }) => [
-                  styles.lessButton,
-                  pressed && styles.buttonPressed,
-                ]}
+                onPress={() => onDiscountChange(5 * itemCount)}
+                style={({ pressed }) => [styles.lessButton, pressed && styles.buttonPressed]}
               >
                 <Text style={styles.lessButtonText}>Less 5</Text>
               </Pressable>
@@ -112,13 +91,9 @@ export default function TransactionSummary({
               <TextInput
                 value={discount === 0 ? '' : String(discount)}
                 onChangeText={(value) => {
-                  const numeric = Number(
-                    value.replace(/[^0-9.]/g, ''),
-                  );
+                  const numeric = Number(value.replace(/[^0-9.]/g, ''));
 
-                  onDiscountChange(
-                    Number.isNaN(numeric) ? 0 : numeric,
-                  );
+                  onDiscountChange(Number.isNaN(numeric) ? 0 : numeric);
                 }}
                 keyboardType="decimal-pad"
                 placeholder="0"
@@ -132,9 +107,7 @@ export default function TransactionSummary({
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>TOTAL</Text>
 
-            <Text style={styles.total}>
-              ₱{total.toFixed(2)}
-            </Text>
+            <Text style={styles.total}>₱{total.toFixed(2)}</Text>
           </View>
 
           {/* BUTTONS */}
@@ -147,9 +120,7 @@ export default function TransactionSummary({
                 pressed && styles.buttonPressed,
               ]}
             >
-              <Text style={styles.buttonText}>
-                Save Transaction
-              </Text>
+              <Text style={styles.buttonText}>Save Transaction</Text>
             </Pressable>
 
             <Pressable
@@ -160,9 +131,7 @@ export default function TransactionSummary({
                 pressed && styles.buttonPressed,
               ]}
             >
-              <Text style={styles.buttonText}>
-                Print Receipt
-              </Text>
+              <Text style={styles.buttonText}>Print Receipt</Text>
             </Pressable>
           </View>
         </View>

@@ -1,6 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { toPrintableProducts } from '@/helper/receiptBuilder';
+import type { PrintableTransaction } from '@/service/escPos';
+import { printerService } from '@/service/printerService';
+
 import { useColorStore } from '../../../store/useColorStore';
 import { useProductStore } from '../../../store/useProductStore';
 import { useSizeStore } from '../../../store/useSizeStore';
@@ -182,6 +186,29 @@ export default function CreateTransaction() {
     Alert.alert('Transaction Saved', `Total: ₱${total.toFixed(2)}`);
   }
 
+  async function printTransaction() {
+    try {
+      const products = toPrintableProducts(items);
+
+      const printableTransaction: PrintableTransaction = {
+        buyerName,
+        date: new Date().toISOString(),
+        subtotal,
+        discount,
+        total,
+        products,
+      };
+
+      await printerService.printReceipt(printableTransaction);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+
+      console.error('PRINT TRANSACTION ERROR:', error);
+
+      Alert.alert('Print Failed', message);
+    }
+  }
+
   return (
     <View style={styles.container}>
       {/* LEFT SIDE */}
@@ -276,6 +303,7 @@ export default function CreateTransaction() {
           onBuyerNameChange={setBuyerName}
           onDiscountChange={setDiscount}
           onSave={saveTransaction}
+          onPrint={printTransaction}
         />
       </View>
     </View>

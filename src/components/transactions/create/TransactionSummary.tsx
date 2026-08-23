@@ -8,6 +8,7 @@ type Props = {
   onBuyerNameChange: (value: string) => void;
   onDiscountChange: (value: number) => void;
   onSave: () => void;
+  onPrint: () => void;
 };
 
 export default function TransactionSummary({
@@ -18,6 +19,7 @@ export default function TransactionSummary({
   onBuyerNameChange,
   onDiscountChange,
   onSave,
+  onPrint,
 }: Props) {
   return (
     <View style={styles.container}>
@@ -43,6 +45,7 @@ export default function TransactionSummary({
           value={discount === 0 ? '' : String(discount)}
           onChangeText={(value) => {
             const numeric = Number(value.replace(/[^0-9.]/g, ''));
+
             onDiscountChange(Number.isNaN(numeric) ? 0 : numeric);
           }}
           keyboardType="decimal-pad"
@@ -57,9 +60,15 @@ export default function TransactionSummary({
         <Text style={styles.total}>₱{total.toFixed(2)}</Text>
       </View>
 
-      <Pressable onPress={onSave} style={styles.saveButton}>
-        <Text style={styles.saveText}>Save Transaction</Text>
-      </Pressable>
+      <View style={styles.buttonRow}>
+        <Pressable onPress={onSave} style={[styles.actionButton, styles.saveButton]}>
+          <Text style={styles.saveText}>Save Transaction</Text>
+        </Pressable>
+
+        <Pressable onPress={onPrint} style={[styles.actionButton, styles.printButton]}>
+          <Text style={styles.saveText}>Print Receipt</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -130,13 +139,26 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 
-  saveButton: {
-    height: 52,
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 12,
     marginTop: 18,
+  },
+
+  actionButton: {
+    flex: 1,
+    height: 52,
     borderRadius: 8,
-    backgroundColor: '#1745D1',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  saveButton: {
+    backgroundColor: '#1745D1',
+  },
+
+  printButton: {
+    backgroundColor: '#087F23',
   },
 
   saveText: {

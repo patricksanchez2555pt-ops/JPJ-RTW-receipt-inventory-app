@@ -31,6 +31,13 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "react-native-ble-plx",
+        {
+          "modes": ["central"],
+          "bluetoothAlwaysPermission": "Allow JPJ RTW to connect to the receipt printer."
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",
@@ -41,7 +48,8 @@
             "imageWidth": 76
           }
         }
-      ]
+      ],
+      "react-native-ble-plx"
     ],
     "experiments": {
       "typedRoutes": true,

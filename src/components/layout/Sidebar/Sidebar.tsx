@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import type { Href } from 'expo-router';
 import { router, usePathname } from 'expo-router';
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 type SidebarItem = {
   label: string;
@@ -57,38 +57,40 @@ export default function Sidebar() {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Logo */}
-      <Pressable style={styles.logoContainer} onPress={() => handleNavigation('/')}>
-        <View style={styles.logoBox}>
-          <Text style={styles.logoText}>JPJ RTW</Text>
+    <View style={styles.sidebar}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        {/* Logo */}
+        <Pressable style={styles.logoContainer} onPress={() => handleNavigation('/')}>
+          <View style={styles.logoBox}>
+            <Text style={styles.logoText}>JPJ RTW</Text>
+          </View>
+        </Pressable>
+
+        {/* Navigation */}
+        <View style={styles.navigation}>
+          {NAV_ITEMS.map((item) => {
+            const isActive = activeItem === item.label;
+
+            return (
+              <Pressable
+                key={item.label}
+                onPress={() => handleNavigation(item.route)}
+                style={({ pressed }) => [
+                  styles.navItem,
+                  isActive && styles.activeNavItem,
+                  pressed && styles.pressedNavItem,
+                ]}
+              >
+                <Ionicons name={item.icon} size={27} color="#FFFFFF" />
+
+                <Text style={[styles.navText, isActive && styles.activeNavText]}>{item.label}</Text>
+              </Pressable>
+            );
+          })}
         </View>
-      </Pressable>
+      </ScrollView>
 
-      {/* Navigation */}
-      <View style={styles.navigation}>
-        {NAV_ITEMS.map((item) => {
-          const isActive = activeItem === item.label;
-
-          return (
-            <Pressable
-              key={item.label}
-              onPress={() => handleNavigation(item.route)}
-              style={({ pressed }) => [
-                styles.navItem,
-                isActive && styles.activeNavItem,
-                pressed && styles.pressedNavItem,
-              ]}
-            >
-              <Ionicons name={item.icon} size={27} color="#FFFFFF" />
-
-              <Text style={[styles.navText, isActive && styles.activeNavText]}>{item.label}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      {/* Logout */}
+      {/* Logout always at bottom */}
       <View style={styles.bottomSection}>
         <Pressable
           onPress={handleLogout}
@@ -104,10 +106,20 @@ export default function Sidebar() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  sidebar: {
     width: 220,
+    flexGrow: 0,
+    flexShrink: 0,
     backgroundColor: '#06132F',
+  },
+
+  scrollView: {
+    flex: 1,
     paddingHorizontal: 14,
+  },
+
+  scrollContent: {
+    paddingBottom: 10,
   },
 
   logoContainer: {
@@ -161,8 +173,9 @@ const styles = StyleSheet.create({
   },
 
   bottomSection: {
-    marginTop: 'auto',
+    paddingHorizontal: 14,
     paddingBottom: 18,
+    paddingTop: 10,
   },
 
   logoutButton: {

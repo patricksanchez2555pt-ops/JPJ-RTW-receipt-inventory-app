@@ -7,13 +7,12 @@ import { useProductStore } from '../store/useProductStore';
 import { useSizeStore } from '../store/useSizeStore';
 
 const DEFAULT_PRODUCT_ID = 'prod-jogging-pants';
-// seedInitialInventoryData();
 
 export default function InventoryView() {
   const products = useProductStore((state) => state.products);
 
+  // remove in future
   useEffect(() => {
-    console.log('inn');
     seedInitialInventoryData();
   }, []);
 

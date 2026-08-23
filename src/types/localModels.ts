@@ -4,13 +4,6 @@ export type Product = {
   createdAt: string;
 };
 
-export type Price = {
-  id: string;
-  sizeId: string;
-  price: number;
-  createdAt: string;
-};
-
 export type Color = {
   id: string;
   productId: string;

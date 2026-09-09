@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { Color } from '../../../types/localModels.ts';
+import type { Color } from '../../../../types/localModels.ts';
 
 type Props = {
   colors: Color[];

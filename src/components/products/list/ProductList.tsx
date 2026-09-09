@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { Color, Product, Size } from '../../../../types/localModels';
+import type { Color, Product, Size } from '../../../types/localModels';
 import ProductRow from './components/ProductRow';
 
 type Props = {

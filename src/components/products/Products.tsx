@@ -4,9 +4,9 @@ import { StyleSheet, View } from 'react-native';
 import { useColorStore } from '../../store/useColorStore';
 import { useProductStore } from '../../store/useProductStore';
 import { useSizeStore } from '../../store/useSizeStore';
-import ProductCreate from './components/create/ProductCreate';
-import ProductEdit from './components/edit/ProductEdit';
-import ProductList from './components/list/ProductList';
+import ProductCreate from './create/ProductCreate';
+import ProductEdit from './edit/ProductEdit';
+import ProductList from './list/ProductList';
 
 export default function Products() {
   const products = useProductStore((state) => state.products);
@@ -57,7 +57,11 @@ export default function Products() {
           />
         ) : (
           selectedProduct && (
-            <ProductEdit key={selectedProduct.id} product={selectedProduct} onDeleted={handleProductDeleted} />
+            <ProductEdit
+              key={selectedProduct.id}
+              product={selectedProduct}
+              onDeleted={handleProductDeleted}
+            />
           )
         )}
       </View>

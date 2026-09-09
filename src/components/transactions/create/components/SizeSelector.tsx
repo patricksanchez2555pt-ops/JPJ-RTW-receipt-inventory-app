@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { PanGesture } from 'react-native-gesture-handler';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
-import type { Size } from '../../../types/localModels.ts';
+import type { Size } from '../../../../types/localModels.ts';
 
 type Props = {
   sizes: Size[];

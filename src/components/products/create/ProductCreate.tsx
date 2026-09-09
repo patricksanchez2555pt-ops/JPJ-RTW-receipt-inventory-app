@@ -2,8 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { useProductStore } from '../../../../store/useProductStore';
-import type { Product } from '../../../../types/localModels';
+import { useProductStore } from '../../../store/useProductStore';
+import type { Product } from '../../../types/localModels';
 
 type Props = {
   onCreated: (product: Product) => void;

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { Product } from '../../../types/localModels.ts';
+import type { Product } from '../../../../types/localModels.ts';
 
 type Props = {
   products: Product[];

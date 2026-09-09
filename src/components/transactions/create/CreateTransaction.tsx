@@ -10,12 +10,12 @@ import { useProductStore } from '../../../store/useProductStore';
 import { useSizeStore } from '../../../store/useSizeStore';
 import { useTransactionStore } from '../../../store/useTransactionStore';
 import type { Color, Product, Size } from '../../../types/localModels.ts';
-import AddedItemsPanel from './AddedItemsPanel';
-import ColorSelector from './ColorSelector';
-import ProductSelector from './ProductSelector';
-import QuantitySelector from './QuantitySelector';
-import SizeSelector from './SizeSelector';
-import TransactionSummary from './TransactionSummary';
+import AddedItemsPanel from './components/AddedItemsPanel';
+import ColorSelector from './components/ColorSelector';
+import ProductSelector from './components/ProductSelector';
+import QuantitySelector from './components/QuantitySelector';
+import SizeSelector from './components/SizeSelector';
+import TransactionSummary from './components/TransactionSummary';
 import type { AddedTransactionItem } from './types';
 
 export default function CreateTransaction() {
@@ -282,7 +282,7 @@ export default function CreateTransaction() {
           </View>
 
           <View style={styles.section}>
-            <QuantitySelector quantity={quantity} onChange={setQuantity} />
+            <QuantitySelector quantity={quantity} onChange={setQuantity} addItems={addItems} />
           </View>
 
           <View style={styles.addSection}>
@@ -305,7 +305,7 @@ export default function CreateTransaction() {
               {quantity} pcs each
             </Text>
 
-            <View style={styles.addButton}>{/* This can become a Pressable */}</View>
+            <View style={styles.addButton} />
           </View>
 
           <Pressable
@@ -384,6 +384,10 @@ const styles = StyleSheet.create({
     color: '#707989',
     fontSize: 14,
   },
+
+  // =========================
+  // TRANSACTION CARD
+  // =========================
 
   card: {
     padding: 18,

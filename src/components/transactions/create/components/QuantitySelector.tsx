@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 type Props = {
   quantity: number;
   onChange: (quantity: number) => void;
+  addItems: () => void;
 };
 
 const QUANTITIES = [
@@ -13,7 +14,7 @@ const QUANTITIES = [
   { label: '12 pcs', value: 12 },
 ];
 
-export default function QuantitySelector({ quantity, onChange }: Props) {
+export default function QuantitySelector({ quantity, onChange, addItems }: Props) {
   const [customQuantity, setCustomQuantity] = useState<string | null>('');
 
   const isPresetQuantity = QUANTITIES.some((item) => item.value === quantity);
@@ -49,7 +50,10 @@ export default function QuantitySelector({ quantity, onChange }: Props) {
           return (
             <Pressable
               key={item.label}
-              onPress={() => onChange(item.value)}
+              onPress={() => {
+                onChange(item.value);
+                addItems();
+              }}
               style={[styles.button, selected && styles.selectedButton]}
             >
               <Text style={[styles.text, selected && styles.selectedText]}>{item.label}</Text>

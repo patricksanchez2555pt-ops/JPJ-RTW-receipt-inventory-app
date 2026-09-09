@@ -14,7 +14,7 @@ import Sidebar from '../components/layout/Sidebar/Sidebar';
 export default function RootLayout() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
-  // remove in future
+  // Remove in future
   useEffect(() => {
     seedInitialInventoryData();
   }, []);
@@ -65,12 +65,14 @@ function seedInitialInventoryData() {
   const sizeStore = useSizeStore.getState();
 
   // Return early if products are already seeded
-  if (productStore.products.length > 0) return;
+  if (productStore.products.length > 0) {
+    return;
+  }
 
-  // Seed Product
+  // Seed Products
   productStore.setAllProducts(PRODUCTS);
 
-  // Seed Colors
+  // Seed Jogging Pants Colors
   const initialColors = [
     { name: 'Black', hexValue: '#000000' },
     { name: 'Blue', hexValue: '#0000FF' },
@@ -91,6 +93,7 @@ function seedInitialInventoryData() {
     });
   });
 
+  // Seed Leotard Colors
   const leothardsColors = [
     { name: 'Black', hexValue: '#000000' },
     { name: 'White', hexValue: '#FFFFFF' },
@@ -98,7 +101,10 @@ function seedInitialInventoryData() {
   ];
 
   PRODUCTS.forEach((product) => {
-    if (product.id === 'jogging-pants') return;
+    if (product.id === 'jogging-pants') {
+      return;
+    }
+
     leothardsColors.forEach((col, index) => {
       colorStore.addColor({
         id: `color-${product.id}-${index}`,
@@ -109,5 +115,6 @@ function seedInitialInventoryData() {
     });
   });
 
+  // Seed Sizes
   sizeStore.setAllSizes(SIZES);
 }

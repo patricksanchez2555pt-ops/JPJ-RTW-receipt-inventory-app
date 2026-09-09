@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import type { AddedTransactionItem } from './types';
+import type { AddedTransactionItem } from '../types';
 
 type Props = {
   items: AddedTransactionItem[];

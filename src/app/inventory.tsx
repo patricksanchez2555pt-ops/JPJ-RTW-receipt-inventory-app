@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 
-import InventoryTable from '../components/inventoryTable/InventoryTable';
+import InventoryTable from '../components/inventory/InventoryTable';
 import { useProductStore } from '../store/useProductStore';
 
 export default function InventoryView() {

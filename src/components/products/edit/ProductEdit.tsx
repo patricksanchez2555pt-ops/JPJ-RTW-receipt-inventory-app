@@ -2,10 +2,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { useColorStore } from '../../../../store/useColorStore';
-import { useProductStore } from '../../../../store/useProductStore';
-import { useSizeStore } from '../../../../store/useSizeStore';
-import type { Product } from '../../../../types/localModels';
+import { useColorStore } from '../../../store/useColorStore';
+import { useProductStore } from '../../../store/useProductStore';
+import { useSizeStore } from '../../../store/useSizeStore';
+import type { Product } from '../../../types/localModels';
 
 type Props = {
   product: Product;

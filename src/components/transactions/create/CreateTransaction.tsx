@@ -6,6 +6,7 @@ import type { PrintableTransaction } from '@/service/escPos';
 import { printerService } from '@/service/printerService';
 
 import { useColorStore } from '../../../store/useColorStore';
+import { useCustomerStore } from '../../../store/useCustomerStore';
 import { useProductStore } from '../../../store/useProductStore';
 import { useSizeStore } from '../../../store/useSizeStore';
 import { useTransactionStore } from '../../../store/useTransactionStore';
@@ -22,6 +23,7 @@ export default function CreateTransaction() {
   const PRODUCTS = useProductStore((state) => state.products);
   const COLORS = useColorStore((state) => state.colors);
   const SIZES = useSizeStore((state) => state.sizes);
+  const CUSTOMERS = useCustomerStore((state) => state.customers);
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(PRODUCTS[0] ?? null);
   const [selectedColor, setSelectedColor] = useState<Color | null>(COLORS[0] ?? null);
@@ -29,6 +31,7 @@ export default function CreateTransaction() {
   const [quantity, setQuantity] = useState(3);
   const [items, setItems] = useState<AddedTransactionItem[]>([]);
   const [buyerName, setBuyerName] = useState('');
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const [discount, setDiscount] = useState(0);
   const [highlightedItemIds, setHighlightedItemIds] = useState<string[]>([]);
 
@@ -177,26 +180,20 @@ export default function CreateTransaction() {
       return;
     }
 
-    const transactionId = `tx-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    if (!selectedCustomerId && buyerName.trim()) {
+      const customer = useCustomerStore.getState().addCustomer({ name: buyerName });
+      setSelectedCustomerId(customer.id);
+    }
+
+    const customer = useCustomerStore.getState().getCustomer(selectedCustomerId ?? '');
 
     const transaction = useTransactionStore.getState().addTransaction({
-      id: transactionId,
-      date: new Date().toISOString(),
-      buyerName,
+      customerId: customer?.id,
+      buyerName: customer?.name ?? buyerName,
       subtotal,
       discount,
       total,
-
-      items: items.map((item) => ({
-        id: item.id,
-        transactionId,
-        productId: item.productId,
-        colorId: item.colorId,
-        sizeId: item.sizeId,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        total: item.total,
-      })),
+      items,
     });
 
     console.log('TRANSACTION SAVED:', transaction);
@@ -331,12 +328,14 @@ export default function CreateTransaction() {
         />
 
         <TransactionSummary
-          buyerName={buyerName}
+          customers={CUSTOMERS}
+          selectedCustomerId={selectedCustomerId}
           itemCount={itemCount}
           discount={discount}
           subtotal={subtotal}
           total={total}
-          onBuyerNameChange={setBuyerName}
+          onCustomerNameChange={setBuyerName}
+          onCustomerSelect={setSelectedCustomerId}
           onDiscountChange={setDiscount}
           onSave={saveTransaction}
           onPrint={printTransaction}

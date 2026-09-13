@@ -1,31 +1,102 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import type { Customer } from '../../../../types/localModels';
+
 type Props = {
-  buyerName: string;
+  customers: Customer[];
+  selectedCustomerId: string | null;
+
   itemCount: number;
   discount: number;
   subtotal: number;
   total: number;
-  onBuyerNameChange: (value: string) => void;
+
+  onCustomerSelect: (customerId: string | null) => void;
   onDiscountChange: (value: number) => void;
+  onCustomerNameChange: (name: string) => void;
   onSave: () => void;
   onPrint: () => void;
 };
 
 export default function TransactionSummary({
-  buyerName,
+  customers,
+  selectedCustomerId,
   itemCount,
   discount,
   subtotal,
   total,
-  onBuyerNameChange,
+  onCustomerNameChange,
+  onCustomerSelect,
   onDiscountChange,
   onSave,
   onPrint,
 }: Props) {
   const [collapsed, setCollapsed] = useState(false);
+  const [customerSearch, setCustomerSearch] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const selectedCustomer = useMemo(() => {
+    if (!selectedCustomerId) {
+      return null;
+    }
+
+    return customers.find((customer) => customer.id === selectedCustomerId) ?? null;
+  }, [customers, selectedCustomerId]);
+
+  /*
+   * Search customers.
+   *
+   * Customers whose names START with the search text
+   * are shown first, followed by customers whose names
+   * simply contain the search text.
+   */
+  const customerSuggestions = useMemo(() => {
+    const search = customerSearch.trim().toLowerCase();
+
+    if (!search) {
+      return [];
+    }
+
+    const startsWith = customers.filter((customer) =>
+      customer.name.toLowerCase().startsWith(search),
+    );
+
+    const contains = customers.filter(
+      (customer) =>
+        customer.name.toLowerCase().includes(search) &&
+        !customer.name.toLowerCase().startsWith(search),
+    );
+
+    return [...startsWith, ...contains].slice(0, 6);
+  }, [customers, customerSearch]);
+
+  function handleCustomerChange(value: string) {
+    setCustomerSearch(value);
+    onCustomerNameChange(value);
+    setShowSuggestions(true);
+
+    /*
+     * Once the user starts typing something different,
+     * the previous customer is no longer selected.
+     */
+    if (selectedCustomerId) {
+      onCustomerSelect(null);
+    }
+  }
+
+  function handleCustomerSelect(customer: Customer) {
+    setCustomerSearch(customer.name);
+    onCustomerSelect(customer.id);
+    setShowSuggestions(false);
+  }
+
+  function clearCustomer() {
+    setCustomerSearch('');
+    onCustomerSelect(null);
+    setShowSuggestions(false);
+  }
 
   return (
     <View style={styles.container}>
@@ -42,16 +113,53 @@ export default function TransactionSummary({
       {/* CONTENT */}
       {!collapsed && (
         <View style={styles.content}>
-          {/* BUYER NAME */}
-          <Text style={styles.label}>Buyer Name</Text>
+          {/* CUSTOMER */}
+          <Text style={styles.label}>Customer</Text>
 
-          <TextInput
-            value={buyerName}
-            onChangeText={onBuyerNameChange}
-            placeholder="Enter buyer name"
-            placeholderTextColor="#9AA2AF"
-            style={styles.input}
-          />
+          <View style={styles.customerContainer}>
+            <TextInput
+              value={customerSearch}
+              onChangeText={handleCustomerChange}
+              onFocus={() => {
+                if (customerSearch.trim().length > 0) {
+                  setShowSuggestions(true);
+                }
+              }}
+              placeholder="Search customer..."
+              placeholderTextColor="#9AA2AF"
+              style={styles.input}
+            />
+
+            {customerSearch.length > 0 && (
+              <Pressable onPress={clearCustomer} style={styles.clearButton}>
+                <Text style={styles.clearButtonText}>×</Text>
+              </Pressable>
+            )}
+          </View>
+
+          {/* SUGGESTIONS */}
+          {showSuggestions && customerSuggestions.length > 0 && (
+            <View style={styles.suggestions}>
+              {customerSuggestions.map((customer) => (
+                <Pressable
+                  key={customer.id}
+                  onPress={() => handleCustomerSelect(customer)}
+                  style={({ pressed }) => [styles.suggestion, pressed && styles.suggestionPressed]}
+                >
+                  <Text style={styles.suggestionName}>{customer.name}</Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+
+          {/* SELECTED CUSTOMER */}
+          {selectedCustomer && (
+            <View style={styles.selectedCustomer}>
+              <Ionicons name="checkmark-circle" size={18} color="#1745D1" />
+
+              <Text style={styles.selectedCustomerText}>{selectedCustomer.name}</Text>
+            </View>
+          )}
 
           {/* TOTAL ITEMS */}
           <View style={styles.row}>
@@ -146,12 +254,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#DCE1E9',
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: 'visible',
+    zIndex: 10,
   },
 
-  /*
-   * Collapsible header
-   */
   header: {
     minHeight: 64,
     paddingHorizontal: 18,
@@ -172,12 +278,10 @@ const styles = StyleSheet.create({
     color: '#1745D1',
   },
 
-  /*
-   * Expanded content
-   */
   content: {
     paddingHorizontal: 18,
     paddingBottom: 18,
+    zIndex: 10,
   },
 
   label: {
@@ -186,14 +290,85 @@ const styles = StyleSheet.create({
     marginBottom: 7,
   },
 
+  /*
+   * Customer autocomplete
+   */
+  customerContainer: {
+    position: 'relative',
+  },
+
   input: {
     height: 46,
     borderWidth: 1,
     borderColor: '#D8DDE5',
     borderRadius: 8,
     paddingHorizontal: 12,
-    marginBottom: 18,
+    paddingRight: 40,
     color: '#151A23',
+  },
+
+  clearButton: {
+    position: 'absolute',
+    right: 4,
+    top: 5,
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  clearButtonText: {
+    fontSize: 22,
+    color: '#7B8493',
+  },
+
+  suggestions: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 73,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D8DDE5',
+    borderRadius: 8,
+    overflow: 'hidden',
+    zIndex: 100,
+    elevation: 8,
+  },
+
+  suggestion: {
+    minHeight: 46,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEF0F3',
+  },
+
+  suggestionPressed: {
+    backgroundColor: '#F2F5FF',
+  },
+
+  suggestionName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#151A23',
+  },
+
+  selectedCustomer: {
+    marginTop: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 7,
+    backgroundColor: '#F2F5FF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+  },
+
+  selectedCustomerText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1745D1',
   },
 
   row: {
@@ -209,9 +384,6 @@ const styles = StyleSheet.create({
     color: '#151A23',
   },
 
-  /*
-   * Discount
-   */
   discountControls: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -246,9 +418,6 @@ const styles = StyleSheet.create({
     color: '#151A23',
   },
 
-  /*
-   * Total
-   */
   totalRow: {
     marginTop: 12,
     paddingTop: 16,
@@ -271,9 +440,6 @@ const styles = StyleSheet.create({
     color: '#151A23',
   },
 
-  /*
-   * Action buttons
-   */
   buttonRow: {
     flexDirection: 'row',
     gap: 12,

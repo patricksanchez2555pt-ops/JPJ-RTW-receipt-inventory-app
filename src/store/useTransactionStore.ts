@@ -18,10 +18,7 @@ type TransactionStore = {
 
   // Actions
   addTransaction: (
-    transactionData: Omit<Transaction, 'id' | 'date'> & {
-      id?: string;
-      date?: string;
-    },
+    transactionData: Omit<Transaction, 'id' | 'date'> & { date?: string },
   ) => Transaction;
   deleteTransaction: (id: string) => void;
   setAllTransactions: (transactions: Transaction[]) => void;
@@ -40,12 +37,14 @@ export const useTransactionStore = create<TransactionStore>()(
        * Creates a transaction AND automatically deducts sold items from Inventory.
        */
       addTransaction: (data) => {
-        const transactionId =
-          data.id ?? `tx-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+        const transactionId = `tx-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
         const date = data.date ?? new Date().toISOString();
 
         // Calculate subtotal & total if not provided
-        const items = data.items ?? [];
+        const items = (data.items ?? []).map((item) => ({
+          ...item,
+          transactionId,
+        }));
         const subtotal = data.subtotal ?? items.reduce((sum, item) => sum + item.total, 0);
         const discount = data.discount ?? 0;
         const total = data.total ?? Math.max(0, subtotal - discount);

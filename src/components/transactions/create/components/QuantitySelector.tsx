@@ -15,7 +15,9 @@ const QUANTITIES = [
 ];
 
 export default function QuantitySelector({ quantity, onChange, addItems }: Props) {
-  const [customQuantity, setCustomQuantity] = useState<string | null>('');
+  const [customQuantity, setCustomQuantity] = useState('');
+
+  const [clickedQuantity, setClickedQuantity] = useState<number | null>(null);
 
   const isPresetQuantity = QUANTITIES.some((item) => item.value === quantity);
 
@@ -45,18 +47,23 @@ export default function QuantitySelector({ quantity, onChange, addItems }: Props
 
       <View style={styles.container}>
         {QUANTITIES.map((item) => {
-          const selected = quantity === item.value && isPresetQuantity;
+          const isClicked = clickedQuantity === item.value;
 
           return (
             <Pressable
               key={item.label}
               onPress={() => {
                 onChange(item.value);
+                setClickedQuantity(item.value);
                 addItems();
+
+                setTimeout(() => {
+                  setClickedQuantity(null);
+                }, 500);
               }}
-              style={[styles.button, selected && styles.selectedButton]}
+              style={[styles.button, isClicked && styles.buttonClicked]}
             >
-              <Text style={[styles.text, selected && styles.selectedText]}>{item.label}</Text>
+              <Text style={[styles.text, isClicked && styles.textClicked]}>{item.label}</Text>
             </Pressable>
           );
         })}
@@ -111,18 +118,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
 
-  selectedButton: {
-    backgroundColor: 'green',
-    borderColor: 'green',
-  },
-
   text: {
     fontWeight: '600',
     color: '#1A1A1A',
   },
 
-  selectedText: {
-    color: '#FFFFFF',
+  buttonClicked: {
+    borderColor: '#1745D1',
+    backgroundColor: '#EEF3FF',
+  },
+
+  textClicked: {
+    color: '#1745D1',
+    fontWeight: '700',
   },
 
   customContainer: {

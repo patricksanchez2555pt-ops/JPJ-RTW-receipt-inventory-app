@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { AddedTransactionItem } from '../types';
@@ -11,7 +11,9 @@ type Props = {
   onRemove: (itemId: string) => void;
 };
 
-type GroupedItems = {
+type ViewMode = 'color' | 'size';
+
+type ColorGroupedItems = {
   key: string;
   productId: string;
   colorId: string;
@@ -21,8 +23,18 @@ type GroupedItems = {
   items: AddedTransactionItem[];
 };
 
-function groupItems(items: AddedTransactionItem[]): GroupedItems[] {
-  const groups = new Map<string, GroupedItems>();
+type SizeGroupedItems = {
+  key: string;
+  productId: string;
+  sizeId: string;
+  productName: string;
+  sizeName: string;
+  quantity: number;
+  unitPrice: number;
+};
+
+function groupByProductColor(items: AddedTransactionItem[]): ColorGroupedItems[] {
+  const groups = new Map<string, ColorGroupedItems>();
 
   for (const item of items) {
     const key = `${item.productId}-${item.colorId}`;
@@ -42,24 +54,75 @@ function groupItems(items: AddedTransactionItem[]): GroupedItems[] {
     groups.get(key)!.items.push(item);
   }
 
-  // Sort sizes inside each group by price
   for (const group of groups.values()) {
     group.items.sort((a, b) => {
-      const priceA = typeof a.unitPrice === 'number' ? a.unitPrice : 0;
-      const priceB = typeof b.unitPrice === 'number' ? b.unitPrice : 0;
+      const sizeNameA = a.size?.name ?? '';
+      const sizeNameB = b.size?.name ?? '';
 
-      return priceA - priceB;
+      return sizeNameA.localeCompare(sizeNameB);
     });
   }
 
-  // Sort groups by their lowest price
+  return Array.from(groups.values()).sort((a, b) => a.productName.localeCompare(b.productName));
+}
+
+function groupByProductSize(items: AddedTransactionItem[]): SizeGroupedItems[] {
+  const groups = new Map<string, SizeGroupedItems>();
+
+  for (const item of items) {
+    const key = `${item.productId}-${item.sizeId}`;
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        key,
+        productId: item.productId,
+        sizeId: item.sizeId,
+        productName: item.product?.name ?? 'Unknown Product',
+        sizeName: item.size?.name ?? 'Unknown Size',
+        quantity: 0,
+        unitPrice: item.unitPrice ?? 0,
+      });
+    }
+
+    groups.get(key)!.quantity += item.quantity;
+  }
+
   return Array.from(groups.values()).sort((a, b) => {
-    const priceA = typeof a.items[0]?.unitPrice === 'number' ? a.items[0].unitPrice : 0;
+    const productCompare = a.productName.localeCompare(b.productName);
 
-    const priceB = typeof b.items[0]?.unitPrice === 'number' ? b.items[0].unitPrice : 0;
+    if (productCompare !== 0) {
+      return productCompare;
+    }
 
-    return priceA - priceB;
+    return a.sizeName.localeCompare(b.sizeName);
   });
+}
+
+function groupSizeGroupsByProduct(groups: SizeGroupedItems[]) {
+  const productGroups = new Map<
+    string,
+    {
+      key: string;
+      productId: string;
+      productName: string;
+      items: SizeGroupedItems[];
+    }
+  >();
+
+  for (const group of groups) {
+    if (!productGroups.has(group.productId)) {
+      productGroups.set(group.productId, {
+        key: group.productId,
+        productId: group.productId,
+        productName: group.productName,
+        items: [],
+      });
+    }
+
+    productGroups.get(group.productId)!.items.push(group);
+  }
+
+  return Array.from(productGroups.values());
 }
 
 export default function AddedItemsPanel({
@@ -69,24 +132,18 @@ export default function AddedItemsPanel({
   onDecrease,
   onRemove,
 }: Props) {
-  const groups = groupItems(items);
+  const [viewMode, setViewMode] = useState<ViewMode>('color');
+
+  const colorGroups = useMemo(() => groupByProductColor(items), [items]);
+
+  const sizeGroups = useMemo(() => groupByProductSize(items), [items]);
+
+  const productSizeGroups = useMemo(() => groupSizeGroupsByProduct(sizeGroups), [sizeGroups]);
 
   const scrollViewRef = useRef<ScrollView>(null);
 
-  /*
-   * Store the Y position of each item relative to its group.
-   * We mainly use this to identify whether the item exists.
-   */
   const itemLayouts = useRef<Record<string, number>>({});
-
-  /*
-   * Store the current ScrollView content height.
-   */
   const contentHeight = useRef(0);
-
-  /*
-   * Store the visible height of the ScrollView.
-   */
   const viewportHeight = useRef(0);
 
   const highlightedSet = new Set(highlightedItemIds);
@@ -96,15 +153,6 @@ export default function AddedItemsPanel({
       return;
     }
 
-    /*
-     * Wait for React Native to finish:
-     * 1. Rendering the new item
-     * 2. Measuring the item
-     * 3. Updating ScrollView content size
-     *
-     * Using multiple frames makes this much more reliable when
-     * several groups/items are added at once.
-     */
     let frame1: number | null = null;
     let frame2: number | null = null;
     let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -118,47 +166,27 @@ export default function AddedItemsPanel({
 
       const maxScrollY = Math.max(0, contentHeight.current - viewportHeight.current);
 
-      /*
-       * If there is enough content to scroll, go toward the bottom.
-       *
-       * This is especially important when the newly added group is
-       * the bottom-most group. Scrolling directly to the item's local
-       * layout.y is not reliable because layout.y is relative to its
-       * group, not the ScrollView.
-       */
-      const isBottomItem =
-        groups.length > 0 &&
-        groups[groups.length - 1].items.some((item) => item.id === firstItemId);
+      if (viewMode === 'color') {
+        const isBottomGroup =
+          colorGroups.length > 0 &&
+          colorGroups[colorGroups.length - 1].items.some((item) => item.id === firstItemId);
 
-      if (isBottomItem) {
+        scrollViewRef.current?.scrollTo({
+          y: isBottomGroup ? maxScrollY : 0,
+          animated: isBottomGroup,
+        });
+      } else {
         scrollViewRef.current?.scrollTo({
           y: maxScrollY,
           animated: true,
         });
-
-        return;
       }
-
-      /*
-       * For items that aren't at the bottom, scroll to the top
-       * of the list first. The bottom-most case above is the
-       * important one because its absolute Y isn't available
-       * from the item's local layout.
-       */
-      scrollViewRef.current?.scrollTo({
-        y: 0,
-        animated: false,
-      });
     };
 
     frame1 = requestAnimationFrame(() => {
       frame2 = requestAnimationFrame(() => {
         scrollToNewItem();
 
-        /*
-         * One additional delayed attempt handles cases where the
-         * ScrollView content size is updated slightly later.
-         */
         timeout = setTimeout(() => {
           scrollToNewItem();
         }, 100);
@@ -178,10 +206,10 @@ export default function AddedItemsPanel({
         clearTimeout(timeout);
       }
     };
-  }, [highlightedItemIds, groups]);
+  }, [highlightedItemIds, colorGroups, viewMode]);
 
   function onRemoveGroupHandler(key: string) {
-    const group = groups.find((g) => g.key === key);
+    const group = colorGroups.find((group) => group.key === key);
 
     if (!group) {
       return;
@@ -197,8 +225,34 @@ export default function AddedItemsPanel({
       <View style={styles.header}>
         <Text style={styles.title}>Added Items</Text>
 
-        <View style={styles.count}>
-          <Text style={styles.countText}>{items.length} items</Text>
+        <View style={styles.headerRight}>
+          <View style={styles.modeSelector}>
+            <Pressable
+              onPress={() => setViewMode('color')}
+              style={[styles.modeButton, viewMode === 'color' && styles.modeButtonActive]}
+            >
+              <Text
+                style={[styles.modeButtonText, viewMode === 'color' && styles.modeButtonTextActive]}
+              >
+                By Color
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => setViewMode('size')}
+              style={[styles.modeButton, viewMode === 'size' && styles.modeButtonActive]}
+            >
+              <Text
+                style={[styles.modeButtonText, viewMode === 'size' && styles.modeButtonTextActive]}
+              >
+                By Size
+              </Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.count}>
+            <Text style={styles.countText}>{items.length} items</Text>
+          </View>
         </View>
       </View>
 
@@ -214,75 +268,117 @@ export default function AddedItemsPanel({
           viewportHeight.current = event.nativeEvent.layout.height;
         }}
       >
-        {groups.map((group) => (
-          <View key={group.key} style={styles.group}>
-            {/* GROUP HEADER */}
-            <View style={styles.groupHeader}>
-              <View
-                style={[
-                  styles.colorDot,
-                  {
-                    backgroundColor: group.colorHex,
-                  },
-                ]}
-              />
+        {viewMode === 'color'
+          ? colorGroups.map((group) => (
+              <View key={group.key} style={styles.group}>
+                <View style={styles.groupHeader}>
+                  <View
+                    style={[
+                      styles.colorDot,
+                      {
+                        backgroundColor: group.colorHex,
+                      },
+                    ]}
+                  />
 
-              <View style={styles.groupInfo}>
-                <Text style={styles.productName}>{group.productName}</Text>
+                  <View style={styles.groupInfo}>
+                    <Text style={styles.productName}>{group.productName}</Text>
 
-                <Text style={styles.colorName}>{group.colorName}</Text>
-              </View>
-
-              <Pressable
-                onPress={() => onRemoveGroupHandler(group.key)}
-                style={({ pressed }) => [styles.deleteGroupButton, pressed && styles.pressed]}
-              >
-                <Text style={styles.deleteGroupText}>Delete</Text>
-              </Pressable>
-            </View>
-
-            {/* ITEMS */}
-            {group.items.map((item) => {
-              const unitPriceNumber = typeof item.unitPrice === 'number' ? item.unitPrice : 0;
-
-              const isHighlighted = highlightedSet.has(item.id);
-
-              return (
-                <View
-                  key={item.id}
-                  onLayout={(event) => {
-                    itemLayouts.current[item.id] = event.nativeEvent.layout.y;
-                  }}
-                  style={[styles.itemRow, isHighlighted && styles.highlightedItemRow]}
-                >
-                  <View style={styles.sizeContainer}>
-                    <Text style={styles.sizeName}>{item.size?.name ?? 'Unknown Size'}</Text>
-
-                    <Text style={styles.price}>₱{unitPriceNumber.toFixed(2)} each</Text>
+                    <Text style={styles.colorName}>{group.colorName}</Text>
                   </View>
 
-                  <View style={styles.actions}>
-                    <Pressable style={styles.quantityButton} onPress={() => onDecrease(item.id)}>
-                      <Text style={styles.buttonText}>−</Text>
-                    </Pressable>
+                  <Pressable
+                    onPress={() => onRemoveGroupHandler(group.key)}
+                    style={({ pressed }) => [styles.deleteGroupButton, pressed && styles.pressed]}
+                  >
+                    <Text style={styles.deleteGroupText}>Delete</Text>
+                  </Pressable>
+                </View>
 
-                    <View style={styles.quantity}>
-                      <Text style={styles.quantityText}>{item.quantity}</Text>
+                {group.items.map((item) => {
+                  const unitPriceNumber = typeof item.unitPrice === 'number' ? item.unitPrice : 0;
+
+                  const isHighlighted = highlightedSet.has(item.id);
+
+                  return (
+                    <View
+                      key={item.id}
+                      onLayout={(event) => {
+                        itemLayouts.current[item.id] = event.nativeEvent.layout.y;
+                      }}
+                      style={[styles.itemRow, isHighlighted && styles.highlightedItemRow]}
+                    >
+                      <View style={styles.sizeContainer}>
+                        <Text style={styles.sizeName}>{item.size?.name ?? 'Unknown Size'}</Text>
+                      </View>
+
+                      <View style={styles.unitPriceContainer}>
+                        <Text style={styles.unitPrice}>₱{unitPriceNumber.toFixed(2)}</Text>
+                      </View>
+
+                      <View style={styles.actions}>
+                        <Pressable
+                          style={styles.quantityButton}
+                          onPress={() => onDecrease(item.id)}
+                        >
+                          <Text style={styles.buttonText}>−</Text>
+                        </Pressable>
+
+                        <View style={styles.quantity}>
+                          <Text style={styles.quantityText}>{item.quantity}</Text>
+                        </View>
+
+                        <Pressable
+                          style={styles.quantityButton}
+                          onPress={() => onIncrease(item.id)}
+                        >
+                          <Text style={styles.buttonText}>+</Text>
+                        </Pressable>
+
+                        <Pressable style={styles.deleteButton} onPress={() => onRemove(item.id)}>
+                          <Text style={styles.deleteText}>×</Text>
+                        </Pressable>
+                      </View>
                     </View>
+                  );
+                })}
+              </View>
+            ))
+          : productSizeGroups.map((productGroup) => (
+              <View key={productGroup.key} style={styles.group}>
+                <View style={styles.readOnlyProductHeader}>
+                  <View style={styles.groupInfo}>
+                    <Text style={styles.productName}>{productGroup.productName}</Text>
 
-                    <Pressable style={styles.quantityButton} onPress={() => onIncrease(item.id)}>
-                      <Text style={styles.buttonText}>+</Text>
-                    </Pressable>
+                    <Text style={styles.readOnlyLabel}>Total by size</Text>
+                  </View>
 
-                    <Pressable style={styles.deleteButton} onPress={() => onRemove(item.id)}>
-                      <Text style={styles.deleteText}>×</Text>
-                    </Pressable>
+                  <View style={styles.readOnlyBadge}>
+                    <Text style={styles.readOnlyBadgeText}>Read only</Text>
                   </View>
                 </View>
-              );
-            })}
-          </View>
-        ))}
+
+                {productGroup.items.map((item) => {
+                  const unitPriceNumber = typeof item.unitPrice === 'number' ? item.unitPrice : 0;
+
+                  return (
+                    <View key={item.key} style={styles.itemRow}>
+                      <View style={styles.sizeContainer}>
+                        <Text style={styles.sizeName}>{item.sizeName}</Text>
+                      </View>
+
+                      <View style={styles.unitPriceContainer}>
+                        <Text style={styles.unitPrice}>₱{unitPriceNumber.toFixed(2)}</Text>
+                      </View>
+
+                      <View style={styles.readOnlyQuantity}>
+                        <Text style={styles.readOnlyQuantityText}>{item.quantity} pcs</Text>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            ))}
       </ScrollView>
     </View>
   );
@@ -298,18 +394,53 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    height: 64,
+    minHeight: 64,
     paddingHorizontal: 18,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E8ED',
+    gap: 12,
   },
 
   title: {
     fontSize: 20,
     fontWeight: '700',
+  },
+
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+
+  modeSelector: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: '#D8DDE5',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+
+  modeButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#FFFFFF',
+  },
+
+  modeButtonActive: {
+    backgroundColor: '#EEF1F5',
+  },
+
+  modeButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#687284',
+  },
+
+  modeButtonTextActive: {
+    color: '#20242B',
   },
 
   count: {
@@ -351,6 +482,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FB',
   },
 
+  readOnlyProductHeader: {
+    minHeight: 64,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F8F9FB',
+  },
+
   groupInfo: {
     flex: 1,
   },
@@ -372,6 +512,25 @@ const styles = StyleSheet.create({
     marginTop: 3,
     color: '#687284',
     fontSize: 13,
+  },
+
+  readOnlyLabel: {
+    marginTop: 3,
+    color: '#687284',
+    fontSize: 12,
+  },
+
+  readOnlyBadge: {
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 6,
+    backgroundColor: '#EEF1F5',
+  },
+
+  readOnlyBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#687284',
   },
 
   deleteGroupButton: {
@@ -398,7 +557,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     borderTopWidth: 1,
     borderTopColor: '#E5E8ED',
   },
@@ -409,6 +567,7 @@ const styles = StyleSheet.create({
 
   sizeContainer: {
     flex: 1,
+    justifyContent: 'center',
   },
 
   sizeName: {
@@ -416,15 +575,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  price: {
-    marginTop: 3,
-    fontSize: 12,
-    color: '#7B8493',
+  unitPriceContainer: {
+    width: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  unitPrice: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4F5868',
   },
 
   actions: {
+    width: 168,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
     gap: 4,
   },
 
@@ -466,5 +633,22 @@ const styles = StyleSheet.create({
   deleteText: {
     color: '#E53935',
     fontSize: 24,
+  },
+
+  readOnlyQuantity: {
+    width: 100,
+    height: 36,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#D8DDE5',
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F8F9FB',
+  },
+
+  readOnlyQuantityText: {
+    fontSize: 14,
+    fontWeight: '700',
   },
 });

@@ -1,3 +1,4 @@
+// configs
 export type Product = {
   id: string;
   name: string;
@@ -34,6 +35,8 @@ export type CustomerPrice = {
   updatedAt: string;
 };
 
+// inventory
+
 export type Inventory = {
   productId: string;
   colorId: string;
@@ -41,6 +44,8 @@ export type Inventory = {
   quantity: number;
   updatedAt?: string;
 };
+
+// transactions
 
 export type TransactionItem = {
   id: string;

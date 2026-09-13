@@ -6,6 +6,7 @@ import type { PrintableTransaction } from '@/service/escPos';
 import { printerService } from '@/service/printerService';
 
 import { useColorStore } from '../../../store/useColorStore';
+import { useCustomerPricingStore } from '../../../store/useCustomerPricingStore';
 import { useCustomerStore } from '../../../store/useCustomerStore';
 import { useProductStore } from '../../../store/useProductStore';
 import { useSizeStore } from '../../../store/useSizeStore';
@@ -21,18 +22,37 @@ import type { AddedTransactionItem } from './types';
 
 export default function CreateTransaction() {
   const PRODUCTS = useProductStore((state) => state.products);
+
   const COLORS = useColorStore((state) => state.colors);
+
   const SIZES = useSizeStore((state) => state.sizes);
+
   const CUSTOMERS = useCustomerStore((state) => state.customers);
 
+  /*
+   * Customer-specific pricing.
+   *
+   * Subscribe to customerPrices directly so the component
+   * re-renders whenever pricing is changed.
+   */
+  const customerPrices = useCustomerPricingStore((state) => state.customerPrices);
+
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(PRODUCTS[0] ?? null);
+
   const [selectedColor, setSelectedColor] = useState<Color | null>(COLORS[0] ?? null);
+
   const [selectedSizes, setSelectedSizes] = useState<Size[]>([]);
+
   const [quantity, setQuantity] = useState(3);
+
   const [items, setItems] = useState<AddedTransactionItem[]>([]);
+
   const [buyerName, setBuyerName] = useState('');
+
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
+
   const [discount, setDiscount] = useState(0);
+
   const [highlightedItemIds, setHighlightedItemIds] = useState<string[]>([]);
 
   const productColors = useMemo(() => {
@@ -57,6 +77,29 @@ export default function CreateTransaction() {
 
   const total = Math.max(0, subtotal - discount);
 
+  /*
+   * Get the effective price for a product/size.
+   *
+   * If a customer is selected and has a custom price,
+   * that price is used.
+   *
+   * Otherwise, the normal size price is used.
+   */
+  function getEffectivePrice(productId: string, sizeId: string, defaultPrice: number) {
+    if (!selectedCustomerId) {
+      return defaultPrice;
+    }
+
+    const customerPrice = customerPrices.find(
+      (price) =>
+        price.customerId === selectedCustomerId &&
+        price.productId === productId &&
+        price.sizeId === sizeId,
+    );
+
+    return customerPrice?.price ?? defaultPrice;
+  }
+
   function handleProductSelect(product: Product) {
     setSelectedProduct(product);
     setSelectedColor(null);
@@ -80,16 +123,19 @@ export default function CreateTransaction() {
   function addItems() {
     if (!selectedProduct) {
       Alert.alert('Select Product', 'Please select a product.');
+
       return;
     }
 
     if (!selectedColor) {
       Alert.alert('Select Color', 'Please select a color.');
+
       return;
     }
 
     if (selectedSizes.length === 0) {
       Alert.alert('Select Size', 'Please select at least one size.');
+
       return;
     }
 
@@ -99,6 +145,12 @@ export default function CreateTransaction() {
       const updated = [...current];
 
       for (const size of selectedSizes) {
+        /*
+         * Use the customer-specific price when
+         * available.
+         */
+        const unitPrice = getEffectivePrice(selectedProduct.id, size.id, size.price);
+
         const existingIndex = updated.findIndex(
           (item) =>
             item.productId === selectedProduct.id &&
@@ -109,13 +161,15 @@ export default function CreateTransaction() {
         if (existingIndex >= 0) {
           const existing = updated[existingIndex];
 
+          const newQuantity = existing.quantity + quantity;
+
           updated[existingIndex] = {
             ...existing,
-            quantity: existing.quantity + quantity,
-            total: (existing.quantity + quantity) * existing.unitPrice,
+            quantity: newQuantity,
+            unitPrice,
+            total: newQuantity * unitPrice,
           };
 
-          // Existing item was updated
           newItemIds.push(existing.id);
         } else {
           const newItemId = `${Date.now()}-${size.id}`;
@@ -127,8 +181,8 @@ export default function CreateTransaction() {
             colorId: selectedColor.id,
             sizeId: size.id,
             quantity,
-            unitPrice: size.price,
-            total: quantity * size.price,
+            unitPrice,
+            total: quantity * unitPrice,
 
             product: selectedProduct,
             color: selectedColor,
@@ -142,7 +196,6 @@ export default function CreateTransaction() {
       return updated;
     });
 
-    // Tell AddedItemsPanel which items to highlight
     setHighlightedItemIds(newItemIds);
 
     setSelectedSizes([]);
@@ -174,14 +227,55 @@ export default function CreateTransaction() {
     setItems((current) => current.filter((item) => item.id !== itemId));
   }
 
+  /*
+   * Change the selected customer.
+   *
+   * Existing transaction items are repriced
+   * using the newly selected customer's pricing.
+   */
+  function handleCustomerSelect(customerId: string | null) {
+    setSelectedCustomerId(customerId);
+
+    setItems((current) =>
+      current.map((item) => {
+        const defaultPrice = item.size?.price ?? item.unitPrice;
+
+        const customerPrice = customerId
+          ? customerPrices.find(
+              (price) =>
+                price.customerId === customerId &&
+                price.productId === item.productId &&
+                price.sizeId === item.sizeId,
+            )
+          : undefined;
+
+        const unitPrice = customerPrice?.price ?? defaultPrice;
+
+        return {
+          ...item,
+          unitPrice,
+          total: item.quantity * unitPrice,
+        };
+      }),
+    );
+  }
+
   function saveTransaction() {
     if (items.length === 0) {
       Alert.alert('No Items', 'Add at least one item.');
+
       return;
     }
 
+    /*
+     * If the user typed a buyer name without selecting
+     * an existing customer, create the customer first.
+     */
     if (!selectedCustomerId && buyerName.trim()) {
-      const customer = useCustomerStore.getState().addCustomer({ name: buyerName });
+      const customer = useCustomerStore.getState().addCustomer({
+        name: buyerName.trim(),
+      });
+
       setSelectedCustomerId(customer.id);
     }
 
@@ -203,16 +297,16 @@ export default function CreateTransaction() {
       `Transaction #${transaction.id}\nTotal: ₱${transaction.total.toFixed(2)}`,
     );
 
-    // Clear transaction form
     setItems([]);
     setBuyerName('');
     setDiscount(0);
     setSelectedSizes([]);
     setQuantity(3);
     setHighlightedItemIds([]);
+    setSelectedCustomerId(null);
 
-    // Reset selections
     setSelectedProduct(PRODUCTS[0] ?? null);
+
     setSelectedColor(null);
   }
 
@@ -250,6 +344,7 @@ export default function CreateTransaction() {
         <View style={styles.header}>
           <View>
             <Text style={styles.title}>Create Transaction</Text>
+
             <Text style={styles.subtitle}>Add products to the transaction.</Text>
           </View>
         </View>
@@ -335,7 +430,7 @@ export default function CreateTransaction() {
           subtotal={subtotal}
           total={total}
           onCustomerNameChange={setBuyerName}
-          onCustomerSelect={setSelectedCustomerId}
+          onCustomerSelect={handleCustomerSelect}
           onDiscountChange={setDiscount}
           onSave={saveTransaction}
           onPrint={printTransaction}
@@ -383,10 +478,6 @@ const styles = StyleSheet.create({
     color: '#707989',
     fontSize: 14,
   },
-
-  // =========================
-  // TRANSACTION CARD
-  // =========================
 
   card: {
     padding: 18,

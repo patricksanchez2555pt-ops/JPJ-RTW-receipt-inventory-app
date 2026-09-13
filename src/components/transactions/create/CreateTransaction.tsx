@@ -198,7 +198,7 @@ export default function CreateTransaction() {
 
     setHighlightedItemIds(newItemIds);
 
-    setSelectedSizes([]);
+    // setSelectedSizes([]);
   }
 
   const itemCount = useMemo(() => {

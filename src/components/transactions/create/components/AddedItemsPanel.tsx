@@ -33,6 +33,20 @@ type SizeGroupedItems = {
   unitPrice: number;
 };
 
+type ProductSizeGroup = {
+  key: string;
+  productId: string;
+  productName: string;
+  items: SizeGroupedItems[];
+};
+
+function formatNumber(value: number): string {
+  return value.toLocaleString('en-PH', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 function groupByProductColor(items: AddedTransactionItem[]): ColorGroupedItems[] {
   const groups = new Map<string, ColorGroupedItems>();
 
@@ -63,7 +77,15 @@ function groupByProductColor(items: AddedTransactionItem[]): ColorGroupedItems[]
     });
   }
 
-  return Array.from(groups.values()).sort((a, b) => a.productName.localeCompare(b.productName));
+  return Array.from(groups.values()).sort((a, b) => {
+    const productCompare = a.productName.localeCompare(b.productName);
+
+    if (productCompare !== 0) {
+      return productCompare;
+    }
+
+    return a.colorName.localeCompare(b.colorName);
+  });
 }
 
 function groupByProductSize(items: AddedTransactionItem[]): SizeGroupedItems[] {
@@ -84,7 +106,9 @@ function groupByProductSize(items: AddedTransactionItem[]): SizeGroupedItems[] {
       });
     }
 
-    groups.get(key)!.quantity += item.quantity;
+    const group = groups.get(key)!;
+
+    group.quantity += item.quantity;
   }
 
   return Array.from(groups.values()).sort((a, b) => {
@@ -98,16 +122,8 @@ function groupByProductSize(items: AddedTransactionItem[]): SizeGroupedItems[] {
   });
 }
 
-function groupSizeGroupsByProduct(groups: SizeGroupedItems[]) {
-  const productGroups = new Map<
-    string,
-    {
-      key: string;
-      productId: string;
-      productName: string;
-      items: SizeGroupedItems[];
-    }
-  >();
+function groupSizeGroupsByProduct(groups: SizeGroupedItems[]): ProductSizeGroup[] {
+  const productGroups = new Map<string, ProductSizeGroup>();
 
   for (const group of groups) {
     if (!productGroups.has(group.productId)) {
@@ -125,6 +141,20 @@ function groupSizeGroupsByProduct(groups: SizeGroupedItems[]) {
   return Array.from(productGroups.values());
 }
 
+function getColorGroupTotal(group: ColorGroupedItems): number {
+  return group.items.reduce((sum, item) => sum + item.quantity * (item.unitPrice ?? 0), 0);
+}
+
+function getProductTotal(groups: ColorGroupedItems[]): number {
+  return groups.reduce((sum, group) => {
+    return sum + getColorGroupTotal(group);
+  }, 0);
+}
+
+function getSizeProductTotal(items: SizeGroupedItems[]): number {
+  return items.reduce((sum, item) => sum + item.quantity * (item.unitPrice ?? 0), 0);
+}
+
 export default function AddedItemsPanel({
   items,
   highlightedItemIds = [],
@@ -139,6 +169,24 @@ export default function AddedItemsPanel({
   const sizeGroups = useMemo(() => groupByProductSize(items), [items]);
 
   const productSizeGroups = useMemo(() => groupSizeGroupsByProduct(sizeGroups), [sizeGroups]);
+
+  const colorProductGroups = useMemo(() => {
+    const products = new Map<string, ColorGroupedItems[]>();
+
+    for (const group of colorGroups) {
+      if (!products.has(group.productId)) {
+        products.set(group.productId, []);
+      }
+
+      products.get(group.productId)!.push(group);
+    }
+
+    return Array.from(products.entries()).map(([productId, groups]) => ({
+      productId,
+      productName: groups[0]?.productName ?? 'Unknown Product',
+      groups,
+    }));
+  }, [colorGroups]);
 
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -269,116 +317,183 @@ export default function AddedItemsPanel({
         }}
       >
         {viewMode === 'color'
-          ? colorGroups.map((group) => (
-              <View key={group.key} style={styles.group}>
-                <View style={styles.groupHeader}>
-                  <View
-                    style={[
-                      styles.colorDot,
-                      {
-                        backgroundColor: group.colorHex,
-                      },
-                    ]}
-                  />
+          ? colorProductGroups.map((productGroup) => {
+              const productTotal = getProductTotal(productGroup.groups);
 
-                  <View style={styles.groupInfo}>
-                    <Text style={styles.productName}>{group.productName}</Text>
+              return (
+                <View key={productGroup.productId} style={styles.productGroup}>
+                  <View style={styles.productHeader}>
+                    <View style={styles.groupInfo}>
+                      <Text style={styles.productName}>{productGroup.productName}</Text>
 
-                    <Text style={styles.colorName}>{group.colorName}</Text>
+                      <Text style={styles.productSubtitle}>By color</Text>
+                    </View>
+
+                    <View style={styles.productHeaderTotal}>
+                      <Text style={styles.productHeaderTotalLabel}>Product Total</Text>
+
+                      <Text style={styles.productHeaderTotalValue}>
+                        ₱{formatNumber(productTotal)}
+                      </Text>
+                    </View>
                   </View>
 
-                  <Pressable
-                    onPress={() => onRemoveGroupHandler(group.key)}
-                    style={({ pressed }) => [styles.deleteGroupButton, pressed && styles.pressed]}
-                  >
-                    <Text style={styles.deleteGroupText}>Delete</Text>
-                  </Pressable>
-                </View>
+                  {productGroup.groups.map((group) => {
+                    const colorTotal = getColorGroupTotal(group);
 
-                {group.items.map((item) => {
-                  const unitPriceNumber = typeof item.unitPrice === 'number' ? item.unitPrice : 0;
+                    return (
+                      <View key={group.key} style={styles.colorGroup}>
+                        <View style={styles.groupHeader}>
+                          <View
+                            style={[
+                              styles.colorDot,
+                              {
+                                backgroundColor: group.colorHex,
+                              },
+                            ]}
+                          />
 
-                  const isHighlighted = highlightedSet.has(item.id);
+                          <View style={styles.groupInfo}>
+                            <Text style={styles.colorName}>{group.colorName}</Text>
+                          </View>
 
-                  return (
-                    <View
-                      key={item.id}
-                      onLayout={(event) => {
-                        itemLayouts.current[item.id] = event.nativeEvent.layout.y;
-                      }}
-                      style={[styles.itemRow, isHighlighted && styles.highlightedItemRow]}
-                    >
-                      <View style={styles.sizeContainer}>
-                        <Text style={styles.sizeName}>{item.size?.name ?? 'Unknown Size'}</Text>
-                      </View>
+                          <View style={styles.colorTotalContainer}>
+                            <Text style={styles.colorTotalLabel}>Color Total</Text>
 
-                      <View style={styles.unitPriceContainer}>
-                        <Text style={styles.unitPrice}>₱{unitPriceNumber.toFixed(2)}</Text>
-                      </View>
+                            <Text style={styles.colorTotal}>₱{formatNumber(colorTotal)}</Text>
+                          </View>
 
-                      <View style={styles.actions}>
-                        <Pressable
-                          style={styles.quantityButton}
-                          onPress={() => onDecrease(item.id)}
-                        >
-                          <Text style={styles.buttonText}>−</Text>
-                        </Pressable>
-
-                        <View style={styles.quantity}>
-                          <Text style={styles.quantityText}>{item.quantity}</Text>
+                          <Pressable
+                            onPress={() => onRemoveGroupHandler(group.key)}
+                            style={({ pressed }) => [
+                              styles.deleteGroupButton,
+                              pressed && styles.pressed,
+                            ]}
+                          >
+                            <Text style={styles.deleteGroupText}>Delete</Text>
+                          </Pressable>
                         </View>
 
-                        <Pressable
-                          style={styles.quantityButton}
-                          onPress={() => onIncrease(item.id)}
-                        >
-                          <Text style={styles.buttonText}>+</Text>
-                        </Pressable>
+                        {group.items.map((item) => {
+                          const unitPriceNumber =
+                            typeof item.unitPrice === 'number' ? item.unitPrice : 0;
 
-                        <Pressable style={styles.deleteButton} onPress={() => onRemove(item.id)}>
-                          <Text style={styles.deleteText}>×</Text>
-                        </Pressable>
+                          const rowTotal = item.quantity * unitPriceNumber;
+
+                          const isHighlighted = highlightedSet.has(item.id);
+
+                          return (
+                            <View
+                              key={item.id}
+                              onLayout={(event) => {
+                                itemLayouts.current[item.id] = event.nativeEvent.layout.y;
+                              }}
+                              style={[styles.itemRow, isHighlighted && styles.highlightedItemRow]}
+                            >
+                              <View style={styles.sizeContainer}>
+                                <Text style={styles.sizeName}>
+                                  {item.size?.name ?? 'Unknown Size'}
+                                </Text>
+                              </View>
+
+                              <View style={styles.unitPriceContainer}>
+                                <Text style={styles.unitPrice}>
+                                  ₱{formatNumber(unitPriceNumber)}
+                                </Text>
+                              </View>
+
+                              <View style={styles.rowTotalContainer}>
+                                <Text style={styles.rowTotal}>₱{formatNumber(rowTotal)}</Text>
+                              </View>
+
+                              <View style={styles.actions}>
+                                <Pressable
+                                  style={styles.quantityButton}
+                                  onPress={() => onDecrease(item.id)}
+                                >
+                                  <Text style={styles.buttonText}>−</Text>
+                                </Pressable>
+
+                                <View style={styles.quantity}>
+                                  <Text style={styles.quantityText}>{item.quantity}</Text>
+                                </View>
+
+                                <Pressable
+                                  style={styles.quantityButton}
+                                  onPress={() => onIncrease(item.id)}
+                                >
+                                  <Text style={styles.buttonText}>+</Text>
+                                </Pressable>
+
+                                <Pressable
+                                  style={styles.deleteButton}
+                                  onPress={() => onRemove(item.id)}
+                                >
+                                  <Text style={styles.deleteText}>×</Text>
+                                </Pressable>
+                              </View>
+                            </View>
+                          );
+                        })}
                       </View>
-                    </View>
-                  );
-                })}
-              </View>
-            ))
-          : productSizeGroups.map((productGroup) => (
-              <View key={productGroup.key} style={styles.group}>
-                <View style={styles.readOnlyProductHeader}>
-                  <View style={styles.groupInfo}>
-                    <Text style={styles.productName}>{productGroup.productName}</Text>
-
-                    <Text style={styles.readOnlyLabel}>Total by size</Text>
-                  </View>
-
-                  <View style={styles.readOnlyBadge}>
-                    <Text style={styles.readOnlyBadgeText}>Read only</Text>
-                  </View>
+                    );
+                  })}
                 </View>
+              );
+            })
+          : productSizeGroups.map((productGroup) => {
+              const productTotal = getSizeProductTotal(productGroup.items);
 
-                {productGroup.items.map((item) => {
-                  const unitPriceNumber = typeof item.unitPrice === 'number' ? item.unitPrice : 0;
+              return (
+                <View key={productGroup.key} style={styles.productGroup}>
+                  <View style={styles.readOnlyProductHeader}>
+                    <View style={styles.groupInfo}>
+                      <Text style={styles.productName}>{productGroup.productName}</Text>
 
-                  return (
-                    <View key={item.key} style={styles.itemRow}>
-                      <View style={styles.sizeContainer}>
-                        <Text style={styles.sizeName}>{item.sizeName}</Text>
-                      </View>
-
-                      <View style={styles.unitPriceContainer}>
-                        <Text style={styles.unitPrice}>₱{unitPriceNumber.toFixed(2)}</Text>
-                      </View>
-
-                      <View style={styles.readOnlyQuantity}>
-                        <Text style={styles.readOnlyQuantityText}>{item.quantity} pcs</Text>
-                      </View>
+                      <Text style={styles.readOnlyLabel}>Total by size</Text>
                     </View>
-                  );
-                })}
-              </View>
-            ))}
+
+                    <View style={styles.productHeaderTotal}>
+                      <Text style={styles.productHeaderTotalLabel}>Product Total</Text>
+
+                      <Text style={styles.productHeaderTotalValue}>
+                        ₱{formatNumber(productTotal)}
+                      </Text>
+                    </View>
+
+                    <View style={styles.readOnlyBadge}>
+                      <Text style={styles.readOnlyBadgeText}>Read only</Text>
+                    </View>
+                  </View>
+
+                  {productGroup.items.map((item) => {
+                    const unitPriceNumber = typeof item.unitPrice === 'number' ? item.unitPrice : 0;
+
+                    const rowTotal = item.quantity * unitPriceNumber;
+
+                    return (
+                      <View key={item.key} style={styles.itemRow}>
+                        <View style={styles.sizeContainer}>
+                          <Text style={styles.sizeName}>{item.sizeName}</Text>
+                        </View>
+
+                        <View style={styles.unitPriceContainer}>
+                          <Text style={styles.unitPrice}>₱{formatNumber(unitPriceNumber)}</Text>
+                        </View>
+
+                        <View style={styles.rowTotalContainer}>
+                          <Text style={styles.rowTotal}>₱{formatNumber(rowTotal)}</Text>
+                        </View>
+
+                        <View style={styles.readOnlyQuantity}>
+                          <Text style={styles.readOnlyQuantityText}>{item.quantity} pcs</Text>
+                        </View>
+                      </View>
+                    );
+                  })}
+                </View>
+              );
+            })}
       </ScrollView>
     </View>
   );
@@ -466,20 +581,22 @@ const styles = StyleSheet.create({
     gap: 12,
   },
 
-  group: {
+  productGroup: {
     borderWidth: 1,
     borderColor: '#E0E4EA',
     borderRadius: 10,
     overflow: 'hidden',
   },
 
-  groupHeader: {
+  productHeader: {
     minHeight: 64,
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
     backgroundColor: '#F8F9FB',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E4EA',
+    gap: 16,
   },
 
   readOnlyProductHeader: {
@@ -487,20 +604,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: '#F8F9FB',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E4EA',
+    gap: 16,
   },
 
   groupInfo: {
     flex: 1,
-  },
-
-  colorDot: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 1,
-    borderColor: '#CBD0D8',
   },
 
   productName: {
@@ -508,10 +619,75 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  colorName: {
+  productSubtitle: {
     marginTop: 3,
     color: '#687284',
+    fontSize: 12,
+  },
+
+  colorGroup: {
+    backgroundColor: '#FFFFFF',
+  },
+
+  groupHeader: {
+    minHeight: 52,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#FAFBFC',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E8ED',
+  },
+
+  colorDot: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#CBD0D8',
+  },
+
+  colorName: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+
+  colorTotalContainer: {
+    width: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  colorTotalLabel: {
+    fontSize: 10,
+    color: '#687284',
+    fontWeight: '600',
+  },
+
+  colorTotal: {
+    marginTop: 2,
     fontSize: 13,
+    fontWeight: '700',
+    color: '#20242B',
+  },
+
+  productHeaderTotal: {
+    width: 130,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+
+  productHeaderTotalLabel: {
+    fontSize: 11,
+    color: '#687284',
+    fontWeight: '600',
+  },
+
+  productHeaderTotalValue: {
+    marginTop: 2,
+    fontSize: 16,
+    fontWeight: '700',
   },
 
   readOnlyLabel: {
@@ -557,8 +733,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#E5E8ED',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E8ED',
   },
 
   highlightedItemRow: {
@@ -585,6 +761,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#4F5868',
+  },
+
+  rowTotalContainer: {
+    width: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  rowTotal: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#20242B',
   },
 
   actions: {
@@ -636,7 +824,7 @@ const styles = StyleSheet.create({
   },
 
   readOnlyQuantity: {
-    width: 100,
+    width: 168,
     height: 36,
     paddingHorizontal: 12,
     borderWidth: 1,

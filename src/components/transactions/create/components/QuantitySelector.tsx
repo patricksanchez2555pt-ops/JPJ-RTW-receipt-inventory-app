@@ -7,12 +7,14 @@ type Props = {
   addItems: () => void;
 };
 
-const QUANTITIES = [
-  { label: '1 pc', value: 1 },
-  { label: '3 pcs', value: 3 },
-  { label: '6 pcs', value: 6 },
-  { label: '12 pcs', value: 12 },
-];
+const QUANTITIES = Array.from({ length: 12 }, (_, index) => {
+  const value = index + 1;
+
+  return {
+    label: `${value} ${value === 1 ? 'pc' : 'pcs'}`,
+    value,
+  };
+});
 
 export default function QuantitySelector({ quantity, onChange, addItems }: Props) {
   const [customQuantity, setCustomQuantity] = useState('');

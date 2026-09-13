@@ -30,7 +30,7 @@ function Customers() {
   );
 
   const selectedCustomer = useMemo(
-    () => (selectedCustomerId ? getCustomer(selectedCustomerId) ?? null : null),
+    () => (selectedCustomerId ? (getCustomer(selectedCustomerId) ?? null) : null),
     [getCustomer, selectedCustomerId],
   );
 

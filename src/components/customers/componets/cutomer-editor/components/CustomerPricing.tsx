@@ -13,9 +13,13 @@ export default function CustomerPricing({ customerId }: Props) {
   const products = useProductStore((state) => state.products);
   const sizes = useSizeStore((state) => state.sizes);
 
-  const getCustomerPricesForCustomer = useCustomerPricingStore(
-    (state) => state.getCustomerPricesForCustomer,
-  );
+  /*
+   * Subscribe directly to the actual saved pricing state.
+   *
+   * This ensures the component re-renders immediately
+   * whenever a customer price is added, updated, or deleted.
+   */
+  const customerPrices = useCustomerPricingStore((state) => state.customerPrices);
 
   const getCustomerPrice = useCustomerPricingStore((state) => state.getCustomerPrice);
 
@@ -26,22 +30,27 @@ export default function CustomerPricing({ customerId }: Props) {
   const deleteCustomerPrice = useCustomerPricingStore((state) => state.deleteCustomerPrice);
 
   /*
-   * Stores only values currently being edited.
+   * Stores values currently being edited.
    *
-   * IMPORTANT:
-   * The key includes customerId so unsaved edits remain
-   * separate when switching between customers.
+   * We intentionally keep these separate from the saved
+   * Zustand values so typing does not immediately modify
+   * the persisted store on every keystroke.
    */
   const [editingPrices, setEditingPrices] = useState<Record<string, string>>({});
 
   /*
-   * Get all saved prices for the selected customer
-   * using the store helper.
+   * Get only the saved prices for this customer.
    */
-  const selectedCustomerPrices = getCustomerPricesForCustomer(customerId);
+  const selectedCustomerPrices = useMemo(
+    () => customerPrices.filter((customerPrice) => customerPrice.customerId === customerId),
+    [customerPrices, customerId],
+  );
 
   /*
-   * Convert the customer's saved prices into a quick lookup map.
+   * Convert saved customer prices into a quick lookup map.
+   *
+   * productId + sizeId uniquely identifies a price
+   * for the selected customer.
    */
   const customerPriceMap = useMemo(() => {
     const map: Record<string, number> = {};
@@ -64,39 +73,47 @@ export default function CustomerPricing({ customerId }: Props) {
   }, [products, sizes]);
 
   /*
-   * Unique key for a price input.
+   * Create a unique key for each input.
    *
-   * Includes customerId so unsaved values don't get mixed
-   * between customers.
+   * customerId is included so values cannot be mixed
+   * when switching between customers.
    */
   const getEditingKey = (productId: string, sizeId: string) => {
     return `${customerId}-${productId}-${sizeId}`;
   };
 
   /*
-   * Get the value displayed in the input.
+   * Get the value that should currently be displayed
+   * inside the input.
    */
   const getPriceValue = (productId: string, sizeId: string) => {
     const editingKey = getEditingKey(productId, sizeId);
 
     /*
-     * If currently editing, keep the local value.
+     * If the user is currently editing this field,
+     * always display the local editing value.
      */
     if (editingKey in editingPrices) {
       return editingPrices[editingKey];
     }
 
     /*
-     * Otherwise use the saved customer price.
+     * Otherwise display the saved customer price.
+     *
+     * If there is no override, leave the input blank
+     * so the placeholder shows the default price.
      */
     const customerPrice = customerPriceMap[`${productId}-${sizeId}`];
 
     return customerPrice !== undefined ? String(customerPrice) : '';
   };
 
+  /*
+   * Handle typing into the price input.
+   */
   const handlePriceChange = (productId: string, sizeId: string, value: string) => {
     /*
-     * Allow numbers and decimal point only.
+     * Allow numbers and decimal points only.
      */
     const sanitized = value.replace(/[^0-9.]/g, '');
 
@@ -115,6 +132,9 @@ export default function CustomerPricing({ customerId }: Props) {
     }));
   };
 
+  /*
+   * Remove the local editing value for an input.
+   */
   const clearEditingPrice = (productId: string, sizeId: string) => {
     const editingKey = getEditingKey(productId, sizeId);
 
@@ -127,33 +147,29 @@ export default function CustomerPricing({ customerId }: Props) {
     });
   };
 
+  /*
+   * Reset the customer price back to the product's
+   * default price.
+   */
   const handleReset = (productId: string, sizeId: string) => {
-    /*
-     * Remove the unsaved local value.
-     */
     clearEditingPrice(productId, sizeId);
 
-    /*
-     * Find the saved customer-specific price.
-     */
     const existing = getCustomerPrice(customerId, productId, sizeId);
 
-    /*
-     * Remove the customer override.
-     *
-     * The product's default price will then be used.
-     */
     if (existing) {
       deleteCustomerPrice(existing.id);
     }
   };
 
+  /*
+   * Save the price when the input loses focus.
+   */
   const handleBlur = (productId: string, sizeId: string, defaultPrice: number) => {
     const editingKey = getEditingKey(productId, sizeId);
 
     /*
-     * Nothing to save if the user never edited
-     * this particular input.
+     * This input was not changed, so there is
+     * nothing to save.
      */
     if (!(editingKey in editingPrices)) {
       return;
@@ -163,14 +179,10 @@ export default function CustomerPricing({ customerId }: Props) {
 
     const customPrice = value?.trim() ? Number.parseFloat(value) : NaN;
 
-    /*
-     * Find the existing saved customer price.
-     */
     const existing = getCustomerPrice(customerId, productId, sizeId);
 
     /*
-     * Empty input means:
-     * use the default product price.
+     * Blank input means use the default price.
      */
     if (!Number.isFinite(customPrice)) {
       if (existing) {
@@ -183,9 +195,8 @@ export default function CustomerPricing({ customerId }: Props) {
     }
 
     /*
-     * If the customer price is exactly the same
-     * as the default price, there is no reason
-     * to store a customer override.
+     * If the customer price matches the default,
+     * don't store an unnecessary override.
      */
     if (customPrice === defaultPrice) {
       if (existing) {
@@ -198,7 +209,7 @@ export default function CustomerPricing({ customerId }: Props) {
     }
 
     /*
-     * Update the existing customer-specific price.
+     * Update an existing customer-specific price.
      */
     if (existing) {
       updateCustomerPrice(existing.id, {
@@ -217,10 +228,11 @@ export default function CustomerPricing({ customerId }: Props) {
     }
 
     /*
-     * Remove the local editing value.
+     * Remove the temporary editing value.
      *
-     * The input will now display the saved value
-     * from the Zustand store.
+     * The input will now get its value from
+     * customerPriceMap, which comes directly from
+     * the Zustand store.
      */
     clearEditingPrice(productId, sizeId);
   };

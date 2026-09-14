@@ -4,6 +4,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { toPrintableProducts } from '@/helper/receiptBuilder';
 import type { PrintableTransaction } from '@/service/escPos';
 import { printerService } from '@/service/printerService';
+import { f } from '@/utils/fontScale';
 
 import { useColorStore } from '../../../store/useColorStore';
 import { useCustomerPricingStore } from '../../../store/useCustomerPricingStore';
@@ -471,14 +472,14 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 26,
+    fontSize: f(26),
     fontWeight: '800',
   },
 
   subtitle: {
     marginTop: 4,
     color: '#707989',
-    fontSize: 14,
+    fontSize: f(14),
   },
 
   card: {
@@ -501,7 +502,7 @@ const styles = StyleSheet.create({
   },
 
   selectedText: {
-    fontSize: 14,
+    fontSize: f(14),
     fontWeight: '700',
   },
 
@@ -548,7 +549,7 @@ const styles = StyleSheet.create({
 
   addItemsButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: f(16),
     fontWeight: '700',
   },
 });

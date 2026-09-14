@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { Customer } from '@/types/localModels';
+import { f } from '@/utils/fontScale';
 
 type Props = {
   customers: Customer[];
@@ -100,14 +101,14 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 22,
+    fontSize: f(22),
     fontWeight: '700',
     color: '#151A23',
   },
 
   customerCount: {
     marginTop: 3,
-    fontSize: 13,
+    fontSize: f(13),
     color: '#687284',
   },
 
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
 
   addButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: f(14),
     fontWeight: '700',
   },
 
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
   },
 
   customerAvatarText: {
-    fontSize: 15,
+    fontSize: f(15),
     fontWeight: '700',
     color: '#4A5568',
   },
@@ -168,7 +169,7 @@ const styles = StyleSheet.create({
   },
 
   customerName: {
-    fontSize: 15,
+    fontSize: f(15),
     fontWeight: '600',
     color: '#151A23',
   },
@@ -179,7 +180,7 @@ const styles = StyleSheet.create({
 
   customerDescription: {
     marginTop: 3,
-    fontSize: 12,
+    fontSize: f(12),
     color: '#687284',
   },
 
@@ -189,14 +190,14 @@ const styles = StyleSheet.create({
   },
 
   emptyTitle: {
-    fontSize: 15,
+    fontSize: f(15),
     fontWeight: '600',
     color: '#151A23',
   },
 
   emptyText: {
     marginTop: 5,
-    fontSize: 13,
+    fontSize: f(13),
     lineHeight: 19,
     textAlign: 'center',
     color: '#687284',

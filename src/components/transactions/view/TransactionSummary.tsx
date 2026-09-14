@@ -1,5 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { f } from '@/utils/fontScale';
+
 type Props = {
   subtotal: number;
   discount: number;
@@ -48,18 +50,18 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    fontSize: 13,
+    fontSize: f(13),
     color: '#707989',
   },
 
   value: {
-    fontSize: 13,
+    fontSize: f(13),
     fontWeight: '600',
     color: '#252B35',
   },
 
   discount: {
-    fontSize: 13,
+    fontSize: f(13),
     fontWeight: '600',
     color: '#D64545',
   },
@@ -77,13 +79,13 @@ const styles = StyleSheet.create({
   },
 
   totalLabel: {
-    fontSize: 13,
+    fontSize: f(13),
     fontWeight: '800',
     color: '#252B35',
   },
 
   total: {
-    fontSize: 20,
+    fontSize: f(20),
     fontWeight: '900',
     color: '#1745D1',
   },

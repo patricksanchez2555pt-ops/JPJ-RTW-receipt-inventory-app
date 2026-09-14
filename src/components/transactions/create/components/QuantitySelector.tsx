@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { f } from '@/utils/fontScale';
+
 type Props = {
   quantity: number;
   onChange: (quantity: number) => void;
@@ -104,7 +106,7 @@ export default function QuantitySelector({ quantity, onChange, addItems }: Props
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 16,
+    fontSize: f(16),
     fontWeight: '700',
     marginBottom: 12,
   },
@@ -128,6 +130,7 @@ const styles = StyleSheet.create({
   },
 
   text: {
+    fontSize: f(14),
     fontWeight: '600',
     color: '#1A1A1A',
   },
@@ -172,7 +175,7 @@ const styles = StyleSheet.create({
     borderColor: '#D9DEE8',
     borderRadius: 6,
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: f(16),
     fontWeight: '600',
     backgroundColor: '#FFFFFF',
   },

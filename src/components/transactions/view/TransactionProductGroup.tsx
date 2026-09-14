@@ -1,5 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { f } from '@/utils/fontScale';
+
 import type { TransactionItem } from '../../../types/localModels';
 
 type Props = {
@@ -59,7 +61,7 @@ const styles = StyleSheet.create({
   },
 
   productName: {
-    fontSize: 14,
+    fontSize: f(14),
     fontWeight: '800',
     color: '#252B35',
   },
@@ -80,13 +82,13 @@ const styles = StyleSheet.create({
 
   colorName: {
     flex: 1,
-    fontSize: 12,
+    fontSize: f(12),
     fontWeight: '700',
     color: '#596273',
   },
 
   colorCount: {
-    fontSize: 11,
+    fontSize: f(11),
     fontWeight: '600',
     color: '#8A93A1',
   },
@@ -107,20 +109,20 @@ const styles = StyleSheet.create({
 
   sizeName: {
     flex: 1,
-    fontSize: 12,
+    fontSize: f(12),
     fontWeight: '600',
     color: '#252B35',
   },
 
   quantity: {
     width: 60,
-    fontSize: 12,
+    fontSize: f(12),
     color: '#5F6978',
   },
 
   unitPrice: {
     width: 75,
-    fontSize: 11,
+    fontSize: f(11),
     color: '#8A93A1',
     textAlign: 'right',
   },
@@ -128,7 +130,7 @@ const styles = StyleSheet.create({
   itemTotal: {
     width: 80,
     marginLeft: 10,
-    fontSize: 12,
+    fontSize: f(12),
     fontWeight: '800',
     color: '#252B35',
     textAlign: 'right',

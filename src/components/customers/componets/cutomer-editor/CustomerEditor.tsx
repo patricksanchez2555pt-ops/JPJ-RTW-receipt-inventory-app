@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { useCustomerStore } from '@/store/useCustomerStore';
+import { f } from '@/utils/fontScale';
 
 import CustomerPricing from './components/CustomerPricing';
 
@@ -136,14 +137,14 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: 17,
+    fontSize: f(17),
     fontWeight: '700',
     color: '#151A23',
   },
 
   sectionSubtitle: {
     marginTop: 4,
-    fontSize: 13,
+    fontSize: f(13),
     color: '#687284',
   },
 
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
 
   saveButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: f(14),
     fontWeight: '700',
   },
 
@@ -167,7 +168,7 @@ const styles = StyleSheet.create({
 
   label: {
     marginBottom: 7,
-    fontSize: 13,
+    fontSize: f(13),
     fontWeight: '600',
     color: '#151A23',
   },
@@ -179,7 +180,7 @@ const styles = StyleSheet.create({
     borderColor: '#D8DDE5',
     borderRadius: 7,
     backgroundColor: '#FFFFFF',
-    fontSize: 15,
+    fontSize: f(15),
     color: '#151A23',
   },
 
@@ -195,14 +196,14 @@ const styles = StyleSheet.create({
   },
 
   emptyEditorTitle: {
-    fontSize: 20,
+    fontSize: f(20),
     fontWeight: '700',
     color: '#151A23',
   },
 
   emptyEditorText: {
     marginTop: 6,
-    fontSize: 14,
+    fontSize: f(14),
     color: '#687284',
   },
 });

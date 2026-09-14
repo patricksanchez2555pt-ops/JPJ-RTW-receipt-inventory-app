@@ -1,5 +1,7 @@
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { f } from '@/utils/fontScale';
+
 import { useTransactionStore } from '../../../store/useTransactionStore';
 import type { Transaction } from '../../../types/localModels';
 import TransactionRow from './TransactionRow';
@@ -79,14 +81,14 @@ export default function TransactionList({
 
 const styles = StyleSheet.create({
   emptyTitle: {
-    fontSize: 18,
+    fontSize: f(18),
     fontWeight: '800',
     color: '#252B35',
   },
 
   emptySubtitle: {
     marginTop: 6,
-    fontSize: 13,
+    fontSize: f(13),
     color: '#7A8494',
   },
   container: {

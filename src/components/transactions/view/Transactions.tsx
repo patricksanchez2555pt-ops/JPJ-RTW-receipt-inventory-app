@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { f } from '@/utils/fontScale';
+
 import { useColorStore } from '../../../store/useColorStore';
 import { useProductStore } from '../../../store/useProductStore';
 import { useSizeStore } from '../../../store/useSizeStore';
@@ -91,14 +93,14 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 26,
+    fontSize: f(26),
     fontWeight: '800',
     color: '#151A23',
   },
 
   subtitle: {
     marginTop: 4,
-    fontSize: 14,
+    fontSize: f(14),
     color: '#707989',
   },
 
@@ -112,7 +114,7 @@ const styles = StyleSheet.create({
   },
 
   countText: {
-    fontSize: 13,
+    fontSize: f(13),
     fontWeight: '700',
     color: '#596273',
   },

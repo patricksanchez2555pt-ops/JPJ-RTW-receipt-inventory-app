@@ -5,6 +5,7 @@ import React from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { seedInitialData } from '@/store/seedInitData';
+import { f } from '@/utils/fontScale';
 
 type SidebarItem = {
   label: string;
@@ -210,13 +211,13 @@ const styles = StyleSheet.create({
 
   logoText: {
     color: '#FFFFFF',
-    fontSize: 24,
+    fontSize: f(24),
     fontWeight: '800',
   },
 
   logoShortText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: f(14),
     fontWeight: '800',
   },
 
@@ -260,7 +261,7 @@ const styles = StyleSheet.create({
   navText: {
     flex: 1,
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: f(16),
     fontWeight: '600',
     lineHeight: 21,
   },
@@ -295,7 +296,7 @@ const styles = StyleSheet.create({
 
   logoutText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: f(16),
     fontWeight: '600',
   },
 
@@ -316,7 +317,7 @@ const styles = StyleSheet.create({
 
   reinitText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: f(16),
     fontWeight: '600',
   },
 });

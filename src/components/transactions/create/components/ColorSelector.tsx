@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { f } from '@/utils/fontScale';
+
 import type { Color } from '../../../../types/localModels.ts';
 
 type Props = {
@@ -36,7 +38,7 @@ export default function ColorSelector({ colors, selectedColor, onSelect }: Props
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 16,
+    fontSize: f(16),
     fontWeight: '700',
     marginBottom: 12,
   },
@@ -73,7 +75,7 @@ const styles = StyleSheet.create({
   },
 
   colorText: {
-    fontSize: 15,
+    fontSize: f(15),
     fontWeight: '600',
   },
 });

@@ -3,6 +3,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { PanGesture } from 'react-native-gesture-handler';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
+import { f } from '@/utils/fontScale';
+
 import type { Size } from '../../../../types/localModels.ts';
 
 type Props = {
@@ -167,7 +169,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 16,
+    fontSize: f(16),
     fontWeight: '700',
   },
 
@@ -185,7 +187,7 @@ const styles = StyleSheet.create({
   },
 
   deselectText: {
-    fontSize: 13,
+    fontSize: f(13),
     fontWeight: '700',
     color: '#D14343',
   },
@@ -216,7 +218,7 @@ const styles = StyleSheet.create({
   },
 
   sizeText: {
-    fontSize: 15,
+    fontSize: f(15),
     fontWeight: '600',
   },
 

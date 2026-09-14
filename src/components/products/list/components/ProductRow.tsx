@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { f } from '@/utils/fontScale';
+
 import type { Color, Product, Size } from '../../../../types/localModels';
 
 type Props = {
@@ -89,14 +91,14 @@ const styles = StyleSheet.create({
   },
 
   name: {
-    fontSize: 15,
+    fontSize: f(15),
     fontWeight: '800',
     color: '#252B35',
   },
 
   price: {
     marginTop: 3,
-    fontSize: 12,
+    fontSize: f(12),
     fontWeight: '700',
     color: '#1745D1',
   },
@@ -108,13 +110,13 @@ const styles = StyleSheet.create({
   },
 
   metaText: {
-    fontSize: 11,
+    fontSize: f(11),
     color: '#8992A1',
   },
 
   dot: {
     marginHorizontal: 5,
-    fontSize: 10,
+    fontSize: f(10),
     color: '#A0A7B2',
   },
 });

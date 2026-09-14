@@ -3,6 +3,8 @@ import { StyleSheet, Text } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
+import { f } from '@/utils/fontScale';
+
 import type { Color } from '../../types/localModels';
 import { COLOR_COLUMN_WIDTH, ROW_HEIGHT } from './constants';
 import { getSubtleBgColor } from './utils';
@@ -86,7 +88,7 @@ const styles = StyleSheet.create({
     borderColor: '#D9DEE8',
   },
   dragIndicator: {
-    fontSize: 16,
+    fontSize: f(16),
     fontWeight: '700',
     color: '#8A93A3',
     marginRight: 6,
@@ -101,7 +103,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0,0,0,0.1)',
   },
   headerText: {
-    fontSize: 15,
+    fontSize: f(15),
     fontWeight: '700',
     color: '#06132F',
   },

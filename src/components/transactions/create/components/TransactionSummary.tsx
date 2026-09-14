@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { f } from '@/utils/fontScale';
 import { formatNumber } from '@/utils/formatNumber';
 
 import type { Customer } from '../../../../types/localModels';
@@ -277,7 +278,7 @@ const styles = StyleSheet.create({
 
   collapsedTotal: {
     marginTop: 2,
-    fontSize: 14,
+    fontSize: f(14),
     fontWeight: '700',
     color: '#1745D1',
   },
@@ -289,7 +290,7 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    fontSize: 14,
+    fontSize: f(14),
     color: '#4D5665',
     marginBottom: 7,
   },
@@ -322,7 +323,7 @@ const styles = StyleSheet.create({
   },
 
   clearButtonText: {
-    fontSize: 22,
+    fontSize: f(22),
     color: '#7B8493',
   },
 
@@ -353,7 +354,7 @@ const styles = StyleSheet.create({
   },
 
   suggestionName: {
-    fontSize: 14,
+    fontSize: f(14),
     fontWeight: '600',
     color: '#151A23',
   },
@@ -370,7 +371,7 @@ const styles = StyleSheet.create({
   },
 
   selectedCustomerText: {
-    fontSize: 13,
+    fontSize: f(13),
     fontWeight: '600',
     color: '#1745D1',
   },
@@ -383,7 +384,7 @@ const styles = StyleSheet.create({
   },
 
   amount: {
-    fontSize: 16,
+    fontSize: f(16),
     fontWeight: '600',
     color: '#151A23',
   },
@@ -406,7 +407,7 @@ const styles = StyleSheet.create({
   },
 
   lessButtonText: {
-    fontSize: 13,
+    fontSize: f(13),
     fontWeight: '700',
     color: '#1745D1',
   },
@@ -433,13 +434,13 @@ const styles = StyleSheet.create({
   },
 
   totalLabel: {
-    fontSize: 18,
+    fontSize: f(18),
     fontWeight: '700',
     color: '#151A23',
   },
 
   total: {
-    fontSize: 24,
+    fontSize: f(24),
     fontWeight: '800',
     color: '#151A23',
   },
@@ -468,7 +469,7 @@ const styles = StyleSheet.create({
 
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: f(16),
     fontWeight: '700',
   },
 

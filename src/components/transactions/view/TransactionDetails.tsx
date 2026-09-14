@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { f } from '@/utils/fontScale';
+
 import type { Transaction, TransactionItem } from '../../../types/localModels';
 import TransactionProductGroup from './TransactionProductGroup';
 import TransactionSummary from './TransactionSummary';
@@ -172,14 +174,14 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 18,
+    fontSize: f(18),
     fontWeight: '800',
     color: '#151A23',
   },
 
   id: {
     marginTop: 3,
-    fontSize: 12,
+    fontSize: f(12),
     fontWeight: '700',
     color: '#1745D1',
   },
@@ -195,7 +197,7 @@ const styles = StyleSheet.create({
 
   closeText: {
     marginTop: -3,
-    fontSize: 25,
+    fontSize: f(25),
     color: '#687284',
   },
 
@@ -208,7 +210,7 @@ const styles = StyleSheet.create({
   },
 
   customerLabel: {
-    fontSize: 10,
+    fontSize: f(10),
     fontWeight: '800',
     color: '#8A93A1',
     letterSpacing: 0.5,
@@ -216,14 +218,14 @@ const styles = StyleSheet.create({
 
   customerName: {
     marginTop: 5,
-    fontSize: 15,
+    fontSize: f(15),
     fontWeight: '800',
     color: '#252B35',
   },
 
   date: {
     marginTop: 4,
-    fontSize: 12,
+    fontSize: f(12),
     color: '#7A8494',
   },
 
@@ -233,14 +235,14 @@ const styles = StyleSheet.create({
   },
 
   itemsTitle: {
-    fontSize: 16,
+    fontSize: f(16),
     fontWeight: '800',
     color: '#252B35',
   },
 
   itemsSubtitle: {
     marginTop: 3,
-    fontSize: 12,
+    fontSize: f(12),
     color: '#7A8494',
   },
 

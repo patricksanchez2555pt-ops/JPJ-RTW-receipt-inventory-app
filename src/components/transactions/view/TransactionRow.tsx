@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { f } from '@/utils/fontScale';
+
 import type { Transaction } from '../../../types/localModels';
 
 type Props = {
@@ -125,25 +127,25 @@ const styles = StyleSheet.create({
   },
 
   transactionId: {
-    fontSize: 13,
+    fontSize: f(13),
     fontWeight: '700',
     color: '#1745D1',
   },
 
   dateText: {
-    fontSize: 13,
+    fontSize: f(13),
     fontWeight: '600',
     color: '#252B35',
   },
 
   timeText: {
     marginTop: 3,
-    fontSize: 11,
+    fontSize: f(11),
     color: '#8A93A1',
   },
 
   customerText: {
-    fontSize: 13,
+    fontSize: f(13),
     fontWeight: '600',
     color: '#252B35',
   },
@@ -164,13 +166,13 @@ const styles = StyleSheet.create({
   },
 
   itemBadgeText: {
-    fontSize: 12,
+    fontSize: f(12),
     fontWeight: '800',
     color: '#1745D1',
   },
 
   totalText: {
-    fontSize: 14,
+    fontSize: f(14),
     fontWeight: '800',
     color: '#151A23',
   },
@@ -186,7 +188,7 @@ const styles = StyleSheet.create({
   },
 
   deleteText: {
-    fontSize: 12,
+    fontSize: f(12),
     fontWeight: '700',
     color: '#D64545',
   },

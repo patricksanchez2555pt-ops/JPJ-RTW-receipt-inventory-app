@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { f } from '@/utils/fontScale';
+
 import type { Color, Product, Size } from '../../../types/localModels';
 import ProductRow from './components/ProductRow';
 
@@ -99,7 +101,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 20,
+    fontSize: f(20),
     fontWeight: '800',
     color: '#151A23',
   },
@@ -112,7 +114,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     backgroundColor: '#F0F3F8',
     color: '#687284',
-    fontSize: 12,
+    fontSize: f(12),
     fontWeight: '700',
   },
 
@@ -129,7 +131,7 @@ const styles = StyleSheet.create({
 
   createButtonText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: f(14),
     fontWeight: '700',
   },
 
@@ -148,7 +150,7 @@ const styles = StyleSheet.create({
 
   emptyTitle: {
     marginTop: 12,
-    fontSize: 18,
+    fontSize: f(18),
     fontWeight: '800',
     color: '#151A23',
   },
@@ -157,7 +159,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
     textAlign: 'center',
     color: '#707989',
-    fontSize: 14,
+    fontSize: f(14),
   },
 
   emptyButton: {

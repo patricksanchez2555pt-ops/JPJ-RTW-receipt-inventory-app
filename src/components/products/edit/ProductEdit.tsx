@@ -2,6 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { f } from '@/utils/fontScale';
+
 import { useColorStore } from '../../../store/useColorStore';
 import { useProductStore } from '../../../store/useProductStore';
 import { useSizeStore } from '../../../store/useSizeStore';
@@ -82,7 +84,7 @@ export default function ProductEdit({ product, onDeleted }: Props) {
     const name = productName.trim();
 
     if (!name) {
-      Alert.alert('Invalid Name', 'Product name cannot be empty.');
+      Alert.alert('Invalid Product', 'Product name cannot be empty.');
       return;
     }
 
@@ -127,7 +129,6 @@ export default function ProductEdit({ product, onDeleted }: Props) {
       name: 'New Color',
       hexValue: '#CCCCCC',
     });
-
     setColorNames((current) => ({
       ...current,
       [id]: 'New Color',
@@ -617,14 +618,14 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 22,
+    fontSize: f(22),
     fontWeight: '800',
     color: '#151A23',
   },
 
   subtitle: {
     marginTop: 4,
-    fontSize: 14,
+    fontSize: f(14),
     color: '#707989',
   },
 
@@ -670,7 +671,7 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: 17,
+    fontSize: f(17),
     fontWeight: '800',
     color: '#151A23',
   },
@@ -678,12 +679,12 @@ const styles = StyleSheet.create({
   sectionSubtitle: {
     marginTop: 3,
     color: '#707989',
-    fontSize: 13,
+    fontSize: f(13),
   },
 
   label: {
     marginBottom: 7,
-    fontSize: 14,
+    fontSize: f(14),
     color: '#4D5665',
   },
 
@@ -825,7 +826,7 @@ const styles = StyleSheet.create({
 
   currency: {
     marginLeft: 8,
-    fontSize: 15,
+    fontSize: f(15),
     color: '#707989',
   },
 
@@ -872,7 +873,7 @@ const styles = StyleSheet.create({
   unsavedText: {
     marginTop: 6,
     marginLeft: 2,
-    fontSize: 11,
+    fontSize: f(11),
     fontWeight: '600',
     color: '#B7791F',
   },

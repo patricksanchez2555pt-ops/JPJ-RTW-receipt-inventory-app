@@ -6,6 +6,10 @@ import { formatNumber } from '@/utils/formatNumber';
 import type { AddedTransactionItem } from '../../types';
 import { computeGroups, getSortedSizeGroup } from './helpers';
 
+// Global scale for fonts in this panel. Increase to make text larger.
+const FONT_SCALE = 1.25;
+const f = (n: number) => Math.round(n * FONT_SCALE);
+
 type Props = {
   items: AddedTransactionItem[];
   highlightedItemIds?: string[];
@@ -491,7 +495,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 20,
+    fontSize: f(20),
     fontWeight: '700',
   },
 
@@ -520,7 +524,7 @@ const styles = StyleSheet.create({
   },
 
   modeButtonText: {
-    fontSize: 12,
+    fontSize: f(12),
     fontWeight: '600',
     color: '#687284',
   },
@@ -544,7 +548,7 @@ const styles = StyleSheet.create({
   },
 
   showColorsButtonText: {
-    fontSize: 12,
+    fontSize: f(12),
     fontWeight: '600',
     color: '#687284',
   },
@@ -610,14 +614,14 @@ const styles = StyleSheet.create({
   },
 
   productName: {
-    fontSize: 15,
+    fontSize: f(15),
     fontWeight: '700',
   },
 
   productSubtitle: {
     marginTop: 3,
     color: '#687284',
-    fontSize: 12,
+    fontSize: f(12),
   },
 
   colorGroup: {
@@ -651,7 +655,7 @@ const styles = StyleSheet.create({
   },
 
   sizeGroupName: {
-    fontSize: 17,
+    fontSize: f(17),
     fontWeight: '700',
     color: '#20242B',
   },
@@ -689,14 +693,14 @@ const styles = StyleSheet.create({
   },
 
   sizeHeaderLabel: {
-    fontSize: 12,
+    fontSize: f(12),
     color: '#687284',
     fontWeight: '600',
     marginBottom: 3,
   },
 
   sizeHeaderValue: {
-    fontSize: 17,
+    fontSize: f(17),
     color: '#20242B',
     fontWeight: '700',
   },
@@ -710,7 +714,7 @@ const styles = StyleSheet.create({
   },
 
   colorName: {
-    fontSize: 14,
+    fontSize: f(14),
     fontWeight: '700',
   },
 
@@ -739,14 +743,14 @@ const styles = StyleSheet.create({
   },
 
   colorHeaderLabel: {
-    fontSize: 11,
+    fontSize: f(11),
     color: '#687284',
     fontWeight: '600',
     marginBottom: 3,
   },
 
   colorHeaderValue: {
-    fontSize: 15,
+    fontSize: f(15),
     fontWeight: '700',
     color: '#20242B',
   },
@@ -758,21 +762,21 @@ const styles = StyleSheet.create({
   },
 
   productHeaderTotalLabel: {
-    fontSize: 11,
+    fontSize: f(11),
     color: '#687284',
     fontWeight: '600',
   },
 
   productHeaderTotalValue: {
     marginTop: 2,
-    fontSize: 16,
+    fontSize: f(16),
     fontWeight: '700',
   },
 
   readOnlyLabel: {
     marginTop: 3,
     color: '#687284',
-    fontSize: 12,
+    fontSize: f(12),
   },
 
   readOnlyBadge: {
@@ -783,7 +787,7 @@ const styles = StyleSheet.create({
   },
 
   readOnlyBadgeText: {
-    fontSize: 11,
+    fontSize: f(11),
     fontWeight: '600',
     color: '#687284',
   },
@@ -794,7 +798,7 @@ const styles = StyleSheet.create({
   },
 
   sizeName: {
-    fontSize: 15,
+    fontSize: f(15),
     fontWeight: '600',
   },
 
@@ -821,7 +825,7 @@ const styles = StyleSheet.create({
   },
 
   unitPrice: {
-    fontSize: 14,
+    fontSize: f(14),
     fontWeight: '600',
     color: '#4F5868',
   },
@@ -833,7 +837,7 @@ const styles = StyleSheet.create({
   },
 
   rowTotal: {
-    fontSize: 14,
+    fontSize: f(14),
     fontWeight: '700',
     color: '#20242B',
   },
@@ -867,10 +871,11 @@ const styles = StyleSheet.create({
 
   quantityText: {
     fontWeight: '600',
+    fontSize: f(14),
   },
 
   buttonText: {
-    fontSize: 20,
+    fontSize: f(20),
   },
 
   deleteButton: {
@@ -883,7 +888,7 @@ const styles = StyleSheet.create({
 
   deleteText: {
     color: '#E53935',
-    fontSize: 24,
+    fontSize: f(24),
   },
 
   deleteGroupButton: {
@@ -897,7 +902,7 @@ const styles = StyleSheet.create({
 
   deleteGroupText: {
     color: '#E53935',
-    fontSize: 12,
+    fontSize: f(12),
     fontWeight: '700',
   },
 

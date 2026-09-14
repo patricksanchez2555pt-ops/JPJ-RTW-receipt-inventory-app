@@ -2,6 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { f } from '@/utils/fontScale';
+
 import { useProductStore } from '../../../store/useProductStore';
 import type { Product } from '../../../types/localModels';
 
@@ -136,14 +138,14 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 22,
+    fontSize: f(22),
     fontWeight: '800',
     color: '#151A23',
   },
 
   subtitle: {
     marginTop: 4,
-    fontSize: 14,
+    fontSize: f(14),
     color: '#707989',
   },
 
@@ -153,7 +155,7 @@ const styles = StyleSheet.create({
 
   label: {
     marginBottom: 8,
-    fontSize: 14,
+    fontSize: f(14),
     fontWeight: '700',
     color: '#4D5665',
   },
@@ -164,14 +166,14 @@ const styles = StyleSheet.create({
     borderColor: '#D8DDE5',
     borderRadius: 8,
     paddingHorizontal: 13,
-    fontSize: 15,
+    fontSize: f(15),
     color: '#151A23',
     backgroundColor: '#FFFFFF',
   },
 
   helpText: {
     marginTop: 8,
-    fontSize: 13,
+    fontSize: f(13),
     color: '#8A93A2',
   },
 
@@ -210,6 +212,7 @@ const styles = StyleSheet.create({
 
   createButtonText: {
     color: '#FFFFFF',
+    fontSize: f(14),
     fontWeight: '700',
   },
 

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { f } from '@/utils/fontScale';
+
 import type { Product } from '../../../../types/localModels.ts';
 
 type Props = {
@@ -74,7 +76,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 16,
+    fontSize: f(16),
     fontWeight: '700',
     color: '#1A1A1A',
     marginBottom: 12,
@@ -104,7 +106,7 @@ const styles = StyleSheet.create({
   },
 
   selectText: {
-    fontSize: 15,
+    fontSize: f(15),
     color: '#1A1A1A',
   },
 
@@ -113,7 +115,7 @@ const styles = StyleSheet.create({
   },
 
   arrow: {
-    fontSize: 12,
+    fontSize: f(12),
     color: '#687284',
   },
 
@@ -166,7 +168,7 @@ const styles = StyleSheet.create({
   },
 
   optionText: {
-    fontSize: 15,
+    fontSize: f(15),
     color: '#1A1A1A',
   },
 
@@ -176,7 +178,7 @@ const styles = StyleSheet.create({
   },
 
   check: {
-    fontSize: 18,
+    fontSize: f(18),
     fontWeight: '700',
     color: '#1745D1',
   },

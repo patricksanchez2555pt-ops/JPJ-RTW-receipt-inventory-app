@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useCustomerPricingStore } from '@/store/useCustomerPricingStore';
 import { useProductStore } from '@/store/useProductStore';
 import { useSizeStore } from '@/store/useSizeStore';
+import { f } from '@/utils/fontScale';
 
 type Props = {
   customerId: string;
@@ -338,15 +339,13 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: 17,
+    fontSize: f(17),
     fontWeight: '700',
     color: '#151A23',
   },
-
   sectionSubtitle: {
     marginTop: 4,
-    fontSize: 13,
-    color: '#687284',
+    fontSize: f(13),
   },
 
   productSection: {
@@ -358,8 +357,7 @@ const styles = StyleSheet.create({
 
   productTitle: {
     marginBottom: 12,
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: f(16),
     color: '#151A23',
   },
 
@@ -381,8 +379,7 @@ const styles = StyleSheet.create({
   },
 
   headerText: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: f(12),
     color: '#687284',
   },
 
@@ -414,14 +411,13 @@ const styles = StyleSheet.create({
 
   sizeText: {
     flex: 1,
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: f(14),
     color: '#151A23',
   },
 
   defaultPrice: {
     width: 130,
-    fontSize: 14,
+    fontSize: f(14),
     color: '#687284',
   },
 
@@ -438,27 +434,25 @@ const styles = StyleSheet.create({
 
   currency: {
     marginRight: 4,
-    fontSize: 14,
+    fontSize: f(14),
     color: '#687284',
   },
 
   priceInput: {
     flex: 1,
     height: 38,
-    fontSize: 14,
+    fontSize: f(14),
     color: '#151A23',
   },
 
   resetText: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: f(13),
     color: '#1745D1',
   },
 
   noSizes: {
     paddingVertical: 8,
-    fontSize: 13,
-    color: '#687284',
+    fontSize: f(13),
   },
 
   empty: {
@@ -467,14 +461,12 @@ const styles = StyleSheet.create({
   },
 
   emptyTitle: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: f(15),
     color: '#151A23',
   },
 
   emptyText: {
     marginTop: 5,
-    fontSize: 13,
-    color: '#687284',
+    fontSize: f(13),
   },
 });

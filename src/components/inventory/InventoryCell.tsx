@@ -1,6 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { f } from '@/utils/fontScale';
+
 import { getInventoryKey, useInventoryStore } from '../../store/useInventoryStore';
 import { COLOR_COLUMN_WIDTH, ROW_HEIGHT } from './constants';
 import { getSubtleBgColor } from './utils';
@@ -72,7 +74,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   quantityButtonText: {
-    fontSize: 20,
+    fontSize: f(20),
     fontWeight: '600',
     color: '#06132F',
   },
@@ -83,7 +85,7 @@ const styles = StyleSheet.create({
     borderColor: '#CBD2DE',
     borderRadius: 6,
     textAlign: 'center',
-    fontSize: 15,
+    fontSize: f(15),
     fontWeight: '600',
     color: '#06132F',
     backgroundColor: '#FFFFFF',

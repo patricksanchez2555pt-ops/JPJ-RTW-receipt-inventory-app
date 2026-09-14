@@ -4,6 +4,8 @@ import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useShallow } from 'zustand/react/shallow';
 
+import { f } from '@/utils/fontScale';
+
 import { useColorStore } from '../../store/useColorStore';
 import { getInventoryKey } from '../../store/useInventoryStore';
 import { useProductStore } from '../../store/useProductStore';
@@ -268,14 +270,14 @@ const styles = StyleSheet.create({
   },
 
   productName: {
-    fontSize: 22,
+    fontSize: f(22),
     fontWeight: '700',
     color: '#06132F',
   },
 
   productInfo: {
     marginTop: 3,
-    fontSize: 13,
+    fontSize: f(13),
     color: '#64748B',
   },
 
@@ -354,13 +356,13 @@ const styles = StyleSheet.create({
   },
 
   headerText: {
-    fontSize: 15,
+    fontSize: f(15),
     fontWeight: '700',
     color: '#06132F',
   },
 
   sizeText: {
-    fontSize: 16,
+    fontSize: f(16),
     fontWeight: '600',
     color: '#06132F',
   },
@@ -376,7 +378,7 @@ const styles = StyleSheet.create({
 
   saveButtonText: {
     color: '#FFFFFF',
-    fontSize: 15,
+    fontSize: f(15),
     fontWeight: '700',
   },
 
@@ -385,7 +387,7 @@ const styles = StyleSheet.create({
   },
 
   errorText: {
-    fontSize: 16,
+    fontSize: f(16),
     color: '#DC2626',
     textAlign: 'center',
   },

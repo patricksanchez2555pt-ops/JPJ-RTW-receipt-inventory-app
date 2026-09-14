@@ -2,6 +2,7 @@ import { memo, useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useCustomerStore } from '@/store/useCustomerStore';
+import { f } from '@/utils/fontScale';
 
 import CustomerList from './componets/CustomerList';
 import CustomerEditor from './componets/cutomer-editor/CustomerEditor';
@@ -147,14 +148,14 @@ const styles = StyleSheet.create({
   },
 
   editorTitle: {
-    fontSize: 22,
+    fontSize: f(22),
     fontWeight: '700',
     color: '#151A23',
   },
 
   editorSubtitle: {
     marginTop: 4,
-    fontSize: 13,
+    fontSize: f(13),
     color: '#687284',
   },
 
@@ -169,7 +170,7 @@ const styles = StyleSheet.create({
 
   deleteButtonText: {
     color: '#B42318',
-    fontSize: 14,
+    fontSize: f(14),
     fontWeight: '600',
   },
 });

@@ -4,7 +4,7 @@ import { router, usePathname } from 'expo-router';
 import React from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { seedInitialInventoryData } from '@/store/seedInventory';
+import { seedInitialData } from '@/store/seedInitData';
 
 type SidebarItem = {
   label: string;
@@ -67,7 +67,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         text: 'Reinitialize',
         style: 'destructive',
         onPress: () => {
-          seedInitialInventoryData();
+          seedInitialData();
           Alert.alert('Done', 'Inventory data reinitialized.');
         },
       },

@@ -1,4 +1,6 @@
 import { useColorStore } from '@/store/useColorStore';
+import { useCustomerPricingStore } from '@/store/useCustomerPricingStore';
+import { useCustomerStore } from '@/store/useCustomerStore';
 import { useProductStore } from '@/store/useProductStore';
 import { useSizeStore } from '@/store/useSizeStore';
 import type { Color, Product, Size } from '@/types/localModels';
@@ -23,16 +25,46 @@ const CONFIG = {
         hexValue: '#000000',
       },
       {
-        id: 'jogging-pants-blue',
+        id: 'jogging-pants-gray',
         productId: 'jogging-pants',
-        name: 'Blue',
+        name: 'Gray',
+        hexValue: 'rgb(92, 91, 91)',
+      },
+      {
+        id: 'jogging-pants-light-blue',
+        productId: 'jogging-pants',
+        name: 'Light Blue',
+        hexValue: '#64c8ea',
+      },
+      {
+        id: 'jogging-pants-royal-blue',
+        productId: 'jogging-pants',
+        name: 'Royal Blue',
         hexValue: '#0000FF',
+      },
+      {
+        id: 'jogging-pants-navy-blue',
+        productId: 'jogging-pants',
+        name: 'Navy Blue',
+        hexValue: '#000080',
+      },
+      {
+        id: 'jogging-pants-orange',
+        productId: 'jogging-pants',
+        name: 'Orange',
+        hexValue: '#FA5000',
       },
       {
         id: 'jogging-pants-red',
         productId: 'jogging-pants',
         name: 'Red',
         hexValue: '#FF0000',
+      },
+      {
+        id: 'jogging-pants-maroon',
+        productId: 'jogging-pants',
+        name: 'Maroon',
+        hexValue: '#680000',
       },
       {
         id: 'jogging-pants-white',
@@ -59,9 +91,9 @@ const CONFIG = {
         hexValue: '#FFC0CB',
       },
       {
-        id: 'jogging-pants-purple',
+        id: 'jogging-pants-violet',
         productId: 'jogging-pants',
-        name: 'Purple',
+        name: 'Violet',
         hexValue: '#800080',
       },
     ] satisfies Color[],
@@ -183,7 +215,6 @@ const CONFIG = {
     ] satisfies Color[],
 
     SIZES: [
-      // Kids
       {
         id: 'leotard-long-s',
         productId: 'leotard-long',
@@ -220,8 +251,6 @@ const CONFIG = {
         name: 'A',
         price: 115,
       },
-
-      // Adult
       {
         id: 'leotard-long-adult-s',
         productId: 'leotard-long',
@@ -284,7 +313,6 @@ const CONFIG = {
     ] satisfies Color[],
 
     SIZES: [
-      // Kids
       {
         id: 'leotard-short-s',
         productId: 'leotard-short',
@@ -321,8 +349,6 @@ const CONFIG = {
         name: 'A',
         price: 105,
       },
-
-      // Adult
       {
         id: 'leotard-short-adult-s',
         productId: 'leotard-short',
@@ -459,7 +485,6 @@ const CONFIG = {
     ] satisfies Color[],
 
     SIZES: [
-      // Kids
       {
         id: 'tights-sakbet-s',
         productId: 'tights-sakbet',
@@ -496,8 +521,6 @@ const CONFIG = {
         name: 'A',
         price: 90,
       },
-
-      // Adult
       {
         id: 'tights-sakbet-adult-s',
         productId: 'tights-sakbet',
@@ -560,7 +583,6 @@ const CONFIG = {
     ] satisfies Color[],
 
     SIZES: [
-      // Kids
       {
         id: 'leotard-set-long-s',
         productId: 'leotard-set-long',
@@ -597,8 +619,6 @@ const CONFIG = {
         name: 'A',
         price: 205,
       },
-
-      // Adult
       {
         id: 'leotard-set-long-adult-s',
         productId: 'leotard-set-long',
@@ -661,7 +681,6 @@ const CONFIG = {
     ] satisfies Color[],
 
     SIZES: [
-      // Kids
       {
         id: 'leotard-set-short-s',
         productId: 'leotard-set-short',
@@ -698,8 +717,6 @@ const CONFIG = {
         name: 'A',
         price: 195,
       },
-
-      // Adult
       {
         id: 'leotard-set-short-adult-s',
         productId: 'leotard-set-short',
@@ -745,17 +762,205 @@ const COLORS: Color[] = Object.values(CONFIG).flatMap(({ COLORS }) => COLORS);
 const SIZES: Size[] = Object.values(CONFIG).flatMap(({ SIZES }) => SIZES);
 
 // ==========================================
+// CUSTOMER DATA
+// ==========================================
+
+const MARIVIC_AND_MARICAR_DATA = [
+  // Jogging - Kids
+  // { productId: 'jogging-pants', sizeId: 'jogging-pants-4', price: 75 },
+  // { productId: 'jogging-pants', sizeId: 'jogging-pants-6', price: 80 },
+  // { productId: 'jogging-pants', sizeId: 'jogging-pants-8', price: 85 },
+  // { productId: 'jogging-pants', sizeId: 'jogging-pants-10', price: 90 },
+  // { productId: 'jogging-pants', sizeId: 'jogging-pants-12', price: 95 },
+  // { productId: 'jogging-pants', sizeId: 'jogging-pants-14', price: 100 },
+  // { productId: 'jogging-pants', sizeId: 'jogging-pants-16', price: 105 },
+  // { productId: 'jogging-pants', sizeId: 'jogging-pants-18', price: 110 },
+  // { productId: 'jogging-pants', sizeId: 'jogging-pants-20', price: 115 },
+
+  // Sakbit kids
+  { productId: 'tights-sakbet', sizeId: 'tights-sakbet-s', price: 60 },
+  { productId: 'tights-sakbet', sizeId: 'tights-sakbet-m', price: 65 },
+  { productId: 'tights-sakbet', sizeId: 'tights-sakbet-l', price: 70 },
+  { productId: 'tights-sakbet', sizeId: 'tights-sakbet-xl', price: 75 },
+  { productId: 'tights-sakbet', sizeId: 'tights-sakbet-2x', price: 80 },
+  { productId: 'tights-sakbet', sizeId: 'tights-sakbet-a', price: 85 },
+
+  // Sakbit adult
+  { productId: 'tights-sakbet', sizeId: 'tights-sakbet-adult-s', price: 85 },
+  { productId: 'tights-sakbet', sizeId: 'tights-sakbet-adult-m', price: 90 },
+  { productId: 'tights-sakbet', sizeId: 'tights-sakbet-adult-l', price: 95 },
+  { productId: 'tights-sakbet', sizeId: 'tights-sakbet-adult-xl', price: 100 },
+  { productId: 'tights-sakbet', sizeId: 'tights-sakbet-adult-2x', price: 105 },
+
+  // L/S Kids
+  { productId: 'leotard-long', sizeId: 'leotard-long-s', price: 80 },
+  { productId: 'leotard-long', sizeId: 'leotard-long-m', price: 85 },
+  { productId: 'leotard-long', sizeId: 'leotard-long-l', price: 90 },
+  { productId: 'leotard-long', sizeId: 'leotard-long-xl', price: 95 },
+  { productId: 'leotard-long', sizeId: 'leotard-long-2x', price: 100 },
+  { productId: 'leotard-long', sizeId: 'leotard-long-a', price: 110 },
+
+  // L/S Adult
+  { productId: 'leotard-long', sizeId: 'leotard-long-adult-s', price: 120 },
+  { productId: 'leotard-long', sizeId: 'leotard-long-adult-m', price: 130 },
+  { productId: 'leotard-long', sizeId: 'leotard-long-adult-l', price: 140 },
+  { productId: 'leotard-long', sizeId: 'leotard-long-adult-2x', price: 150 },
+  { productId: 'leotard-long', sizeId: 'leotard-long-adult-a', price: 160 },
+
+  // L/S Kids Set
+  { productId: 'leotard-set-long', sizeId: 'leotard-set-long-s', price: 140 },
+  { productId: 'leotard-set-long', sizeId: 'leotard-set-long-m', price: 150 },
+  { productId: 'leotard-set-long', sizeId: 'leotard-set-long-l', price: 160 },
+  { productId: 'leotard-set-long', sizeId: 'leotard-set-long-xl', price: 170 },
+  { productId: 'leotard-set-long', sizeId: 'leotard-set-long-2x', price: 180 },
+  { productId: 'leotard-set-long', sizeId: 'leotard-set-long-a', price: 195 },
+
+  // L/S Adult Set
+  { productId: 'leotard-set-long', sizeId: 'leotard-set-long-adult-s', price: 205 },
+  { productId: 'leotard-set-long', sizeId: 'leotard-set-long-adult-m', price: 220 },
+  { productId: 'leotard-set-long', sizeId: 'leotard-set-long-adult-l', price: 235 },
+  { productId: 'leotard-set-long', sizeId: 'leotard-set-long-adult-2x', price: 250 },
+  { productId: 'leotard-set-long', sizeId: 'leotard-set-long-adult-a', price: 265 },
+
+  // Short Sleeve Kids
+  { productId: 'leotard-short', sizeId: 'leotard-short-s', price: 70 },
+  { productId: 'leotard-short', sizeId: 'leotard-short-m', price: 75 },
+  { productId: 'leotard-short', sizeId: 'leotard-short-l', price: 80 },
+  { productId: 'leotard-short', sizeId: 'leotard-short-xl', price: 85 },
+  { productId: 'leotard-short', sizeId: 'leotard-short-2x', price: 90 },
+  { productId: 'leotard-short', sizeId: 'leotard-short-a', price: 100 },
+
+  // Short Sleeve Adult
+  { productId: 'leotard-short', sizeId: 'leotard-short-adult-s', price: 110 },
+  { productId: 'leotard-short', sizeId: 'leotard-short-adult-m', price: 120 },
+  { productId: 'leotard-short', sizeId: 'leotard-short-adult-l', price: 130 },
+  { productId: 'leotard-short', sizeId: 'leotard-short-adult-xl', price: 140 },
+  { productId: 'leotard-short', sizeId: 'leotard-short-adult-2x', price: 150 },
+
+  // S/S Kids Set
+  { productId: 'leotard-set-short', sizeId: 'leotard-set-short-s', price: 130 },
+  { productId: 'leotard-set-short', sizeId: 'leotard-set-short-m', price: 140 },
+  { productId: 'leotard-set-short', sizeId: 'leotard-set-short-l', price: 150 },
+  { productId: 'leotard-set-short', sizeId: 'leotard-set-short-xl', price: 160 },
+  { productId: 'leotard-set-short', sizeId: 'leotard-set-short-2x', price: 170 },
+  { productId: 'leotard-set-short', sizeId: 'leotard-set-short-a', price: 185 },
+
+  // S/S Adult Set
+  { productId: 'leotard-set-short', sizeId: 'leotard-set-short-adult-s', price: 195 },
+  { productId: 'leotard-set-short', sizeId: 'leotard-set-short-adult-m', price: 210 },
+  { productId: 'leotard-set-short', sizeId: 'leotard-set-short-adult-l', price: 225 },
+  { productId: 'leotard-set-short', sizeId: 'leotard-set-short-adult-xl', price: 240 },
+  { productId: 'leotard-set-short', sizeId: 'leotard-set-short-adult-2x', price: 255 },
+];
+
+const RIZZA_AND_JESSICA_DATA = [
+  // Jogging - Kids
+  { productId: 'jogging-pants', sizeId: 'jogging-pants-4', price: 70 },
+  { productId: 'jogging-pants', sizeId: 'jogging-pants-6', price: 75 },
+  { productId: 'jogging-pants', sizeId: 'jogging-pants-8', price: 80 },
+  { productId: 'jogging-pants', sizeId: 'jogging-pants-10', price: 85 },
+  { productId: 'jogging-pants', sizeId: 'jogging-pants-12', price: 90 },
+  { productId: 'jogging-pants', sizeId: 'jogging-pants-14', price: 95 },
+  { productId: 'jogging-pants', sizeId: 'jogging-pants-16', price: 100 },
+  { productId: 'jogging-pants', sizeId: 'jogging-pants-18', price: 105 },
+  { productId: 'jogging-pants', sizeId: 'jogging-pants-20', price: 110 },
+
+  // Jogging - Adult
+  { productId: 'jogging-pants', sizeId: 'jogging-pants-s', price: 120 },
+  { productId: 'jogging-pants', sizeId: 'jogging-pants-m', price: 125 },
+  { productId: 'jogging-pants', sizeId: 'jogging-pants-l', price: 130 },
+  { productId: 'jogging-pants', sizeId: 'jogging-pants-xl', price: 135 },
+  { productId: 'jogging-pants', sizeId: 'jogging-pants-2x', price: 140 },
+];
+
+const CUSTOMER_DATA = {
+  Maricar: MARIVIC_AND_MARICAR_DATA,
+  Marivic: MARIVIC_AND_MARICAR_DATA,
+  Riza: RIZZA_AND_JESSICA_DATA,
+  Jessica: RIZZA_AND_JESSICA_DATA,
+
+  Jay: [
+    // Jogging - Kids
+    { productId: 'jogging-pants', sizeId: 'jogging-pants-4', price: 73 },
+    { productId: 'jogging-pants', sizeId: 'jogging-pants-6', price: 78 },
+    { productId: 'jogging-pants', sizeId: 'jogging-pants-8', price: 83 },
+    { productId: 'jogging-pants', sizeId: 'jogging-pants-10', price: 88 },
+    { productId: 'jogging-pants', sizeId: 'jogging-pants-12', price: 93 },
+    { productId: 'jogging-pants', sizeId: 'jogging-pants-14', price: 98 },
+    { productId: 'jogging-pants', sizeId: 'jogging-pants-16', price: 103 },
+    { productId: 'jogging-pants', sizeId: 'jogging-pants-18', price: 108 },
+    { productId: 'jogging-pants', sizeId: 'jogging-pants-20', price: 113 },
+
+    // Jogging - Adult
+    { productId: 'jogging-pants', sizeId: 'jogging-pants-s', price: 123 },
+    { productId: 'jogging-pants', sizeId: 'jogging-pants-m', price: 128 },
+    { productId: 'jogging-pants', sizeId: 'jogging-pants-l', price: 133 },
+    { productId: 'jogging-pants', sizeId: 'jogging-pants-xl', price: 138 },
+    { productId: 'jogging-pants', sizeId: 'jogging-pants-2x', price: 148 },
+  ],
+} as const;
+
+// ==========================================
+// SEED CUSTOMERS
+// ==========================================
+
+function seedCustomers() {
+  const customerStore = useCustomerStore.getState();
+  const customerPricingStore = useCustomerPricingStore.getState();
+
+  Object.entries(CUSTOMER_DATA).forEach(([customerName, prices]) => {
+    // Find an existing customer first so running the seed
+    // multiple times does not create duplicate customers.
+    let customer = customerStore.customers.find(
+      (existingCustomer) => existingCustomer.name === customerName,
+    );
+
+    if (!customer) {
+      customer = customerStore.addCustomer({
+        name: customerName,
+      });
+    }
+
+    prices.forEach(({ productId, sizeId, price }) => {
+      if (!sizeId) {
+        console.warn(
+          `[seedInitialData] Could not resolve size: ` +
+            `customer="${customerName}", ` +
+            `product="${productId}", ` +
+            `size="${sizeId}"`,
+        );
+
+        return;
+      }
+
+      customerPricingStore.addCustomerPrice({
+        customerId: customer.id,
+        productId,
+        sizeId,
+        price,
+      });
+    });
+  });
+}
+
+// ==========================================
 // SEED INITIAL DATA
 // ==========================================
 
-export function seedInitialInventoryData() {
+export function seedInitialData() {
   const productStore = useProductStore.getState();
   const colorStore = useColorStore.getState();
   const sizeStore = useSizeStore.getState();
 
+  // Seed products.
   productStore.setAllProducts(PRODUCTS);
 
+  // Seed colors.
   colorStore.setAllColors(COLORS);
 
+  // Seed sizes.
   sizeStore.setAllSizes(SIZES);
+
+  // Seed customers and customer-specific pricing.
+  seedCustomers();
 }

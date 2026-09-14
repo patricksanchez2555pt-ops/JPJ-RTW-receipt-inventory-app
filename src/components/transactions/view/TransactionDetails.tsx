@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import type { Transaction } from '../../../types/localModels';
+import type { Transaction, TransactionItem } from '../../../types/localModels';
 import TransactionProductGroup from './TransactionProductGroup';
 import TransactionSummary from './TransactionSummary';
 
@@ -20,7 +20,7 @@ type ProductGroup = {
   colors: {
     colorId: string;
     colorName: string;
-    items: Transaction['items'];
+    items: TransactionItem[];
   }[];
 };
 
@@ -34,7 +34,7 @@ export default function TransactionDetails({
   const groupedItems = useMemo(() => {
     const productMap = new Map<string, ProductGroup>();
 
-    for (const item of transaction.items) {
+    for (const item of transaction.items ?? []) {
       let productGroup = productMap.get(item.productId);
 
       if (!productGroup) {
@@ -80,7 +80,7 @@ export default function TransactionDetails({
     });
   }
 
-  const totalQuantity = transaction.items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalQuantity = (transaction.items ?? []).reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <View style={styles.container}>

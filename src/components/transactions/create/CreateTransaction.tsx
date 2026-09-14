@@ -403,7 +403,7 @@ export default function CreateTransaction() {
           </View>
 
           <Pressable
-            onPress={addItems}
+            onPress={() => addItems()}
             style={({ pressed }) => [
               styles.addItemsButton,
               pressed && styles.addItemsButtonPressed,

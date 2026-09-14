@@ -2,8 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import type { Customer } from '../../../../types/localModels';
 import { formatNumber } from '@/utils/formatNumber';
+
+import type { Customer } from '../../../../types/localModels';
 
 type Props = {
   customers: Customer[];

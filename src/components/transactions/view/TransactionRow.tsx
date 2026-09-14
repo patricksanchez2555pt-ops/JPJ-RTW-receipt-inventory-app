@@ -55,7 +55,7 @@ export default function TransactionRow({ transaction, selected, onPress, onDelet
 
       <View style={styles.itemsCol}>
         <View style={styles.itemBadge}>
-          <Text style={styles.itemBadgeText}>{transaction.items.length}</Text>
+          <Text style={styles.itemBadgeText}>{transaction.items?.length ?? 0}</Text>
         </View>
       </View>
 

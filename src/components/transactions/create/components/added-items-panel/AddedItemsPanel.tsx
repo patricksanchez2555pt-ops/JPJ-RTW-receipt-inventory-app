@@ -4,13 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { formatNumber } from '@/utils/formatNumber';
 
 import type { AddedTransactionItem } from '../../types';
-import {
-  computeGroups,
-  findColorGroup,
-  getColorGroupTotal,
-  getProductTotal,
-  getSizeProductTotal,
-} from './helpers';
+import { computeGroups, getSortedSizeGroup } from './helpers';
 
 type Props = {
   items: AddedTransactionItem[];
@@ -81,7 +75,7 @@ export default function AddedItemsPanel({
       const lastProductGroup = productSizeGroups[productSizeGroups.length - 1];
 
       const lastSizeGroup = lastProductGroup
-        ? Object.values(lastProductGroup.sizeGroups).at(-1)
+        ? getSortedSizeGroup(lastProductGroup.sizeGroups).at(-1)
         : undefined;
 
       const isBottomGroup = lastSizeGroup?.items.some((item) => item.id === firstItemId) ?? false;
@@ -115,16 +109,23 @@ export default function AddedItemsPanel({
         clearTimeout(timeout);
       }
     };
-  }, [highlightedItemIds, colorProductGroups, productSizeGroups, viewMode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightedItemIds, viewMode]);
 
-  function onRemoveGroupHandler(key: string) {
-    const group = findColorGroup(colorProductGroups, key);
+  function onRemoveColorGroupHandler(productId: string, groupId: string) {
+    const productGroup = colorProductGroups.find((p) => p.productId === productId);
+
+    if (!productGroup) {
+      return;
+    }
+
+    const group = productGroup.colorGroups[groupId];
 
     if (!group) {
       return;
     }
 
-    group.items.forEach((item) => {
+    group.items.forEach((item: AddedTransactionItem) => {
       onRemove(item.id);
     });
   }
@@ -198,9 +199,9 @@ export default function AddedItemsPanel({
         }}
       >
         {viewMode === 'color'
-          ? colorProductGroups.map((productGroup) => {
+          ? Object.values(colorProductGroups).map((productGroup) => {
               const groups = Object.values(productGroup.colorGroups);
-              const productTotal = getProductTotal(groups);
+              const productTotal = productGroup.subTotal;
 
               return (
                 <View key={productGroup.productId} style={styles.productGroup}>
@@ -221,7 +222,8 @@ export default function AddedItemsPanel({
                   </View>
 
                   {groups.map((group) => {
-                    const colorTotal = getColorGroupTotal(group);
+                    const colorTotal = group.subTotal;
+                    const colorQuantity = group.quantity;
 
                     return (
                       <View key={group.id} style={styles.colorGroup}>
@@ -239,14 +241,22 @@ export default function AddedItemsPanel({
                             <Text style={styles.colorName}>{group.name}</Text>
                           </View>
 
-                          <View style={styles.colorTotalContainer}>
-                            <Text style={styles.colorTotalLabel}>Color Total</Text>
+                          <View style={styles.colorQuantityContainer}>
+                            <Text style={styles.colorHeaderLabel}>Quantity</Text>
 
-                            <Text style={styles.colorTotal}>₱{formatNumber(colorTotal)}</Text>
+                            <Text style={styles.colorHeaderValue}>{colorQuantity} pcs</Text>
+                          </View>
+
+                          <View style={styles.colorTotalContainer}>
+                            <Text style={styles.colorHeaderLabel}>Color Total</Text>
+
+                            <Text style={styles.colorHeaderValue}>₱{formatNumber(colorTotal)}</Text>
                           </View>
 
                           <Pressable
-                            onPress={() => onRemoveGroupHandler(group.id)}
+                            onPress={() =>
+                              onRemoveColorGroupHandler(productGroup.productId, group.id)
+                            }
                             style={({ pressed }) => [
                               styles.deleteGroupButton,
                               pressed && styles.pressed,
@@ -324,8 +334,8 @@ export default function AddedItemsPanel({
               );
             })
           : productSizeGroups.map((productGroup) => {
-              const groups = Object.values(productGroup.sizeGroups);
-              const productTotal = getSizeProductTotal(groups);
+              const groups = getSortedSizeGroup(productGroup.sizeGroups);
+              const productTotal = productGroup.subTotal;
 
               return (
                 <View key={productGroup.productId} style={styles.productGroup}>
@@ -354,6 +364,12 @@ export default function AddedItemsPanel({
                       <View style={styles.sizeGroupHeader}>
                         <View style={styles.sizeNameContainer}>
                           <Text style={styles.sizeGroupName}>{group.name}</Text>
+                        </View>
+
+                        <View style={styles.sizePriceContainer}>
+                          <Text style={styles.sizeHeaderLabel}>Price</Text>
+
+                          <Text style={styles.sizeHeaderValue}>₱{formatNumber(group.price)}</Text>
                         </View>
 
                         <View style={styles.sizeQuantityContainer}>
@@ -415,8 +431,31 @@ export default function AddedItemsPanel({
                                 <Text style={styles.rowTotal}>₱{formatNumber(rowTotal)}</Text>
                               </View>
 
-                              <View style={styles.readOnlyQuantity}>
-                                <Text style={styles.readOnlyQuantityText}>{item.quantity} pcs</Text>
+                              <View style={styles.actions}>
+                                <Pressable
+                                  style={styles.quantityButton}
+                                  onPress={() => onDecrease(item.id)}
+                                >
+                                  <Text style={styles.buttonText}>−</Text>
+                                </Pressable>
+
+                                <View style={styles.quantity}>
+                                  <Text style={styles.quantityText}>{item.quantity}</Text>
+                                </View>
+
+                                <Pressable
+                                  style={styles.quantityButton}
+                                  onPress={() => onIncrease(item.id)}
+                                >
+                                  <Text style={styles.buttonText}>+</Text>
+                                </Pressable>
+
+                                <Pressable
+                                  style={styles.deleteButton}
+                                  onPress={() => onRemove(item.id)}
+                                >
+                                  <Text style={styles.deleteText}>×</Text>
+                                </Pressable>
                               </View>
                             </View>
                           );
@@ -586,7 +625,7 @@ const styles = StyleSheet.create({
   },
 
   groupHeader: {
-    minHeight: 52,
+    minHeight: 64,
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
@@ -596,16 +635,9 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E5E8ED',
   },
 
-  /*
-   * By Size header
-   *
-   * The size, quantity and subtotal are all primary
-   * pieces of information and therefore use similar
-   * visual weight.
-   */
   sizeGroupHeader: {
     minHeight: 72,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FAFBFC',
@@ -624,14 +656,35 @@ const styles = StyleSheet.create({
     color: '#20242B',
   },
 
+  /*
+   * Column alignment:
+   *
+   * By Color:
+   *   unit price  = 100
+   *   row total   = 120
+   *
+   * By Size:
+   *   price       = 100
+   *   quantity    = 120
+   *   subtotal    = 120
+   *
+   * This keeps the corresponding columns aligned between views.
+   */
+  sizePriceContainer: {
+    width: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   sizeQuantityContainer: {
-    width: 150,
+    width: 120,
+    alignItems: 'center',
     justifyContent: 'center',
   },
 
   sizeSubtotalContainer: {
-    width: 150,
-    alignItems: 'flex-end',
+    width: 120,
+    alignItems: 'center',
     justifyContent: 'center',
   },
 
@@ -667,21 +720,33 @@ const styles = StyleSheet.create({
     gap: 9,
   },
 
+  /*
+   * Matches the By Size columns:
+   *
+   * Quantity -> Size Price column
+   * Color Total -> Size Subtotal column
+   */
+  colorQuantityContainer: {
+    width: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   colorTotalContainer: {
     width: 120,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  colorTotalLabel: {
-    fontSize: 10,
+  colorHeaderLabel: {
+    fontSize: 11,
     color: '#687284',
     fontWeight: '600',
+    marginBottom: 3,
   },
 
-  colorTotal: {
-    marginTop: 2,
-    fontSize: 13,
+  colorHeaderValue: {
+    fontSize: 15,
     fontWeight: '700',
     color: '#20242B',
   },
@@ -746,6 +811,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF4B8',
   },
 
+  /*
+   * These are the base columns used by both views.
+   */
   unitPriceContainer: {
     width: 100,
     alignItems: 'center',
@@ -816,23 +884,6 @@ const styles = StyleSheet.create({
   deleteText: {
     color: '#E53935',
     fontSize: 24,
-  },
-
-  readOnlyQuantity: {
-    width: 168,
-    height: 36,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: '#D8DDE5',
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F8F9FB',
-  },
-
-  readOnlyQuantityText: {
-    fontSize: 14,
-    fontWeight: '700',
   },
 
   deleteGroupButton: {

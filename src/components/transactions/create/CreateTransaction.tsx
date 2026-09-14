@@ -12,7 +12,7 @@ import { useProductStore } from '../../../store/useProductStore';
 import { useSizeStore } from '../../../store/useSizeStore';
 import { useTransactionStore } from '../../../store/useTransactionStore';
 import type { Color, Product, Size } from '../../../types/localModels.ts';
-import AddedItemsPanel from './components/AddedItemsPanel';
+import AddedItemsPanel from './components/added-items-panel/AddedItemsPanel';
 import ColorSelector from './components/ColorSelector';
 import ProductSelector from './components/ProductSelector';
 import QuantitySelector from './components/QuantitySelector';
@@ -43,7 +43,7 @@ export default function CreateTransaction() {
 
   const [selectedSizes, setSelectedSizes] = useState<Size[]>([]);
 
-  const [quantity, setQuantity] = useState(3);
+  const [quantity, setQuantity] = useState(0);
 
   const [items, setItems] = useState<AddedTransactionItem[]>([]);
 
@@ -120,7 +120,9 @@ export default function CreateTransaction() {
     });
   }
 
-  function addItems() {
+  function addItems(passedQuantity?: number) {
+    const qty = passedQuantity ?? quantity;
+
     if (!selectedProduct) {
       Alert.alert('Select Product', 'Please select a product.');
 
@@ -161,7 +163,7 @@ export default function CreateTransaction() {
         if (existingIndex >= 0) {
           const existing = updated[existingIndex];
 
-          const newQuantity = existing.quantity + quantity;
+          const newQuantity = existing.quantity + qty;
 
           updated[existingIndex] = {
             ...existing,
@@ -180,9 +182,9 @@ export default function CreateTransaction() {
             productId: selectedProduct.id,
             colorId: selectedColor.id,
             sizeId: size.id,
-            quantity,
+            quantity: qty,
             unitPrice,
-            total: quantity * unitPrice,
+            total: qty * unitPrice,
 
             product: selectedProduct,
             color: selectedColor,
@@ -198,7 +200,7 @@ export default function CreateTransaction() {
 
     setHighlightedItemIds(newItemIds);
 
-    // setSelectedSizes([]);
+    setSelectedSizes([]);
   }
 
   const itemCount = useMemo(() => {
@@ -301,7 +303,7 @@ export default function CreateTransaction() {
     setBuyerName('');
     setDiscount(0);
     setSelectedSizes([]);
-    setQuantity(3);
+    setQuantity(0);
     setHighlightedItemIds([]);
     setSelectedCustomerId(null);
 

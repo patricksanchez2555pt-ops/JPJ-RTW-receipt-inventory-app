@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 type Props = {
   quantity: number;
   onChange: (quantity: number) => void;
-  addItems: () => void;
+  addItems: (quantity?: number) => void;
 };
 
 const QUANTITIES = Array.from({ length: 12 }, (_, index) => {
@@ -55,9 +55,16 @@ export default function QuantitySelector({ quantity, onChange, addItems }: Props
             <Pressable
               key={item.label}
               onPress={() => {
-                onChange(item.value);
+                const value = Number(item.value);
+
+                // update parent quantity state first
+                onChange(value);
+
+                // highlight button
                 setClickedQuantity(item.value);
-                addItems();
+
+                // call addItems with the explicit value to avoid stale state
+                addItems(value);
 
                 setTimeout(() => {
                   setClickedQuantity(null);

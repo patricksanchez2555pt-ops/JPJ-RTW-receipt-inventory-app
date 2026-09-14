@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import type { Customer } from '../../../../types/localModels';
+import { formatNumber } from '@/utils/formatNumber';
 
 type Props = {
   customers: Customer[];
@@ -105,7 +106,9 @@ export default function TransactionSummary({
         onPress={() => setCollapsed((current) => !current)}
         style={({ pressed }) => [styles.header, pressed && styles.headerPressed]}
       >
-        <View>{collapsed && <Text style={styles.collapsedTotal}>₱{total.toFixed(2)}</Text>}</View>
+        <View>
+          {collapsed && <Text style={styles.collapsedTotal}>₱{formatNumber(total)}</Text>}
+        </View>
 
         <Ionicons name={collapsed ? 'chevron-up' : 'chevron-down'} size={24} color="#4D5665" />
       </Pressable>
@@ -174,7 +177,7 @@ export default function TransactionSummary({
           <View style={styles.row}>
             <Text style={styles.label}>Subtotal</Text>
 
-            <Text style={styles.amount}>₱{subtotal.toFixed(2)}</Text>
+            <Text style={styles.amount}>₱{formatNumber(subtotal)}</Text>
           </View>
 
           {/* DISCOUNT */}
@@ -215,7 +218,7 @@ export default function TransactionSummary({
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>TOTAL</Text>
 
-            <Text style={styles.total}>₱{total.toFixed(2)}</Text>
+            <Text style={styles.total}>₱{formatNumber(total)}</Text>
           </View>
 
           {/* BUTTONS */}

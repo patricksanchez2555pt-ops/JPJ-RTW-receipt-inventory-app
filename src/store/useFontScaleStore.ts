@@ -1,6 +1,6 @@
 import { createMMKV } from 'react-native-mmkv';
 import { create } from 'zustand';
-import { createJSONStorage,persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 type FontScaleState = {
   fontScale: number;

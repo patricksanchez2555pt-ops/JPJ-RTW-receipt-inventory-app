@@ -10,9 +10,11 @@ export default function InventoryView() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {products.length > 0 ? (
-        products.map((product) => <InventoryTable key={product.id} productId={product.id} />)
+        products.map((product, index) => (
+          <InventoryTable key={product.id} productId={product.id} collapsed={index !== 0} />
+        ))
       ) : (
-        <InventoryTable productId={products[0]?.id} />
+        <InventoryTable productId={products[0]?.id} collapsed={false} />
       )}
     </ScrollView>
   );

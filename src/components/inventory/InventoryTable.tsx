@@ -17,9 +17,10 @@ import { InventoryCell } from './InventoryCell';
 
 type InventoryTableProps = {
   productId: string;
+  collapsed: boolean;
 };
 
-export default function InventoryTable({ productId }: InventoryTableProps) {
+export default function InventoryTable({ productId, collapsed: isCollapsed }: InventoryTableProps) {
   const product = useProductStore((state) => state.getProductById(productId));
 
   const rawColors = useColorStore(
@@ -35,7 +36,7 @@ export default function InventoryTable({ productId }: InventoryTableProps) {
   const [reorderedColors, setReorderedColors] = useState<Color[] | null>(null);
 
   // Collapsed state
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(isCollapsed);
 
   const columnOrder = reorderedColors ?? rawColors;
 

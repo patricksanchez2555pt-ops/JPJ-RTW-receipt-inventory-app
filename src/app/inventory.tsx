@@ -11,8 +11,7 @@ import type { Product } from '../types/localModels';
 export default function InventoryView() {
   const products = useProductStore((state) => state.products);
 
-  const [selectedProduct, setSelectedProduct] =
-    useState<Product | null>(products[0] ?? null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(products[0] ?? null);
 
   return (
     <View style={styles.container}>
@@ -27,25 +26,16 @@ export default function InventoryView() {
           </View>
 
           <Pressable
-            style={({ pressed }) => [
-              styles.saveButton,
-              pressed && styles.pressed,
-            ]}
+            style={({ pressed }) => [styles.saveButton, pressed && styles.pressed]}
             onPress={() => {
-              console.log(
-                `Inventory saved locally for ${selectedProduct?.name}`,
-              );
+              console.log(`Inventory saved locally for ${selectedProduct?.name}`);
             }}
           >
             <Text style={styles.saveButtonText}>Save</Text>
           </Pressable>
         </View>
 
-        {selectedProduct && (
-          <InventoryTable
-            productId={selectedProduct.id}
-          />
-        )}
+        {selectedProduct && <InventoryTable productId={selectedProduct.id} />}
       </View>
     </View>
   );

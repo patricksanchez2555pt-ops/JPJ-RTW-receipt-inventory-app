@@ -1,14 +1,6 @@
 import React, { useRef, useState } from 'react';
-import type {
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-} from 'react-native';
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useShallow } from 'zustand/react/shallow';
 
 import { f } from '@/utils/fontScale';
@@ -25,28 +17,18 @@ type InventoryTableProps = {
   productId: string;
 };
 
-export default function InventoryTable({
-  productId,
-}: InventoryTableProps) {
+export default function InventoryTable({ productId }: InventoryTableProps) {
   const rawColors = useColorStore(
-    useShallow((state) =>
-      state.colors.filter((color) => color.productId === productId),
-    ),
+    useShallow((state) => state.colors.filter((color) => color.productId === productId)),
   );
 
   const sizes = useSizeStore(
-    useShallow((state) =>
-      state.sizes.filter((size) => size.productId === productId),
-    ),
+    useShallow((state) => state.sizes.filter((size) => size.productId === productId)),
   );
 
-  const reorderColorsInStore = useColorStore(
-    (state) => state.reorderColors,
-  );
+  const reorderColorsInStore = useColorStore((state) => state.reorderColors);
 
-  const [reorderedColors, setReorderedColors] = useState<Color[] | null>(
-    null,
-  );
+  const [reorderedColors, setReorderedColors] = useState<Color[] | null>(null);
 
   const columnOrder = reorderedColors ?? rawColors;
 
@@ -57,9 +39,7 @@ export default function InventoryTable({
   const syncingVertical = useRef(false);
   const syncingHorizontal = useRef(false);
 
-  const handleHorizontalScroll = (
-    event: NativeSyntheticEvent<NativeScrollEvent>,
-  ) => {
+  const handleHorizontalScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     if (syncingHorizontal.current) {
       return;
     }
@@ -78,9 +58,7 @@ export default function InventoryTable({
     });
   };
 
-  const handleInventoryVerticalScroll = (
-    event: NativeSyntheticEvent<NativeScrollEvent>,
-  ) => {
+  const handleInventoryVerticalScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     if (syncingVertical.current) {
       return;
     }
@@ -99,9 +77,7 @@ export default function InventoryTable({
     });
   };
 
-  const handleSizeColumnScroll = (
-    event: NativeSyntheticEvent<NativeScrollEvent>,
-  ) => {
+  const handleSizeColumnScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     if (syncingVertical.current) {
       return;
     }
@@ -142,7 +118,6 @@ export default function InventoryTable({
 
   return (
     <View style={styles.container}>
-
       {/* TABLE */}
       <View style={styles.tableContainer}>
         {/* FIXED CORNER HEADER */}
@@ -184,13 +159,8 @@ export default function InventoryTable({
             scrollEventThrottle={16}
           >
             {sizes.map((size) => (
-              <View
-                key={size.id}
-                style={styles.sizeCell}
-              >
-                <Text style={styles.sizeText}>
-                  {size.name}
-                </Text>
+              <View key={size.id} style={styles.sizeCell}>
+                <Text style={styles.sizeText}>{size.name}</Text>
               </View>
             ))}
           </ScrollView>
@@ -214,17 +184,10 @@ export default function InventoryTable({
             >
               <View>
                 {sizes.map((size) => (
-                  <View
-                    key={size.id}
-                    style={styles.row}
-                  >
+                  <View key={size.id} style={styles.row}>
                     {columnOrder.map((color) => (
                       <InventoryCell
-                        key={getInventoryKey(
-                          productId,
-                          color.id,
-                          size.id,
-                        )}
+                        key={getInventoryKey(productId, color.id, size.id)}
                         productId={productId}
                         sizeId={size.id}
                         colorId={color.id}

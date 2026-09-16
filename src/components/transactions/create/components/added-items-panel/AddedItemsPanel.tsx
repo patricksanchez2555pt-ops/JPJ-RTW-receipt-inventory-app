@@ -29,6 +29,7 @@ export default function AddedItemsPanel({
 }: Props) {
   const [viewMode, setViewMode] = useState<ViewMode>('color');
   const [showColors, setShowColors] = useState(false);
+  const [showUnitPrice, setShowUnitPrice] = useState(true);
 
   const { colorProductGroups, productSizeGroups } = useMemo(() => computeGroups(items), [items]);
 
@@ -113,6 +114,7 @@ export default function AddedItemsPanel({
         clearTimeout(timeout);
       }
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [highlightedItemIds, viewMode]);
 
@@ -136,10 +138,41 @@ export default function AddedItemsPanel({
 
   return (
     <View style={styles.container}>
+      {/* HEADER */}
       <View style={styles.header}>
-        <Text style={styles.title}>Added Items</Text>
+        {/* FIXED TITLE */}
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.title}>Items</Text>
+        </View>
 
-        <View style={styles.headerRight}>
+        {/* SCROLLABLE HEADER CONTROLS */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.headerControlsScroll}
+          contentContainerStyle={styles.headerRight}
+          bounces={false}
+        >
+          {/* UNIT PRICE TOGGLE */}
+          <Pressable
+            onPress={() => setShowUnitPrice((current) => !current)}
+            style={({ pressed }) => [
+              styles.showUnitPriceButton,
+              showUnitPrice && styles.showUnitPriceButtonActive,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text
+              style={[
+                styles.showUnitPriceButtonText,
+                showUnitPrice && styles.showUnitPriceButtonTextActive,
+              ]}
+            >
+              Unit Price
+            </Text>
+          </Pressable>
+
+          {/* SHOW COLORS */}
           {viewMode === 'size' && (
             <Pressable
               onPress={() => setShowColors((current) => !current)}
@@ -155,11 +188,12 @@ export default function AddedItemsPanel({
                   showColors && styles.showColorsButtonTextActive,
                 ]}
               >
-                {showColors ? 'Hide Colors' : 'Show Colors'}
+                Colors
               </Text>
             </Pressable>
           )}
 
+          {/* VIEW MODE */}
           <View style={styles.modeSelector}>
             <Pressable
               onPress={() => setViewMode('color')}
@@ -184,12 +218,14 @@ export default function AddedItemsPanel({
             </Pressable>
           </View>
 
+          {/* ITEM COUNT */}
           <View style={styles.count}>
             <Text style={styles.countText}>{items.length} items</Text>
           </View>
-        </View>
+        </ScrollView>
       </View>
 
+      {/* LIST */}
       <ScrollView
         ref={scrollViewRef}
         style={styles.list}
@@ -209,6 +245,7 @@ export default function AddedItemsPanel({
 
               return (
                 <View key={productGroup.productId} style={styles.productGroup}>
+                  {/* PRODUCT HEADER */}
                   <View style={styles.productHeader}>
                     <View style={styles.groupInfo}>
                       <Text style={styles.productName}>{productGroup.productName}</Text>
@@ -225,12 +262,14 @@ export default function AddedItemsPanel({
                     </View>
                   </View>
 
+                  {/* COLOR GROUPS */}
                   {groups.map((group) => {
                     const colorTotal = group.subTotal;
                     const colorQuantity = group.quantity;
 
                     return (
                       <View key={group.id} style={styles.colorGroup}>
+                        {/* COLOR HEADER */}
                         <View style={styles.groupHeader}>
                           <View
                             style={[
@@ -270,6 +309,7 @@ export default function AddedItemsPanel({
                           </Pressable>
                         </View>
 
+                        {/* ITEMS */}
                         {group.items.map((item) => {
                           const unitPriceNumber =
                             typeof item.unitPrice === 'number' ? item.unitPrice : 0;
@@ -292,16 +332,21 @@ export default function AddedItemsPanel({
                                 </Text>
                               </View>
 
-                              <View style={styles.unitPriceContainer}>
-                                <Text style={styles.unitPrice}>
-                                  ₱{formatNumber(unitPriceNumber)}
-                                </Text>
-                              </View>
+                              {/* UNIT PRICE */}
+                              {showUnitPrice && (
+                                <View style={styles.unitPriceContainer}>
+                                  <Text style={styles.unitPrice}>
+                                    ₱{formatNumber(unitPriceNumber)}
+                                  </Text>
+                                </View>
+                              )}
 
+                              {/* ROW TOTAL */}
                               <View style={styles.rowTotalContainer}>
                                 <Text style={styles.rowTotal}>₱{formatNumber(rowTotal)}</Text>
                               </View>
 
+                              {/* ACTIONS */}
                               <View style={styles.actions}>
                                 <Pressable
                                   style={styles.quantityButton}
@@ -343,6 +388,7 @@ export default function AddedItemsPanel({
 
               return (
                 <View key={productGroup.productId} style={styles.productGroup}>
+                  {/* PRODUCT HEADER */}
                   <View style={styles.readOnlyProductHeader}>
                     <View style={styles.groupInfo}>
                       <Text style={styles.productName}>{productGroup.productName}</Text>
@@ -363,18 +409,22 @@ export default function AddedItemsPanel({
                     </View>
                   </View>
 
+                  {/* SIZE GROUPS */}
                   {groups.map((group) => (
                     <View key={group.id} style={styles.colorGroup}>
+                      {/* SIZE HEADER */}
                       <View style={styles.sizeGroupHeader}>
                         <View style={styles.sizeNameContainer}>
                           <Text style={styles.sizeGroupName}>{group.name}</Text>
                         </View>
 
-                        <View style={styles.sizePriceContainer}>
-                          <Text style={styles.sizeHeaderLabel}>Price</Text>
+                        {showUnitPrice && (
+                          <View style={styles.sizePriceContainer}>
+                            <Text style={styles.sizeHeaderLabel}>Price</Text>
 
-                          <Text style={styles.sizeHeaderValue}>₱{formatNumber(group.price)}</Text>
-                        </View>
+                            <Text style={styles.sizeHeaderValue}>₱{formatNumber(group.price)}</Text>
+                          </View>
+                        )}
 
                         <View style={styles.sizeQuantityContainer}>
                           <Text style={styles.sizeHeaderLabel}>Quantity</Text>
@@ -391,6 +441,7 @@ export default function AddedItemsPanel({
                         </View>
                       </View>
 
+                      {/* COLOR ITEMS */}
                       {showColors &&
                         group.items.map((item) => {
                           const unitPriceNumber =
@@ -425,16 +476,21 @@ export default function AddedItemsPanel({
                                 </View>
                               </View>
 
-                              <View style={styles.unitPriceContainer}>
-                                <Text style={styles.unitPrice}>
-                                  ₱{formatNumber(unitPriceNumber)}
-                                </Text>
-                              </View>
+                              {/* UNIT PRICE */}
+                              {showUnitPrice && (
+                                <View style={styles.unitPriceContainer}>
+                                  <Text style={styles.unitPrice}>
+                                    ₱{formatNumber(unitPriceNumber)}
+                                  </Text>
+                                </View>
+                              )}
 
+                              {/* ROW TOTAL */}
                               <View style={styles.rowTotalContainer}>
                                 <Text style={styles.rowTotal}>₱{formatNumber(rowTotal)}</Text>
                               </View>
 
+                              {/* ACTIONS */}
                               <View style={styles.actions}>
                                 <Pressable
                                   style={styles.quantityButton}
@@ -485,13 +541,16 @@ const styles = StyleSheet.create({
 
   header: {
     minHeight: 64,
-    paddingHorizontal: 18,
+    paddingLeft: 18,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E8ED',
-    gap: 12,
+  },
+
+  headerTitleContainer: {
+    flexShrink: 0,
+    paddingRight: 12,
   },
 
   title: {
@@ -499,18 +558,51 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
+  headerControlsScroll: {
+    flex: 1,
+  },
+
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    paddingRight: 18,
   },
 
+  /* UNIT PRICE TOGGLE */
+  showUnitPriceButton: {
+    flexShrink: 0,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#D8DDE5',
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+  },
+
+  showUnitPriceButtonActive: {
+    backgroundColor: '#EEF1F5',
+    borderColor: '#C8CED8',
+  },
+
+  showUnitPriceButtonText: {
+    fontSize: f(12),
+    fontWeight: '600',
+    color: '#687284',
+  },
+
+  showUnitPriceButtonTextActive: {
+    color: '#20242B',
+  },
+
+  /* VIEW MODE */
   modeSelector: {
     flexDirection: 'row',
     borderWidth: 1,
     borderColor: '#D8DDE5',
     borderRadius: 8,
     overflow: 'hidden',
+    flexShrink: 0,
   },
 
   modeButton: {
@@ -533,7 +625,9 @@ const styles = StyleSheet.create({
     color: '#20242B',
   },
 
+  /* SHOW COLORS */
   showColorsButton: {
+    flexShrink: 0,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderWidth: 1,
@@ -557,7 +651,9 @@ const styles = StyleSheet.create({
     color: '#20242B',
   },
 
+  /* COUNT */
   count: {
+    flexShrink: 0,
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderWidth: 1,
@@ -570,6 +666,7 @@ const styles = StyleSheet.create({
     color: '#5F6878',
   },
 
+  /* LIST */
   list: {
     flex: 1,
   },
@@ -580,6 +677,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
 
+  /* PRODUCT */
   productGroup: {
     borderWidth: 1,
     borderColor: '#E0E4EA',
@@ -628,6 +726,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
 
+  /* GROUP HEADER */
   groupHeader: {
     minHeight: 64,
     paddingHorizontal: 14,
@@ -671,9 +770,8 @@ const styles = StyleSheet.create({
    *   price       = 100
    *   quantity    = 120
    *   subtotal    = 120
-   *
-   * This keeps the corresponding columns aligned between views.
    */
+
   sizePriceContainer: {
     width: 100,
     alignItems: 'center',
@@ -705,6 +803,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
+  /* COLOR */
   colorDot: {
     width: 20,
     height: 20,
@@ -730,6 +829,7 @@ const styles = StyleSheet.create({
    * Quantity -> Size Price column
    * Color Total -> Size Subtotal column
    */
+
   colorQuantityContainer: {
     width: 100,
     alignItems: 'center',
@@ -755,6 +855,7 @@ const styles = StyleSheet.create({
     color: '#20242B',
   },
 
+  /* PRODUCT TOTAL */
   productHeaderTotal: {
     width: 130,
     alignItems: 'flex-end',
@@ -773,6 +874,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
+  /* READ ONLY */
   readOnlyLabel: {
     marginTop: 3,
     color: '#687284',
@@ -792,6 +894,7 @@ const styles = StyleSheet.create({
     color: '#687284',
   },
 
+  /* ITEM ROW */
   sizeContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -816,7 +919,8 @@ const styles = StyleSheet.create({
   },
 
   /*
-   * These are the base columns used by both views.
+   * Unit price column.
+   * It is completely removed from the layout when hidden.
    */
   unitPriceContainer: {
     width: 100,
@@ -842,6 +946,7 @@ const styles = StyleSheet.create({
     color: '#20242B',
   },
 
+  /* ACTIONS */
   actions: {
     width: 168,
     flexDirection: 'row',

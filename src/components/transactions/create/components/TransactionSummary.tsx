@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { f } from '@/utils/fontScale';
 import { formatNumber } from '@/utils/formatNumber';
@@ -102,7 +102,12 @@ export default function TransactionSummary({
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+      nestedScrollEnabled
+    >
       {/* HEADER */}
       <Pressable
         onPress={() => setCollapsed((current) => !current)}
@@ -140,22 +145,25 @@ export default function TransactionSummary({
                 <Text style={styles.clearButtonText}>×</Text>
               </Pressable>
             )}
-          </View>
 
-          {/* SUGGESTIONS */}
-          {showSuggestions && customerSuggestions.length > 0 && (
-            <View style={styles.suggestions}>
-              {customerSuggestions.map((customer) => (
-                <Pressable
-                  key={customer.id}
-                  onPress={() => handleCustomerSelect(customer)}
-                  style={({ pressed }) => [styles.suggestion, pressed && styles.suggestionPressed]}
-                >
-                  <Text style={styles.suggestionName}>{customer.name}</Text>
-                </Pressable>
-              ))}
-            </View>
-          )}
+            {/* SUGGESTIONS */}
+            {showSuggestions && customerSuggestions.length > 0 && (
+              <View style={styles.suggestions}>
+                {customerSuggestions.map((customer) => (
+                  <Pressable
+                    key={customer.id}
+                    onPress={() => handleCustomerSelect(customer)}
+                    style={({ pressed }) => [
+                      styles.suggestion,
+                      pressed && styles.suggestionPressed,
+                    ]}
+                  >
+                    <Text style={styles.suggestionName}>{customer.name}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+          </View>
 
           {/* SELECTED CUSTOMER */}
           {selectedCustomer && (
@@ -249,7 +257,7 @@ export default function TransactionSummary({
           </View>
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
@@ -261,6 +269,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'visible',
     zIndex: 10,
+
+    // Allows the summary to size itself based on its content.
+    flexGrow: 0,
+  },
+
+  scrollContent: {
+    flexGrow: 0,
   },
 
   header: {
@@ -295,9 +310,6 @@ const styles = StyleSheet.create({
     marginBottom: 7,
   },
 
-  /*
-   * Customer autocomplete
-   */
   customerContainer: {
     position: 'relative',
   },

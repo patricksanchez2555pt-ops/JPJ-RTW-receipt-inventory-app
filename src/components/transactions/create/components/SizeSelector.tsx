@@ -98,7 +98,7 @@ export default function SizeSelector({ sizes, selectedSizes, onToggle, onDeselec
     <View>
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>3. Select Size</Text>
+          <Text style={styles.title}>Select Size</Text>
 
           <Text style={styles.subtitle}>Tap or drag across multiple sizes</Text>
         </View>

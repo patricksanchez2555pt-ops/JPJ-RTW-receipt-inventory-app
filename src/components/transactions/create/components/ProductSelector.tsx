@@ -21,7 +21,6 @@ export default function ProductSelector({ products, selectedProduct, onSelect }:
 
   return (
     <View style={styles.container}>
-
       {/* Dropdown button */}
       <Pressable
         onPress={() => setOpen((current) => !current)}

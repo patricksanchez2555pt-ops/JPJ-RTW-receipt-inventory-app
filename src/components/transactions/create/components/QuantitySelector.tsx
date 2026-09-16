@@ -47,7 +47,7 @@ export default function QuantitySelector({ quantity, onChange, addItems }: Props
 
   return (
     <View>
-      <Text style={styles.title}>4. Choose Quantity</Text>
+      <Text style={styles.title}>Choose Quantity</Text>
 
       <View style={styles.container}>
         {QUANTITIES.map((item) => {

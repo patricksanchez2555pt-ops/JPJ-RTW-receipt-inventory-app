@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { f } from '@/utils/fontScale';
@@ -11,9 +12,17 @@ type Props = {
 };
 
 export default function ColorSelector({ colors, selectedColor, onSelect }: Props) {
+  const [showText, setShowText] = useState(true);
+
   return (
     <View>
-      <Text style={styles.title}>2. Select Color</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>Select Color</Text>
+
+        <Pressable onPress={() => setShowText((current) => !current)} style={styles.toggleButton}>
+          <Text style={styles.toggleText}>{showText ? 'Hide text' : 'Show text'}</Text>
+        </Pressable>
+      </View>
 
       <View style={styles.colors}>
         {colors.map((color) => {
@@ -23,11 +32,15 @@ export default function ColorSelector({ colors, selectedColor, onSelect }: Props
             <Pressable
               key={color.id}
               onPress={() => onSelect(color)}
-              style={[styles.colorButton, selected && styles.selectedColorButton]}
+              style={[
+                styles.colorButton,
+                !showText && styles.colorButtonCompact,
+                selected && styles.selectedColorButton,
+              ]}
             >
               <View style={[styles.colorCircle, { backgroundColor: color.hexValue }]} />
 
-              <Text style={styles.colorText}>{color.name}</Text>
+              {showText && <Text style={styles.colorText}>{color.name}</Text>}
             </Pressable>
           );
         })}
@@ -37,10 +50,29 @@ export default function ColorSelector({ colors, selectedColor, onSelect }: Props
 }
 
 const styles = StyleSheet.create({
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+
   title: {
     fontSize: f(16),
     fontWeight: '700',
-    marginBottom: 12,
+  },
+
+  toggleButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    backgroundColor: '#EEF3FF',
+  },
+
+  toggleText: {
+    fontSize: f(12),
+    fontWeight: '600',
+    color: '#1745D1',
   },
 
   colors: {
@@ -59,6 +91,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+  },
+
+  colorButtonCompact: {
+    minWidth: 52,
+    width: 52,
+    paddingHorizontal: 0,
+    justifyContent: 'center',
+    gap: 0,
   },
 
   selectedColorButton: {

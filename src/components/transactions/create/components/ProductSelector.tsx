@@ -21,7 +21,6 @@ export default function ProductSelector({ products, selectedProduct, onSelect }:
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>1. Select Product</Text>
 
       {/* Dropdown button */}
       <Pressable

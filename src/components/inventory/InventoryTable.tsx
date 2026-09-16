@@ -1,46 +1,55 @@
-import { Ionicons } from '@expo/vector-icons';
 import React, { useRef, useState } from 'react';
-import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import type {
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+} from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useShallow } from 'zustand/react/shallow';
 
 import { f } from '@/utils/fontScale';
 
 import { useColorStore } from '../../store/useColorStore';
 import { getInventoryKey } from '../../store/useInventoryStore';
-import { useProductStore } from '../../store/useProductStore';
 import { useSizeStore } from '../../store/useSizeStore';
 import type { Color } from '../../types/localModels';
-import { ROW_HEIGHT, SIZE_COLUMN_WIDTH, TABLE_HEIGHT } from './constants';
+import { ROW_HEIGHT, SIZE_COLUMN_WIDTH } from './constants';
 import { DraggableColorHeader } from './DraggableColorHeader';
 import { InventoryCell } from './InventoryCell';
 
 type InventoryTableProps = {
   productId: string;
-  collapsed: boolean;
 };
 
-export default function InventoryTable({ productId, collapsed: isCollapsed }: InventoryTableProps) {
-  const product = useProductStore((state) => state.getProductById(productId));
-
+export default function InventoryTable({
+  productId,
+}: InventoryTableProps) {
   const rawColors = useColorStore(
-    useShallow((state) => state.colors.filter((c) => c.productId === productId)),
+    useShallow((state) =>
+      state.colors.filter((color) => color.productId === productId),
+    ),
   );
 
   const sizes = useSizeStore(
-    useShallow((state) => state.sizes.filter((s) => s.productId === productId)),
+    useShallow((state) =>
+      state.sizes.filter((size) => size.productId === productId),
+    ),
   );
 
-  const reorderColorsInStore = useColorStore((state) => state.reorderColors);
+  const reorderColorsInStore = useColorStore(
+    (state) => state.reorderColors,
+  );
 
-  const [reorderedColors, setReorderedColors] = useState<Color[] | null>(null);
-
-  // Collapsed state
-  const [collapsed, setCollapsed] = useState(isCollapsed);
+  const [reorderedColors, setReorderedColors] = useState<Color[] | null>(
+    null,
+  );
 
   const columnOrder = reorderedColors ?? rawColors;
 
-  // Scroll refs
   const colorHeaderRef = useRef<ScrollView>(null);
   const sizeColumnRef = useRef<ScrollView>(null);
   const inventoryVerticalRef = useRef<ScrollView>(null);
@@ -48,8 +57,12 @@ export default function InventoryTable({ productId, collapsed: isCollapsed }: In
   const syncingVertical = useRef(false);
   const syncingHorizontal = useRef(false);
 
-  const handleHorizontalScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    if (syncingHorizontal.current) return;
+  const handleHorizontalScroll = (
+    event: NativeSyntheticEvent<NativeScrollEvent>,
+  ) => {
+    if (syncingHorizontal.current) {
+      return;
+    }
 
     const x = event.nativeEvent.contentOffset.x;
 
@@ -65,8 +78,12 @@ export default function InventoryTable({ productId, collapsed: isCollapsed }: In
     });
   };
 
-  const handleInventoryVerticalScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    if (syncingVertical.current) return;
+  const handleInventoryVerticalScroll = (
+    event: NativeSyntheticEvent<NativeScrollEvent>,
+  ) => {
+    if (syncingVertical.current) {
+      return;
+    }
 
     const y = event.nativeEvent.contentOffset.y;
 
@@ -82,8 +99,12 @@ export default function InventoryTable({ productId, collapsed: isCollapsed }: In
     });
   };
 
-  const handleSizeColumnScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    if (syncingVertical.current) return;
+  const handleSizeColumnScroll = (
+    event: NativeSyntheticEvent<NativeScrollEvent>,
+  ) => {
+    if (syncingVertical.current) {
+      return;
+    }
 
     const y = event.nativeEvent.contentOffset.y;
 
@@ -100,11 +121,17 @@ export default function InventoryTable({ productId, collapsed: isCollapsed }: In
   };
 
   const reorderColumns = (fromIndex: number, toIndex: number) => {
-    if (fromIndex === toIndex) return;
+    if (fromIndex === toIndex) {
+      return;
+    }
 
     const newOrder = [...columnOrder];
 
     const [movedColumn] = newOrder.splice(fromIndex, 1);
+
+    if (!movedColumn) {
+      return;
+    }
 
     newOrder.splice(toIndex, 0, movedColumn);
 
@@ -113,160 +140,124 @@ export default function InventoryTable({ productId, collapsed: isCollapsed }: In
     reorderColorsInStore(productId, newOrder);
   };
 
-  if (!product) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Product not found.</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
-      {/* HEADER */}
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => setCollapsed((current) => !current)}
-          style={({ pressed }) => [styles.productHeaderButton, pressed && styles.pressed]}
-        >
-          <Ionicons
-            name={collapsed ? 'chevron-forward' : 'chevron-down'}
-            size={24}
-            color="#06132F"
-          />
-
-          <View style={styles.productTitleContainer}>
-            <Text style={styles.productName}>{product.name}</Text>
-
-            <Text style={styles.productInfo}>
-              {sizes.length} sizes • {columnOrder.length} colors
-            </Text>
-          </View>
-        </Pressable>
-
-        <Pressable
-          style={({ pressed }) => [styles.saveButton, pressed && styles.pressed]}
-          onPress={() => {
-            console.log(`Inventory saved locally for ${product.name}`);
-          }}
-        >
-          <Text style={styles.saveButtonText}>Save</Text>
-        </Pressable>
-      </View>
 
       {/* TABLE */}
-      {!collapsed && (
-        <View style={styles.tableContainer}>
-          {/* FIXED CORNER HEADER */}
-          <View style={styles.cornerCell}>
-            <Text style={styles.headerText}>Size</Text>
-          </View>
+      <View style={styles.tableContainer}>
+        {/* FIXED CORNER HEADER */}
+        <View style={styles.cornerCell}>
+          <Text style={styles.headerText}>Size</Text>
+        </View>
 
-          {/* COLOR HEADER */}
-          <View style={styles.colorHeaderContainer}>
+        {/* COLOR HEADER */}
+        <View style={styles.colorHeaderContainer}>
+          <ScrollView
+            ref={colorHeaderRef}
+            horizontal
+            scrollEnabled={false}
+            showsHorizontalScrollIndicator={false}
+            bounces={false}
+          >
+            <View style={styles.colorHeaderRow}>
+              {columnOrder.map((color, index) => (
+                <DraggableColorHeader
+                  key={color.id}
+                  color={color}
+                  index={index}
+                  totalColumns={columnOrder.length}
+                  onDrop={reorderColumns}
+                />
+              ))}
+            </View>
+          </ScrollView>
+        </View>
+
+        {/* FIXED SIZE COLUMN */}
+        <View style={styles.sizeColumnContainer}>
+          <ScrollView
+            ref={sizeColumnRef}
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+            bounces={false}
+            onScroll={handleSizeColumnScroll}
+            scrollEventThrottle={16}
+          >
+            {sizes.map((size) => (
+              <View
+                key={size.id}
+                style={styles.sizeCell}
+              >
+                <Text style={styles.sizeText}>
+                  {size.name}
+                </Text>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* INVENTORY BODY */}
+        <View style={styles.inventoryContainer}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator
+            bounces={false}
+            onScroll={handleHorizontalScroll}
+            scrollEventThrottle={16}
+          >
             <ScrollView
-              ref={colorHeaderRef}
-              horizontal
-              scrollEnabled={false}
-              showsHorizontalScrollIndicator={false}
+              ref={inventoryVerticalRef}
+              showsVerticalScrollIndicator
               bounces={false}
+              onScroll={handleInventoryVerticalScroll}
+              scrollEventThrottle={16}
             >
-              <View style={styles.colorHeaderRow}>
-                {columnOrder.map((color, index) => (
-                  <DraggableColorHeader
-                    key={color.id}
-                    color={color}
-                    index={index}
-                    totalColumns={columnOrder.length}
-                    onDrop={reorderColumns}
-                  />
+              <View>
+                {sizes.map((size) => (
+                  <View
+                    key={size.id}
+                    style={styles.row}
+                  >
+                    {columnOrder.map((color) => (
+                      <InventoryCell
+                        key={getInventoryKey(
+                          productId,
+                          color.id,
+                          size.id,
+                        )}
+                        productId={productId}
+                        sizeId={size.id}
+                        colorId={color.id}
+                        hexValue={color.hexValue}
+                      />
+                    ))}
+                  </View>
                 ))}
               </View>
             </ScrollView>
-          </View>
-
-          {/* FIXED SIZE COLUMN */}
-          <View style={styles.sizeColumnContainer}>
-            <ScrollView
-              ref={sizeColumnRef}
-              showsVerticalScrollIndicator={false}
-              showsHorizontalScrollIndicator={false}
-              bounces={false}
-              onScroll={handleSizeColumnScroll}
-              scrollEventThrottle={16}
-            >
-              {sizes.map((size) => (
-                <View key={size.id} style={styles.sizeCell}>
-                  <Text style={styles.sizeText}>{size.name}</Text>
-                </View>
-              ))}
-            </ScrollView>
-          </View>
-
-          {/* INVENTORY BODY */}
-          <View style={styles.inventoryContainer}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator
-              bounces={false}
-              onScroll={handleHorizontalScroll}
-              scrollEventThrottle={16}
-            >
-              <ScrollView
-                ref={inventoryVerticalRef}
-                showsVerticalScrollIndicator
-                bounces={false}
-                onScroll={handleInventoryVerticalScroll}
-                scrollEventThrottle={16}
-              >
-                <View>
-                  {sizes.map((size) => (
-                    <View key={size.id} style={styles.row}>
-                      {columnOrder.map((color) => (
-                        <InventoryCell
-                          key={getInventoryKey(productId, color.id, size.id)}
-                          productId={productId}
-                          sizeId={size.id}
-                          colorId={color.id}
-                          hexValue={color.hexValue}
-                        />
-                      ))}
-                    </View>
-                  ))}
-                </View>
-              </ScrollView>
-            </ScrollView>
-          </View>
+          </ScrollView>
         </View>
-      )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    minHeight: 0,
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 20,
-    marginBottom: 24,
+    marginTop: 16,
   },
 
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-
-  productHeaderButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 6,
-    marginRight: 16,
   },
 
   productTitleContainer: {
-    marginLeft: 10,
     flex: 1,
   },
 
@@ -283,7 +274,8 @@ const styles = StyleSheet.create({
   },
 
   tableContainer: {
-    height: TABLE_HEIGHT,
+    flex: 1,
+    minHeight: 0,
     marginTop: 16,
     borderWidth: 1,
     borderColor: '#D9DEE8',
@@ -366,25 +358,6 @@ const styles = StyleSheet.create({
     fontSize: f(16),
     fontWeight: '600',
     color: '#06132F',
-  },
-
-  saveButton: {
-    paddingHorizontal: 28,
-    height: 44,
-    borderRadius: 8,
-    backgroundColor: '#1745D1',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  saveButtonText: {
-    color: '#FFFFFF',
-    fontSize: f(15),
-    fontWeight: '700',
-  },
-
-  pressed: {
-    opacity: 0.7,
   },
 
   errorText: {

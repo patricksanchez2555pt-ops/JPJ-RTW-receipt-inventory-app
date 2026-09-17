@@ -116,13 +116,13 @@ export default function SizeView({
 const styles = StyleSheet.create({
   productGroup: {
     borderWidth: 1,
-    borderColor: '#E0E4EA',
+    borderColor: '#80848a',
     borderRadius: 10,
     overflow: 'hidden',
   },
 
   productHeader: {
-    minHeight: 64,
+    minHeight: 50,
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
@@ -137,14 +137,14 @@ const styles = StyleSheet.create({
   },
 
   productName: {
-    fontSize: f(15),
+    fontSize: f(12),
     fontWeight: '700',
   },
 
   readOnlyLabel: {
     marginTop: 3,
     color: '#687284',
-    fontSize: f(12),
+    fontSize: f(9),
   },
 
   productHeaderTotal: {
@@ -154,14 +154,14 @@ const styles = StyleSheet.create({
   },
 
   productHeaderTotalLabel: {
-    fontSize: f(11),
+    fontSize: f(9),
     color: '#687284',
     fontWeight: '600',
   },
 
   productHeaderTotalValue: {
     marginTop: 2,
-    fontSize: f(16),
+    fontSize: f(12),
     fontWeight: '700',
   },
 
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   },
 
   readOnlyBadgeText: {
-    fontSize: f(11),
+    fontSize: f(9),
     fontWeight: '600',
     color: '#687284',
   },
@@ -183,11 +183,11 @@ const styles = StyleSheet.create({
   },
 
   sizeGroupHeader: {
-    minHeight: 72,
+    minHeight: 50,
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FAFBFC',
+    backgroundColor: '#242525',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E8ED',
   },
@@ -198,9 +198,9 @@ const styles = StyleSheet.create({
   },
 
   sizeGroupName: {
-    fontSize: f(17),
+    fontSize: f(12),
     fontWeight: '700',
-    color: '#20242B',
+    color: '#e8eaee',
   },
 
   sizePriceContainer: {
@@ -222,15 +222,15 @@ const styles = StyleSheet.create({
   },
 
   sizeHeaderLabel: {
-    fontSize: f(12),
-    color: '#687284',
+    fontSize: f(9),
+    color: '#7f8080',
     fontWeight: '600',
     marginBottom: 3,
   },
 
   sizeHeaderValue: {
-    fontSize: f(17),
-    color: '#20242B',
+    fontSize: f(12),
+    color: '#c8c8cb',
     fontWeight: '700',
   },
 });

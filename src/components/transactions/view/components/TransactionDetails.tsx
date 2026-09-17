@@ -43,10 +43,7 @@ export default function TransactionDetails({ transaction, onClose }: Props) {
   }, [transaction.items, products, colors, sizes]);
 
   const subtotal = useMemo(() => {
-    return (transaction.items ?? []).reduce(
-      (sum, item) => sum + item.total,
-      0,
-    );
+    return (transaction.items ?? []).reduce((sum, item) => sum + item.total, 0);
   }, [transaction.items]);
 
   const discount = transaction.discount ?? 0;
@@ -62,9 +59,7 @@ export default function TransactionDetails({ transaction, onClose }: Props) {
         <View>
           <Text style={styles.title}>Transaction Details</Text>
 
-          <Text style={styles.id}>
-            #{transaction.id.replace('tx-', '')}
-          </Text>
+          <Text style={styles.id}>#{transaction.id.replace('tx-', '')}</Text>
 
           <Text style={styles.date}>
             {formatDate(transaction.date)} • {formatTime(transaction.date)}
@@ -81,34 +76,26 @@ export default function TransactionDetails({ transaction, onClose }: Props) {
         <View style={styles.customer}>
           <Text style={styles.customerLabel}>CUSTOMER</Text>
 
-          <Text style={styles.customerName}>
-            {transaction.buyerName || 'Walk-in Customer'}
-          </Text>
+          <Text style={styles.customerName}>{transaction.buyerName || 'Walk-in Customer'}</Text>
         </View>
 
         <View style={styles.summary}>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Subtotal</Text>
 
-            <Text style={styles.summaryValue}>
-              ₱{subtotal.toLocaleString()}
-            </Text>
+            <Text style={styles.summaryValue}>₱{subtotal.toLocaleString()}</Text>
           </View>
 
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Discount</Text>
 
-            <Text style={styles.discountValue}>
-              -₱{discount.toLocaleString()}
-            </Text>
+            <Text style={styles.discountValue}>-₱{discount.toLocaleString()}</Text>
           </View>
 
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Total</Text>
 
-            <Text style={styles.totalValue}>
-              ₱{total.toLocaleString()}
-            </Text>
+            <Text style={styles.totalValue}>₱{total.toLocaleString()}</Text>
           </View>
         </View>
       </View>

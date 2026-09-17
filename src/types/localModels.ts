@@ -65,6 +65,8 @@ export type Transaction = {
   customerId?: string;
   buyerName: string;
 
+  paidAmount: number;
+
   subtotal: number;
   discount: number;
   total: number;

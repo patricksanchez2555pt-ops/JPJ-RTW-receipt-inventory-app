@@ -83,12 +83,14 @@ export default function ColorView({
                     <Text style={styles.colorHeaderValue}>₱{formatNumber(group.subTotal)}</Text>
                   </View>
 
-                  <Pressable
-                    onPress={() => onRemoveColorGroup(productGroup.productId, group.id)}
-                    style={({ pressed }) => [styles.deleteGroupButton, pressed && styles.pressed]}
-                  >
-                    <Text style={styles.deleteGroupText}>Delete</Text>
-                  </Pressable>
+                  {isViewOnly ? null : (
+                    <Pressable
+                      onPress={() => onRemoveColorGroup(productGroup.productId, group.id)}
+                      style={({ pressed }) => [styles.deleteGroupButton, pressed && styles.pressed]}
+                    >
+                      <Text style={styles.deleteGroupText}>Delete</Text>
+                    </Pressable>
+                  )}
                 </View>
 
                 {group.items.map((item: AddedTransactionItem) => (
@@ -123,7 +125,7 @@ const styles = StyleSheet.create({
   },
 
   productHeader: {
-    minHeight: 64,
+    minHeight: 50,
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
@@ -138,14 +140,14 @@ const styles = StyleSheet.create({
   },
 
   productName: {
-    fontSize: f(15),
+    fontSize: f(12),
     fontWeight: '700',
   },
 
   productSubtitle: {
     marginTop: 3,
     color: '#687284',
-    fontSize: f(12),
+    fontSize: f(9),
   },
 
   productHeaderTotal: {
@@ -155,14 +157,14 @@ const styles = StyleSheet.create({
   },
 
   productHeaderTotalLabel: {
-    fontSize: f(11),
+    fontSize: f(9),
     color: '#687284',
     fontWeight: '600',
   },
 
   productHeaderTotalValue: {
     marginTop: 2,
-    fontSize: f(16),
+    fontSize: f(12),
     fontWeight: '700',
   },
 
@@ -171,12 +173,12 @@ const styles = StyleSheet.create({
   },
 
   groupHeader: {
-    minHeight: 64,
+    minHeight: 50,
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#FAFBFC',
+    backgroundColor: '#242525',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E8ED',
   },
@@ -190,12 +192,13 @@ const styles = StyleSheet.create({
   },
 
   colorName: {
-    fontSize: f(14),
+    fontSize: f(12),
     fontWeight: '700',
+    color: '#e8eaee',
   },
 
   colorQuantityContainer: {
-    width: 100,
+    width: 120,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -207,16 +210,16 @@ const styles = StyleSheet.create({
   },
 
   colorHeaderLabel: {
-    fontSize: f(11),
-    color: '#687284',
+    fontSize: f(12),
+    color: '#7f8080',
     fontWeight: '600',
     marginBottom: 3,
   },
 
   colorHeaderValue: {
-    fontSize: f(15),
+    fontSize: f(12),
     fontWeight: '700',
-    color: '#20242B',
+    color: '#c8c8cb',
   },
 
   deleteGroupButton: {
@@ -230,7 +233,7 @@ const styles = StyleSheet.create({
 
   deleteGroupText: {
     color: '#E53935',
-    fontSize: f(12),
+    fontSize: f(8),
     fontWeight: '700',
   },
 

@@ -3,7 +3,6 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { formatNumber } from '@/utils/formatNumber';
 
 import type { AddedTransactionItem } from '../../../create/types';
-import type { ViewMode } from '../AddedItemsPanel';
 
 const FONT_SCALE = 1.25;
 const f = (n: number) => Math.round(n * FONT_SCALE);
@@ -49,7 +48,7 @@ export default function TransactionItemRow({
       }}
       style={[styles.itemRow, highlighted && styles.highlightedItemRow]}
     >
-      <View style={[styles.sizeContainer ]}>
+      <View style={[styles.sizeContainer]}>
         {colorHex ? (
           <View style={[styles.colorItem]}>
             <View
@@ -107,7 +106,7 @@ export default function TransactionItemRow({
 
 const styles = StyleSheet.create({
   itemRow: {
-    minHeight: 62,
+    minHeight: 50,
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
@@ -122,11 +121,10 @@ const styles = StyleSheet.create({
   sizeContainer: {
     flex: 1,
     justifyContent: 'center',
-    paddingLeft: 30,
   },
 
   sizeName: {
-    fontSize: f(15),
+    fontSize: f(10),
     fontWeight: '600',
   },
 
@@ -151,7 +149,7 @@ const styles = StyleSheet.create({
   },
 
   unitPrice: {
-    fontSize: f(14),
+    fontSize: f(10),
     fontWeight: '600',
     color: '#4F5868',
   },
@@ -163,7 +161,7 @@ const styles = StyleSheet.create({
   },
 
   rowTotal: {
-    fontSize: f(14),
+    fontSize: f(10),
     fontWeight: '700',
     color: '#20242B',
   },
@@ -209,7 +207,7 @@ const styles = StyleSheet.create({
 
   quantityText: {
     fontWeight: '600',
-    fontSize: f(14),
+    fontSize: f(10),
   },
 
   buttonText: {

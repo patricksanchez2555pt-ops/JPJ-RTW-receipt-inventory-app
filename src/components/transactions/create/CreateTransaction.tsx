@@ -13,7 +13,7 @@ import { useProductStore } from '../../../store/useProductStore';
 import { useSizeStore } from '../../../store/useSizeStore';
 import { useTransactionStore } from '../../../store/useTransactionStore';
 import type { Color, Product, Size } from '../../../types/localModels.ts';
-import AddedItemsPanel from './components/added-items-panel/AddedItemsPanel';
+import AddedItemsPanel from '../components/added-items-panel/AddedItemsPanel';
 import ColorSelector from './components/ColorSelector';
 import ProductSelector from './components/ProductSelector';
 import QuantitySelector from './components/QuantitySelector';

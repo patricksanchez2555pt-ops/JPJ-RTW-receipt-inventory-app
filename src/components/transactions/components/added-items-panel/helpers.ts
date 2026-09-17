@@ -1,4 +1,4 @@
-import type { AddedTransactionItem } from '../../types';
+import type { AddedTransactionItem } from '../../create/types';
 import type { ColorProductGroup, SizeGroup, SizeProductGroup } from './types';
 
 function sortColorGroupItemsByPrice(items: AddedTransactionItem[]) {

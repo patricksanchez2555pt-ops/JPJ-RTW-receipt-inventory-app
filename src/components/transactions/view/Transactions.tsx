@@ -3,19 +3,12 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { f } from '@/utils/fontScale';
 
-import { useColorStore } from '../../../store/useColorStore';
-import { useProductStore } from '../../../store/useProductStore';
-import { useSizeStore } from '../../../store/useSizeStore';
 import { useTransactionStore } from '../../../store/useTransactionStore';
-import TransactionDetails from './TransactionDetails';
-import TransactionList from './TransactionList';
+import TransactionDetails from './components/TransactionDetails';
+import TransactionList from './components/TransactionList';
 
 export default function Transactions() {
   const transactions = useTransactionStore((state) => state.transactions);
-
-  const products = useProductStore((state) => state.products);
-  const colors = useColorStore((state) => state.colors);
-  const sizes = useSizeStore((state) => state.sizes);
 
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 
@@ -26,18 +19,6 @@ export default function Transactions() {
 
     return transactions.find((transaction) => transaction.id === selectedTransactionId);
   }, [transactions, selectedTransactionId]);
-
-  function getProductName(productId: string) {
-    return products.find((product) => product.id === productId)?.name ?? 'Unknown Product';
-  }
-
-  function getColorName(colorId: string) {
-    return colors.find((color) => color.id === colorId)?.name ?? 'Unknown Color';
-  }
-
-  function getSizeName(sizeId: string) {
-    return sizes.find((size) => size.id === sizeId)?.name ?? 'Unknown Size';
-  }
 
   return (
     <View style={styles.container}>
@@ -57,39 +38,39 @@ export default function Transactions() {
       </View>
 
       <View style={styles.content}>
-        <TransactionList
-          transactions={transactions}
-          selectedTransactionId={selectedTransactionId}
-          onSelect={setSelectedTransactionId}
-          hasDetails={!!selectedTransaction}
-        />
+        <View style={selectedTransaction && styles.transactionList}>
+          <TransactionList
+            transactions={transactions}
+            selectedTransactionId={selectedTransactionId}
+            onSelect={setSelectedTransactionId}
+            hasDetails={!!selectedTransaction}
+          />
+        </View>
 
         {selectedTransaction && (
-          <TransactionDetails
-            transaction={selectedTransaction}
-            onClose={() => setSelectedTransactionId(null)}
-            getProductName={getProductName}
-            getColorName={getColorName}
-            getSizeName={getSizeName}
-          />
+          <View style={styles.transactionDetails}>
+            <TransactionDetails
+              transaction={selectedTransaction}
+              onClose={() => setSelectedTransactionId(null)}
+            />
+          </View>
         )}
       </View>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#F5F7FA',
   },
 
   header: {
+    padding: 20,
+    paddingBottom: 18,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 18,
   },
 
   title: {
@@ -121,7 +102,17 @@ const styles = StyleSheet.create({
 
   content: {
     flex: 1,
+    width: '100%',
     flexDirection: 'row',
-    gap: 14,
+  },
+
+  transactionList: {
+    width: '40%',
+    height: '100%',
+  },
+
+  transactionDetails: {
+    width: '60%',
+    height: '100%',
   },
 });

@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { f } from '@/utils/fontScale';
+import { formatNumber } from '@/utils/formatNumber';
 
 import type { Transaction } from '../../../types/localModels';
 
@@ -36,10 +37,6 @@ export default function TransactionRow({ transaction, selected, onPress, onDelet
         pressed && styles.pressedRow,
       ]}
     >
-      <View style={styles.transactionCol}>
-        <Text style={styles.transactionId}>#{transaction.id.replace('tx-', '')}</Text>
-      </View>
-
       <View style={styles.dateCol}>
         <Text style={styles.dateText}>{formatDate(transaction.date)}</Text>
 
@@ -53,6 +50,8 @@ export default function TransactionRow({ transaction, selected, onPress, onDelet
         >
           {transaction.buyerName || 'Walk-in Customer'}
         </Text>
+
+        <Text style={styles.transactionId}>#{transaction.id.replace('tx-', '')}</Text>
       </View>
 
       <View style={styles.itemsCol}>
@@ -62,7 +61,7 @@ export default function TransactionRow({ transaction, selected, onPress, onDelet
       </View>
 
       <View style={styles.totalCol}>
-        <Text style={styles.totalText}>₱{transaction.total.toFixed(2)}</Text>
+        <Text style={styles.totalText}>₱{formatNumber(Number(transaction.total))}</Text>
       </View>
 
       <View style={styles.actionCol}>
@@ -85,7 +84,7 @@ const styles = StyleSheet.create({
     minHeight: 72,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#EDF0F4',
   },
@@ -98,26 +97,22 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
 
-  transactionCol: {
-    width: 145,
-  },
-
   dateCol: {
-    width: 125,
+    width: 80,
   },
 
   customerCol: {
     flex: 1,
-    minWidth: 120,
+    minWidth: 80,
   },
 
   itemsCol: {
-    width: 70,
+    width: 50,
     alignItems: 'center',
   },
 
   totalCol: {
-    width: 120,
+    width: 100,
     alignItems: 'flex-end',
   },
 
@@ -126,9 +121,21 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
 
-  transactionId: {
+  customerText: {
     fontSize: f(13),
-    fontWeight: '700',
+    fontWeight: '600',
+    color: '#252B35',
+  },
+
+  walkInText: {
+    color: '#8A93A1',
+    fontWeight: '500',
+  },
+
+  transactionId: {
+    marginTop: 3,
+    fontSize: f(11),
+    fontWeight: '600',
     color: '#1745D1',
   },
 
@@ -142,17 +149,6 @@ const styles = StyleSheet.create({
     marginTop: 3,
     fontSize: f(11),
     color: '#8A93A1',
-  },
-
-  customerText: {
-    fontSize: f(13),
-    fontWeight: '600',
-    color: '#252B35',
-  },
-
-  walkInText: {
-    color: '#8A93A1',
-    fontWeight: '500',
   },
 
   itemBadge: {

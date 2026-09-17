@@ -2,9 +2,9 @@ import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { f } from '@/utils/fontScale';
 
-import { useTransactionStore } from '../../../store/useTransactionStore';
-import type { Transaction } from '../../../types/localModels';
-import TransactionRow from './TransactionRow';
+import { useTransactionStore } from '../../../../store/useTransactionStore';
+import type { Transaction } from '../../../../types/localModels';
+import TransactionRow from '../TransactionRow';
 
 type Props = {
   transactions: Transaction[];

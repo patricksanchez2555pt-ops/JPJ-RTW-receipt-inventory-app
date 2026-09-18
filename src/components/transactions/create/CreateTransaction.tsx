@@ -54,6 +54,8 @@ export default function CreateTransaction() {
 
   const [discount, setDiscount] = useState(0);
 
+  const [paidAmount, setPaidAmount] = useState(0);
+
   const [highlightedItemIds, setHighlightedItemIds] = useState<string[]>([]);
 
   const productColors = useMemo(() => {
@@ -288,6 +290,7 @@ export default function CreateTransaction() {
       customerId: customer?.id,
       buyerName: customer?.name ?? buyerName,
       subtotal,
+      paidAmount,
       discount,
       total,
       items,
@@ -303,6 +306,7 @@ export default function CreateTransaction() {
     setItems([]);
     setBuyerName('');
     setDiscount(0);
+    setPaidAmount(0);
     setSelectedSizes([]);
     setQuantity(0);
     setHighlightedItemIds([]);
@@ -432,9 +436,11 @@ export default function CreateTransaction() {
           discount={discount}
           subtotal={subtotal}
           total={total}
+          paidAmount={paidAmount}
           onCustomerNameChange={setBuyerName}
           onCustomerSelect={handleCustomerSelect}
           onDiscountChange={setDiscount}
+          onPaidAmountChange={setPaidAmount}
           onSave={saveTransaction}
           onPrint={printTransaction}
         />

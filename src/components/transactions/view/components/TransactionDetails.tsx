@@ -21,6 +21,8 @@ export default function TransactionDetails({ transaction, onClose }: Props) {
   const colors = useColorStore((state) => state.colors);
   const sizes = useSizeStore((state) => state.sizes);
 
+  const paidAmount = transaction.paidAmount ?? 1980;
+
   const addedItems = useMemo<AddedTransactionItem[]>(() => {
     return (transaction.items ?? []).flatMap((item) => {
       const product = products.find((entry) => entry.id === item.productId);
@@ -52,6 +54,8 @@ export default function TransactionDetails({ transaction, onClose }: Props) {
     return subtotal - discount;
   }, [subtotal, discount]);
 
+  const remainingBalance = total - paidAmount;
+
   return (
     <View style={styles.container}>
       {/* HEADER */}
@@ -71,14 +75,33 @@ export default function TransactionDetails({ transaction, onClose }: Props) {
         </Pressable>
       </View>
 
-      {/* CUSTOMER + SUMMARY */}
+      {/* CUSTOMER + PAYMENT + SUMMARY */}
       <View style={styles.customerRow}>
+        {/* CUSTOMER */}
         <View style={styles.customer}>
           <Text style={styles.customerLabel}>CUSTOMER</Text>
 
           <Text style={styles.customerName}>{transaction.buyerName || 'Walk-in Customer'}</Text>
         </View>
 
+        {/* PAYMENT */}
+        <View style={styles.payment}>
+          <View style={styles.paymentRow}>
+            <Text style={styles.paymentLabel}>Paid Amount</Text>
+
+            <Text style={styles.paidValue}>₱{paidAmount.toLocaleString()}</Text>
+          </View>
+
+          <View style={styles.paymentRow}>
+            <Text style={styles.paymentLabel}>Remaining Balance</Text>
+
+            <Text style={[styles.remainingValue, remainingBalance === 0 && styles.paidInFullValue]}>
+              ₱{remainingBalance.toLocaleString()}
+            </Text>
+          </View>
+        </View>
+
+        {/* SUMMARY */}
         <View style={styles.summary}>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Subtotal</Text>
@@ -192,6 +215,44 @@ const styles = StyleSheet.create({
     fontSize: f(15),
     fontWeight: '800',
     color: '#252B35',
+  },
+
+  payment: {
+    width: 210,
+    minHeight: 86,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    justifyContent: 'center',
+    borderRadius: 10,
+    backgroundColor: '#F5F7FA',
+  },
+
+  paymentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 5,
+  },
+
+  paymentLabel: {
+    fontSize: f(11),
+    color: '#7A8494',
+  },
+
+  paidValue: {
+    fontSize: f(14),
+    fontWeight: '800',
+    color: '#2F6B45',
+  },
+
+  remainingValue: {
+    fontSize: f(14),
+    fontWeight: '900',
+    color: '#C45A5A',
+  },
+
+  paidInFullValue: {
+    color: '#2F6B45',
   },
 
   summary: {

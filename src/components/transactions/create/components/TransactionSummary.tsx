@@ -15,10 +15,12 @@ type Props = {
   discount: number;
   subtotal: number;
   total: number;
+  paidAmount: number;
 
   onCustomerSelect: (customerId: string | null) => void;
   onDiscountChange: (value: number) => void;
   onCustomerNameChange: (name: string) => void;
+  onPaidAmountChange: (amount: number) => void;
   onSave: () => void;
   onPrint: () => void;
 };
@@ -30,9 +32,11 @@ export default function TransactionSummary({
   discount,
   subtotal,
   total,
+  paidAmount,
   onCustomerNameChange,
   onCustomerSelect,
   onDiscountChange,
+  onPaidAmountChange,
   onSave,
   onPrint,
 }: Props) {
@@ -229,6 +233,40 @@ export default function TransactionSummary({
             <Text style={styles.totalLabel}>TOTAL</Text>
 
             <Text style={styles.total}>₱{formatNumber(total)}</Text>
+          </View>
+
+          {/* PAID AMOUNT */}
+          <View style={styles.row}>
+            <Text style={styles.label}>Paid Amount</Text>
+
+            <View style={styles.paidAmountControls}>
+              <TextInput
+                value={paidAmount === 0 ? '' : String(paidAmount)}
+                onChangeText={(value) => {
+                  const numeric = Number(value.replace(/[^0-9.]/g, ''));
+
+                  onPaidAmountChange(Number.isNaN(numeric) ? 0 : numeric);
+                }}
+                keyboardType="decimal-pad"
+                placeholder="0"
+                placeholderTextColor="#9AA2AF"
+                style={styles.paidAmountInput}
+              />
+
+              <Pressable
+                onPress={() => onPaidAmountChange(total)}
+                style={({ pressed }) => [styles.payFullButton, pressed && styles.buttonPressed]}
+              >
+                <Text style={styles.payFullButtonText}>Pay Full</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          {/* REMAINING AMOUNT */}
+          <View style={styles.remainingRow}>
+            <Text style={styles.remainingLabel}>Remaining Amount</Text>
+
+            <Text style={styles.remainingAmount}>₱{formatNumber(total - paidAmount)}</Text>
           </View>
 
           {/* BUTTONS */}
@@ -455,6 +493,64 @@ const styles = StyleSheet.create({
     fontSize: f(24),
     fontWeight: '800',
     color: '#151A23',
+  },
+
+  paidAmountControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  paidAmountInput: {
+    width: 120,
+    height: 42,
+    borderWidth: 1,
+    borderColor: '#D8DDE5',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    textAlign: 'right',
+    color: '#151A23',
+    fontSize: f(16),
+    fontWeight: '600',
+  },
+
+  payFullButton: {
+    height: 42,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    backgroundColor: '#E8F5EC',
+    borderWidth: 1,
+    borderColor: '#B8DCC2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  payFullButtonText: {
+    fontSize: f(13),
+    fontWeight: '700',
+    color: '#087F23',
+  },
+
+  remainingRow: {
+    marginTop: 10,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#EEF0F3',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  remainingLabel: {
+    fontSize: f(15),
+    fontWeight: '600',
+    color: '#4D5665',
+  },
+
+  remainingAmount: {
+    fontSize: f(18),
+    fontWeight: '800',
+    color: '#D97706',
   },
 
   buttonRow: {

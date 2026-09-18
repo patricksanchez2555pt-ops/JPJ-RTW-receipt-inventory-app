@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { Tabs } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -18,10 +18,10 @@ export default function RootLayout() {
         />
 
         <View style={styles.content}>
-          <Stack
+          <Tabs
             screenOptions={{
               headerShown: false,
-              gestureEnabled: false,
+              tabBarStyle: { display: 'none' },
             }}
           />
         </View>
@@ -43,13 +43,5 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     minWidth: 0,
-  },
-
-  topControls: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingHorizontal: 12,
-    paddingTop: 12,
-    paddingBottom: 6,
   },
 });

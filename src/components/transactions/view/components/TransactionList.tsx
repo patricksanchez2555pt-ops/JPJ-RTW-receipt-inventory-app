@@ -10,15 +10,9 @@ type Props = {
   transactions: Transaction[];
   selectedTransactionId: string | null;
   onSelect: (id: string | null) => void;
-  hasDetails: boolean;
 };
 
-export default function TransactionList({
-  transactions,
-  selectedTransactionId,
-  onSelect,
-  hasDetails,
-}: Props) {
+export default function TransactionList({ transactions, selectedTransactionId, onSelect }: Props) {
   const deleteTransaction = useTransactionStore((state) => state.deleteTransaction);
 
   function handleDelete(transaction: Transaction) {
@@ -52,7 +46,7 @@ export default function TransactionList({
   }
 
   return (
-    <View style={[styles.container, hasDetails && styles.containerWithDetails]}>
+    <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
         {transactions.map((transaction) => (
           <TransactionRow
@@ -71,17 +65,6 @@ export default function TransactionList({
 }
 
 const styles = StyleSheet.create({
-  emptyTitle: {
-    fontSize: f(18),
-    fontWeight: '800',
-    color: '#252B35',
-  },
-
-  emptySubtitle: {
-    marginTop: 6,
-    fontSize: f(13),
-    color: '#7A8494',
-  },
   container: {
     flex: 1,
     overflow: 'hidden',
@@ -89,10 +72,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#DCE1E9',
     backgroundColor: '#FFFFFF',
-  },
-
-  containerWithDetails: {
-    flex: 1.45,
   },
 
   listContent: {
@@ -109,8 +88,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  emptyState: {
-    width: 200,
-    height: 100,
+  emptyTitle: {
+    fontSize: f(18),
+    fontWeight: '800',
+    color: '#252B35',
+  },
+
+  emptySubtitle: {
+    marginTop: 6,
+    fontSize: f(13),
+    color: '#7A8494',
   },
 });

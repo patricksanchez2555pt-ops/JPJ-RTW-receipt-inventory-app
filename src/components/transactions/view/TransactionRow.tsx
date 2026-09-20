@@ -46,6 +46,7 @@ export default function TransactionRow({ transaction, selected, onPress, onDelet
       <View style={styles.customerCol}>
         <Text
           numberOfLines={1}
+          ellipsizeMode="tail"
           style={[styles.customerText, !transaction.buyerName && styles.walkInText]}
         >
           {transaction.buyerName || 'Walk-in Customer'}
@@ -103,7 +104,7 @@ const styles = StyleSheet.create({
 
   customerCol: {
     flex: 1,
-    minWidth: 80,
+    minWidth: 0,
   },
 
   itemsCol: {

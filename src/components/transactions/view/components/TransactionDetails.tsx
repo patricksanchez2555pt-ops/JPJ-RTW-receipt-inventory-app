@@ -4,45 +4,19 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { formatDate, formatTime } from '@/utils/dateFormat';
 import { f } from '@/utils/fontScale';
 
-import { useColorStore } from '../../../../store/useColorStore';
-import { useProductStore } from '../../../../store/useProductStore';
-import { useSizeStore } from '../../../../store/useSizeStore';
 import type { Transaction } from '../../../../types/localModels';
 import AddedItemsPanel from '../../components/added-items-panel/AddedItemsPanel';
 import type { AddedTransactionItem } from '../../form/types';
 
 type Props = {
   transaction: Transaction;
+  addedItems: AddedTransactionItem[];
   onClose: () => void;
+  onEdit: () => void;
 };
 
-export default function TransactionDetails({ transaction, onClose }: Props) {
-  const products = useProductStore((state) => state.products);
-  const colors = useColorStore((state) => state.colors);
-  const sizes = useSizeStore((state) => state.sizes);
-
-  const paidAmount = transaction.paidAmount ?? 1980;
-
-  const addedItems = useMemo<AddedTransactionItem[]>(() => {
-    return (transaction.items ?? []).flatMap((item) => {
-      const product = products.find((entry) => entry.id === item.productId);
-      const color = colors.find((entry) => entry.id === item.colorId);
-      const size = sizes.find((entry) => entry.id === item.sizeId);
-
-      if (!product || !color || !size) {
-        return [];
-      }
-
-      return [
-        {
-          ...item,
-          product,
-          color,
-          size,
-        },
-      ];
-    });
-  }, [transaction.items, products, colors, sizes]);
+export default function TransactionDetails({ transaction, addedItems, onClose, onEdit }: Props) {
+  const paidAmount = transaction.paidAmount ?? 0;
 
   const subtotal = useMemo(() => {
     return (transaction.items ?? []).reduce((sum, item) => sum + item.total, 0);
@@ -70,9 +44,21 @@ export default function TransactionDetails({ transaction, onClose }: Props) {
           </Text>
         </View>
 
-        <Pressable onPress={onClose} style={styles.closeButton}>
-          <Text style={styles.closeText}>×</Text>
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable
+            onPress={onEdit}
+            style={({ pressed }) => [styles.editButton, pressed && styles.editButtonPressed]}
+          >
+            <Text style={styles.editText}>Edit</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={onClose}
+            style={({ pressed }) => [styles.closeButton, pressed && styles.closeButtonPressed]}
+          >
+            <Text style={styles.closeText}>×</Text>
+          </Pressable>
+        </View>
       </View>
 
       {/* CUSTOMER + PAYMENT + SUMMARY */}
@@ -171,6 +157,32 @@ const styles = StyleSheet.create({
     color: '#7A8494',
   },
 
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  editButton: {
+    minWidth: 58,
+    height: 34,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1745D1',
+  },
+
+  editButtonPressed: {
+    opacity: 0.75,
+  },
+
+  editText: {
+    fontSize: f(12),
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+
   closeButton: {
     width: 34,
     height: 34,
@@ -178,6 +190,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#F3F5F7',
+  },
+
+  closeButtonPressed: {
+    backgroundColor: '#E8EBEF',
   },
 
   closeText: {

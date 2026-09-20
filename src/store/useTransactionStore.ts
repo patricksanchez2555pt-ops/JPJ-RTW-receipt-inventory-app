@@ -20,6 +20,7 @@ type TransactionStore = {
   addTransaction: (
     transactionData: Omit<Transaction, 'id' | 'date'> & { date?: string },
   ) => Transaction;
+  updateTransaction: (transactionData: Transaction) => Transaction | undefined;
   deleteTransaction: (id: string) => void;
   setAllTransactions: (transactions: Transaction[]) => void;
 
@@ -76,6 +77,14 @@ export const useTransactionStore = create<TransactionStore>()(
         }));
 
         return newTransaction;
+      },
+
+      updateTransaction: (data) => {
+        const updatedTransaction = get().transactions.find((t) => t.id === data?.id);
+        Object.keys(data)?.forEach((k) => {
+          updatedTransaction[k] = data[k];
+        });
+        return updatedTransaction;
       },
 
       deleteTransaction: (id) =>

@@ -1,9 +1,14 @@
 import { useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { useColorStore } from '@/store/useColorStore';
+import { useProductStore } from '@/store/useProductStore';
+import { useSizeStore } from '@/store/useSizeStore';
 import { f } from '@/utils/fontScale';
 
 import { useTransactionStore } from '../../../store/useTransactionStore';
+import TransactionForm from '../form/TransactionForm';
+import type { AddedTransactionItem } from '../form/types';
 import TransactionDetails from './components/TransactionDetails';
 import TransactionList from './components/TransactionList';
 
@@ -11,6 +16,7 @@ export default function Transactions() {
   const transactions = useTransactionStore((state) => state.transactions);
 
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
 
   const selectedTransaction = useMemo(() => {
     if (!selectedTransactionId) {
@@ -19,6 +25,65 @@ export default function Transactions() {
 
     return transactions.find((transaction) => transaction.id === selectedTransactionId);
   }, [transactions, selectedTransactionId]);
+
+  const products = useProductStore((state) => state.products);
+  const colors = useColorStore((state) => state.colors);
+  const sizes = useSizeStore((state) => state.sizes);
+
+  const addedItems = useMemo<AddedTransactionItem[]>(() => {
+    return (selectedTransaction?.items ?? []).flatMap((item) => {
+      const product = products.find((entry) => entry.id === item.productId);
+      const color = colors.find((entry) => entry.id === item.colorId);
+      const size = sizes.find((entry) => entry.id === item.sizeId);
+
+      if (!product || !color || !size) {
+        return [];
+      }
+
+      return [
+        {
+          ...item,
+          product,
+          color,
+          size,
+        },
+      ];
+    });
+  }, [selectedTransaction, products, colors, sizes]);
+
+  const hasSelectedTransaction = !!selectedTransaction;
+
+  if (isEditMode) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.editHeader}>
+          <View>
+            <Text style={styles.title}>Edit Transaction</Text>
+            <Text style={styles.subtitle}>Update the transaction details.</Text>
+          </View>
+
+          <Pressable
+            onPress={() => {
+              setIsEditMode(false);
+            }}
+            style={styles.closeButton}
+          >
+            <Text style={styles.closeText}>×</Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.formContainer}>
+          <TransactionForm
+            transaction={selectedTransaction}
+            addedItems={addedItems}
+            onUpdate={() => {
+              setIsEditMode(false);
+            }}
+          />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -39,19 +104,25 @@ export default function Transactions() {
 
       <View style={styles.content}>
         <View
-          style={selectedTransaction ? styles.transactionList : styles.transactionListNoSelected}
+          style={[
+            styles.transactionList,
+            hasSelectedTransaction ? styles.transactionListWithDetails : styles.transactionListFull,
+          ]}
         >
           <TransactionList
             transactions={transactions}
             selectedTransactionId={selectedTransactionId}
             onSelect={setSelectedTransactionId}
-            hasDetails={!!selectedTransaction}
           />
         </View>
 
         {selectedTransaction && (
           <View style={styles.transactionDetails}>
             <TransactionDetails
+              addedItems={addedItems}
+              onEdit={() => {
+                setIsEditMode(true);
+              }}
               transaction={selectedTransaction}
               onClose={() => setSelectedTransactionId(null)}
             />
@@ -61,6 +132,7 @@ export default function Transactions() {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -68,6 +140,14 @@ const styles = StyleSheet.create({
   },
 
   header: {
+    padding: 20,
+    paddingBottom: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+
+  editHeader: {
     padding: 20,
     paddingBottom: 18,
     flexDirection: 'row',
@@ -85,6 +165,25 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: f(14),
     color: '#707989',
+  },
+
+  closeButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F3F5F7',
+  },
+
+  closeText: {
+    marginTop: -3,
+    fontSize: f(25),
+    color: '#687284',
+  },
+
+  formContainer: {
+    flex: 1,
   },
 
   countBadge: {
@@ -106,16 +205,19 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     flexDirection: 'row',
+    gap: 12,
   },
 
   transactionList: {
-    width: '40%',
     height: '100%',
   },
 
-  transactionListNoSelected: {
+  transactionListFull: {
     width: '100%',
-    height: '100%',
+  },
+
+  transactionListWithDetails: {
+    width: '40%',
   },
 
   transactionDetails: {

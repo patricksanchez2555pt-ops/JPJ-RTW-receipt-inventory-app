@@ -12,7 +12,7 @@ import { useCustomerStore } from '../../../store/useCustomerStore';
 import { useProductStore } from '../../../store/useProductStore';
 import { useSizeStore } from '../../../store/useSizeStore';
 import { useTransactionStore } from '../../../store/useTransactionStore';
-import type { Color, Product, Size } from '../../../types/localModels';
+import type { Color, Product, Size, Transaction } from '../../../types/localModels';
 import AddedItemsPanel from '../components/added-items-panel/AddedItemsPanel';
 import ColorSelector from './components/ColorSelector';
 import ProductSelector from './components/ProductSelector';
@@ -21,7 +21,17 @@ import SizeSelector from './components/SizeSelector';
 import TransactionSummary from './components/TransactionSummary';
 import type { AddedTransactionItem } from './types';
 
-export default function TransactionForm() {
+type Props = {
+  transaction?: Transaction | null | undefined;
+  addedItems?: AddedTransactionItem[];
+  onUpdate?: () => void;
+};
+
+export default function TransactionForm({
+  transaction = null,
+  addedItems = [],
+  onUpdate = () => {},
+}: Props) {
   const PRODUCTS = useProductStore((state) => state.products);
 
   const COLORS = useColorStore((state) => state.colors);
@@ -38,6 +48,18 @@ export default function TransactionForm() {
    */
   const customerPrices = useCustomerPricingStore((state) => state.customerPrices);
 
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(
+    transaction?.customerId ?? null,
+  );
+
+  const [discount, setDiscount] = useState(transaction?.discount ?? 0);
+
+  const [paidAmount, setPaidAmount] = useState(transaction?.paidAmount ?? 0);
+
+  const [buyerName, setBuyerName] = useState(transaction?.buyerName ?? '');
+
+  const [items, setItems] = useState<AddedTransactionItem[]>(addedItems ?? []);
+
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(PRODUCTS[0] ?? null);
 
   const [selectedColor, setSelectedColor] = useState<Color | null>(COLORS[0] ?? null);
@@ -45,16 +67,6 @@ export default function TransactionForm() {
   const [selectedSizes, setSelectedSizes] = useState<Size[]>([]);
 
   const [quantity, setQuantity] = useState(0);
-
-  const [items, setItems] = useState<AddedTransactionItem[]>([]);
-
-  const [buyerName, setBuyerName] = useState('');
-
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
-
-  const [discount, setDiscount] = useState(0);
-
-  const [paidAmount, setPaidAmount] = useState(0);
 
   const [highlightedItemIds, setHighlightedItemIds] = useState<string[]>([]);
 
@@ -286,22 +298,41 @@ export default function TransactionForm() {
 
     const customer = useCustomerStore.getState().getCustomer(selectedCustomerId ?? '');
 
-    const transaction = useTransactionStore.getState().addTransaction({
-      customerId: customer?.id,
-      buyerName: customer?.name ?? buyerName,
-      subtotal,
-      paidAmount,
-      discount,
-      total,
-      items,
-    });
+    if (transaction?.id) {
+      const updatedTransaction = useTransactionStore.getState().updateTransaction({
+        ...transaction,
+        customerId: customer?.id,
+        buyerName: customer?.name ?? buyerName,
+        subtotal,
+        paidAmount,
+        discount,
+        total,
+        items,
+      });
+      Alert.alert(
+        'Transaction Updated',
+        `Transaction #${updatedTransaction?.id}\nTotal: ₱${updatedTransaction?.total.toFixed(2)}`,
+      );
 
-    console.log('TRANSACTION SAVED:', transaction);
+      onUpdate();
+    } else {
+      const newTransaction = useTransactionStore.getState().addTransaction({
+        customerId: customer?.id,
+        buyerName: customer?.name ?? buyerName,
+        subtotal,
+        paidAmount,
+        discount,
+        total,
+        items,
+      });
 
-    Alert.alert(
-      'Transaction Saved',
-      `Transaction #${transaction.id}\nTotal: ₱${transaction.total.toFixed(2)}`,
-    );
+      console.log('TRANSACTION SAVED:', newTransaction);
+
+      Alert.alert(
+        'Transaction Saved',
+        `Transaction #${newTransaction.id}\nTotal: ₱${newTransaction.total.toFixed(2)}`,
+      );
+    }
 
     setItems([]);
     setDiscount(0);

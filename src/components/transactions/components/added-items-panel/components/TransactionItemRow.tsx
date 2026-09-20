@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { formatNumber } from '@/utils/formatNumber';
 
-import type { AddedTransactionItem } from '../../../create/types';
+import type { AddedTransactionItem } from '../../../form/types';
 
 const FONT_SCALE = 1.25;
 const f = (n: number) => Math.round(n * FONT_SCALE);

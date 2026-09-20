@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { f } from '@/utils/fontScale';
 
 import InventoryTable from '../components/inventory/InventoryTable';
-import ProductSelector from '../components/transactions/create/components/ProductSelector';
+import ProductSelector from '../components/transactions/form/components/ProductSelector';
 import { useProductStore } from '../store/useProductStore';
 import type { Product } from '../types/localModels';
 

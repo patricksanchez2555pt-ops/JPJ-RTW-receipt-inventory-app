@@ -1,4 +1,4 @@
-import type { AddedTransactionItem } from '../components/transactions/create/types';
+import type { AddedTransactionItem } from '../components/transactions/form/types';
 import type { PrintableProduct } from '../service/escPos';
 
 export function toPrintableProducts(items: AddedTransactionItem[]): PrintableProduct[] {

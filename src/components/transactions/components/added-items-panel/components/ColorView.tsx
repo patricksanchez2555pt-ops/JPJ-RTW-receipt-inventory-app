@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { formatNumber } from '@/utils/formatNumber';
 
-import type { AddedTransactionItem } from '../../../create/types';
+import type { AddedTransactionItem } from '../../../form/types';
 import type { ColorGroup, ColorProductGroup } from '../types';
 import TransactionItemRow from './TransactionItemRow';
 

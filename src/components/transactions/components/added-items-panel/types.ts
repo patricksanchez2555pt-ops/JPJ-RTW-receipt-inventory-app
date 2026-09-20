@@ -1,4 +1,4 @@
-import type { AddedTransactionItem } from '../../create/types';
+import type { AddedTransactionItem } from '../../form/types';
 
 export type ColorGroup = {
   id: string;

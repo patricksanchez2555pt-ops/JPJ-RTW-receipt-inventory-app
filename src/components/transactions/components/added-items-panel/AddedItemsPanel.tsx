@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
-import type { AddedTransactionItem } from '../../create/types';
+import type { AddedTransactionItem } from '../../form/types';
 import AddedItemsHeader from './components/AddedItemsHeader';
 import ColorView from './components/ColorView';
 import SizeView from './components/SizeView';

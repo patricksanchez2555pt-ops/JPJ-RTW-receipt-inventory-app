@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { formatNumber } from '@/utils/formatNumber';
 
-import type { AddedTransactionItem } from '../../../create/types';
+import type { AddedTransactionItem } from '../../../form/types';
 import { getSortedSizeGroup } from '../helpers';
 import type { SizeProductGroup } from '../types';
 import TransactionItemRow from './TransactionItemRow';

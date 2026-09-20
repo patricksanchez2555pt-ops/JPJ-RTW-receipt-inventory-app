@@ -9,7 +9,7 @@ import { useProductStore } from '../../../../store/useProductStore';
 import { useSizeStore } from '../../../../store/useSizeStore';
 import type { Transaction } from '../../../../types/localModels';
 import AddedItemsPanel from '../../components/added-items-panel/AddedItemsPanel';
-import type { AddedTransactionItem } from '../../create/types';
+import type { AddedTransactionItem } from '../../form/types';
 
 type Props = {
   transaction: Transaction;

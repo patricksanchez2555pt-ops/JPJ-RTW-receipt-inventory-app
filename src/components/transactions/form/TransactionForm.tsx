@@ -12,7 +12,7 @@ import { useCustomerStore } from '../../../store/useCustomerStore';
 import { useProductStore } from '../../../store/useProductStore';
 import { useSizeStore } from '../../../store/useSizeStore';
 import { useTransactionStore } from '../../../store/useTransactionStore';
-import type { Color, Product, Size } from '../../../types/localModels.ts';
+import type { Color, Product, Size } from '../../../types/localModels';
 import AddedItemsPanel from '../components/added-items-panel/AddedItemsPanel';
 import ColorSelector from './components/ColorSelector';
 import ProductSelector from './components/ProductSelector';
@@ -21,7 +21,7 @@ import SizeSelector from './components/SizeSelector';
 import TransactionSummary from './components/TransactionSummary';
 import type { AddedTransactionItem } from './types';
 
-export default function CreateTransaction() {
+export default function TransactionForm() {
   const PRODUCTS = useProductStore((state) => state.products);
 
   const COLORS = useColorStore((state) => state.colors);
@@ -304,16 +304,16 @@ export default function CreateTransaction() {
     );
 
     setItems([]);
-    setBuyerName('');
     setDiscount(0);
     setPaidAmount(0);
-    setSelectedSizes([]);
-    setQuantity(0);
-    setHighlightedItemIds([]);
     setSelectedCustomerId(null);
 
-    setSelectedProduct(PRODUCTS[0] ?? null);
+    setBuyerName('');
+    setQuantity(0);
+    setHighlightedItemIds([]);
 
+    setSelectedProduct(PRODUCTS[0] ?? null);
+    setSelectedSizes([]);
     setSelectedColor(null);
   }
 

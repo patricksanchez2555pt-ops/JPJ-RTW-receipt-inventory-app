@@ -1,5 +1,5 @@
-import CreateTransaction from '../components/transactions/create/CreateTransaction';
+import TransactionForm from '../components/transactions/form/TransactionForm';
 
-export default function CreateTransactionScreen() {
-  return <CreateTransaction />;
+export default function TransactionFormScreen() {
+  return <TransactionForm />;
 }

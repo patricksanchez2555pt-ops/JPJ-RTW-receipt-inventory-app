@@ -350,9 +350,9 @@ export default function TransactionForm() {
       >
         <View style={styles.header}>
           <View>
-            <Text style={styles.title}>Create Transaction</Text>
+            <Text style={styles.title}>Transaction Form</Text>
 
-            <Text style={styles.subtitle}>Add products to the transaction.</Text>
+            <Text style={styles.subtitle}>Create a new transaction.</Text>
           </View>
         </View>
 

@@ -38,7 +38,9 @@ export default function Transactions() {
       </View>
 
       <View style={styles.content}>
-        <View style={selectedTransaction && styles.transactionList}>
+        <View
+          style={selectedTransaction ? styles.transactionList : styles.transactionListNoSelected}
+        >
           <TransactionList
             transactions={transactions}
             selectedTransactionId={selectedTransactionId}
@@ -108,6 +110,11 @@ const styles = StyleSheet.create({
 
   transactionList: {
     width: '40%',
+    height: '100%',
+  },
+
+  transactionListNoSelected: {
+    width: '100%',
     height: '100%',
   },
 

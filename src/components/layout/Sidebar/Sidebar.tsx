@@ -25,9 +25,9 @@ const NAV_ITEMS: SidebarItem[] = [
     route: '/inventory',
   },
   {
-    label: 'Create Transaction',
+    label: 'Transaction Form',
     icon: 'cart-outline',
-    route: '/create-transaction',
+    route: '/transaction-form',
   },
   {
     label: 'Transactions',

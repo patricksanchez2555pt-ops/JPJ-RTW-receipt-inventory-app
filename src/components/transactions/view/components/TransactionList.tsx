@@ -53,15 +53,6 @@ export default function TransactionList({
 
   return (
     <View style={[styles.container, hasDetails && styles.containerWithDetails]}>
-      <View style={styles.tableHeader}>
-        <View style={styles.transactionCol} />
-        <View style={styles.dateCol} />
-        <View style={styles.customerCol} />
-        <View style={styles.itemsCol} />
-        <View style={styles.totalCol} />
-        <View style={styles.actionCol} />
-      </View>
-
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
         {transactions.map((transaction) => (
           <TransactionRow
@@ -102,41 +93,6 @@ const styles = StyleSheet.create({
 
   containerWithDetails: {
     flex: 1.45,
-  },
-
-  tableHeader: {
-    height: 50,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    backgroundColor: '#F7F8FA',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E1E5EB',
-  },
-
-  transactionCol: {
-    width: 145,
-  },
-
-  dateCol: {
-    width: 125,
-  },
-
-  customerCol: {
-    flex: 1,
-    minWidth: 120,
-  },
-
-  itemsCol: {
-    width: 70,
-  },
-
-  totalCol: {
-    width: 120,
-  },
-
-  actionCol: {
-    width: 80,
   },
 
   listContent: {

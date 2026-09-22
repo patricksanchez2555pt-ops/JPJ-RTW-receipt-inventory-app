@@ -51,6 +51,7 @@ export default function TransactionList({ transactions, selectedTransactionId, o
         {transactions.map((transaction) => (
           <TransactionRow
             key={transaction.id}
+            isStatusShown={selectedTransactionId === null}
             transaction={transaction}
             selected={transaction.id === selectedTransactionId}
             onPress={() =>

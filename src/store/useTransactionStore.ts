@@ -81,10 +81,13 @@ export const useTransactionStore = create<TransactionStore>()(
 
       updateTransaction: (data) => {
         const updatedTransaction = get().transactions.find((t) => t.id === data?.id);
-        Object.keys(data)?.forEach((k) => {
-          updatedTransaction[k] = data[k];
-        });
-        return updatedTransaction;
+        if (!updatedTransaction) return undefined;
+
+        set((state) => ({
+          transactions: state.transactions.map((t) => (t.id === data.id ? { ...t, ...data } : t)),
+        }));
+
+        return { ...updatedTransaction, ...data };
       },
 
       deleteTransaction: (id) =>

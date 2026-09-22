@@ -24,13 +24,19 @@ import type { AddedTransactionItem } from './types';
 type Props = {
   transaction?: Transaction | null | undefined;
   addedItems?: AddedTransactionItem[];
+  title?: string;
+  subtitle?: string;
   onUpdate?: () => void;
+  onClose?: () => void | undefined;
 };
 
 export default function TransactionForm({
   transaction = null,
   addedItems = [],
+  title = 'Transaction Form',
+  subtitle = 'Create a new transaction.',
   onUpdate = () => {},
+  onClose = undefined,
 }: Props) {
   const PRODUCTS = useProductStore((state) => state.products);
 
@@ -381,10 +387,21 @@ export default function TransactionForm({
       >
         <View style={styles.header}>
           <View>
-            <Text style={styles.title}>Transaction Form</Text>
+            <Text style={styles.title}>{title}</Text>
 
-            <Text style={styles.subtitle}>Create a new transaction.</Text>
+            <Text style={styles.subtitle}>{subtitle}</Text>
           </View>
+
+          {onClose && (
+            <Pressable
+              onPress={() => {
+                onClose();
+              }}
+              style={styles.closeButton}
+            >
+              <Text style={styles.closeText}>×</Text>
+            </Pressable>
+          )}
         </View>
 
         <View style={styles.card}>
@@ -506,6 +523,9 @@ const styles = StyleSheet.create({
 
   header: {
     marginBottom: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
 
   title: {
@@ -517,6 +537,21 @@ const styles = StyleSheet.create({
     marginTop: 4,
     color: '#707989',
     fontSize: f(14),
+  },
+
+  closeButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F3F5F7',
+  },
+
+  closeText: {
+    marginTop: -3,
+    fontSize: f(25),
+    color: '#687284',
   },
 
   card: {

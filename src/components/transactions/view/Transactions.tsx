@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { useColorStore } from '@/store/useColorStore';
 import { useProductStore } from '@/store/useProductStore';
@@ -55,33 +55,18 @@ export default function Transactions() {
 
   if (isEditMode) {
     return (
-      <View style={styles.container}>
-        <View style={styles.editHeader}>
-          <View>
-            <Text style={styles.title}>Edit Transaction</Text>
-            <Text style={styles.subtitle}>Update the transaction details.</Text>
-          </View>
-
-          <Pressable
-            onPress={() => {
-              setIsEditMode(false);
-            }}
-            style={styles.closeButton}
-          >
-            <Text style={styles.closeText}>×</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.formContainer}>
-          <TransactionForm
-            transaction={selectedTransaction}
-            addedItems={addedItems}
-            onUpdate={() => {
-              setIsEditMode(false);
-            }}
-          />
-        </View>
-      </View>
+      <TransactionForm
+        title="Edit Transaction"
+        subtitle={selectedTransactionId ?? ''}
+        transaction={selectedTransaction}
+        addedItems={addedItems}
+        onClose={() => {
+          setIsEditMode(false);
+        }}
+        onUpdate={() => {
+          setIsEditMode(false);
+        }}
+      />
     );
   }
 
@@ -91,7 +76,9 @@ export default function Transactions() {
         <View>
           <Text style={styles.title}>Transactions</Text>
 
-          <Text style={styles.subtitle}>View all completed transactions.</Text>
+          <Text style={styles.subtitle}>
+            Manage completed transactions, payments, and order details.
+          </Text>
         </View>
 
         <View style={styles.countBadge}>
@@ -147,14 +134,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
 
-  editHeader: {
-    padding: 20,
-    paddingBottom: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-
   title: {
     fontSize: f(26),
     fontWeight: '800',
@@ -165,21 +144,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: f(14),
     color: '#707989',
-  },
-
-  closeButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F3F5F7',
-  },
-
-  closeText: {
-    marginTop: -3,
-    fontSize: f(25),
-    color: '#687284',
+    maxWidth: 600,
   },
 
   formContainer: {

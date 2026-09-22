@@ -8,11 +8,18 @@ import type { Transaction } from '../../../types/localModels';
 type Props = {
   transaction: Transaction;
   selected: boolean;
+  isStatusShown: boolean;
   onPress: () => void;
   onDelete: () => void;
 };
 
-export default function TransactionRow({ transaction, selected, onPress, onDelete }: Props) {
+export default function TransactionRow({
+  transaction,
+  selected,
+  isStatusShown,
+  onPress,
+  onDelete,
+}: Props) {
   function formatDate(date: string) {
     return new Date(date).toLocaleDateString('en-PH', {
       year: 'numeric',
@@ -27,6 +34,11 @@ export default function TransactionRow({ transaction, selected, onPress, onDelet
       minute: '2-digit',
     });
   }
+
+  const paidAmount = Number(transaction.paidAmount ?? 0);
+  const total = Number(transaction.total ?? 0);
+
+  const isPaid = paidAmount >= total;
 
   return (
     <Pressable
@@ -62,8 +74,18 @@ export default function TransactionRow({ transaction, selected, onPress, onDelet
       </View>
 
       <View style={styles.totalCol}>
-        <Text style={styles.totalText}>₱{formatNumber(Number(transaction.total))}</Text>
+        <Text style={styles.totalText}>₱{formatNumber(total)}</Text>
       </View>
+
+      {isStatusShown && (
+        <View style={styles.statusCol}>
+          <View style={[styles.statusBadge, isPaid ? styles.paidBadge : styles.unpaidBadge]}>
+            <Text style={[styles.statusText, isPaid ? styles.paidText : styles.unpaidText]}>
+              {isPaid ? 'Paid' : 'Unpaid'}
+            </Text>
+          </View>
+        </View>
+      )}
 
       <View style={styles.actionCol}>
         <Pressable
@@ -115,6 +137,11 @@ const styles = StyleSheet.create({
   totalCol: {
     width: 100,
     alignItems: 'flex-end',
+  },
+
+  statusCol: {
+    width: 80,
+    alignItems: 'center',
   },
 
   actionCol: {
@@ -172,6 +199,36 @@ const styles = StyleSheet.create({
     fontSize: f(14),
     fontWeight: '800',
     color: '#151A23',
+  },
+
+  statusBadge: {
+    minWidth: 62,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  paidBadge: {
+    backgroundColor: '#EAF7EF',
+  },
+
+  unpaidBadge: {
+    backgroundColor: '#FFF3E8',
+  },
+
+  statusText: {
+    fontSize: f(11),
+    fontWeight: '800',
+  },
+
+  paidText: {
+    color: '#21864A',
+  },
+
+  unpaidText: {
+    color: '#C66A16',
   },
 
   deleteButton: {

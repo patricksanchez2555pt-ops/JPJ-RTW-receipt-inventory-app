@@ -1,3 +1,4 @@
+import type { GestureResponderEvent } from 'react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { f } from '@/utils/fontScale';
@@ -9,6 +10,8 @@ type Props = {
   transaction: Transaction;
   selected: boolean;
   isStatusShown: boolean;
+  isDeleteButtonShown?: boolean;
+  isSmallTotal?: boolean;
   onPress: () => void;
   onDelete: () => void;
 };
@@ -17,6 +20,8 @@ export default function TransactionRow({
   transaction,
   selected,
   isStatusShown,
+  isDeleteButtonShown,
+  isSmallTotal,
   onPress,
   onDelete,
 }: Props) {
@@ -37,7 +42,6 @@ export default function TransactionRow({
 
   const paidAmount = Number(transaction.paidAmount ?? 0);
   const total = Number(transaction.total ?? 0);
-
   const isPaid = paidAmount >= total;
 
   return (
@@ -50,11 +54,13 @@ export default function TransactionRow({
       ]}
     >
       <View style={styles.dateCol}>
-        <Text style={styles.dateText}>{formatDate(transaction.date)}</Text>
-
-        <Text style={styles.timeText}>{formatTime(transaction.date)}</Text>
+        <Text style={styles.dateText} numberOfLines={1}>
+          {formatDate(transaction.date)}
+        </Text>
+        <Text style={styles.timeText} numberOfLines={1}>
+          {formatTime(transaction.date)}
+        </Text>
       </View>
-
       <View style={styles.customerCol}>
         <Text
           numberOfLines={1}
@@ -64,19 +70,20 @@ export default function TransactionRow({
           {transaction.buyerName || 'Walk-in Customer'}
         </Text>
 
-        <Text style={styles.transactionId}>#{transaction.id.replace('tx-', '')}</Text>
+        <Text style={styles.transactionId} numberOfLines={1}>
+          #{transaction.id.replace('tx-', '')}
+        </Text>
       </View>
-
       <View style={styles.itemsCol}>
         <View style={styles.itemBadge}>
           <Text style={styles.itemBadgeText}>{transaction.items?.length ?? 0}</Text>
         </View>
       </View>
-
       <View style={styles.totalCol}>
-        <Text style={styles.totalText}>₱{formatNumber(total)}</Text>
+        <Text style={[styles.totalText, isSmallTotal && styles.smallTotalText]} numberOfLines={1}>
+          ₱{formatNumber(total)}
+        </Text>
       </View>
-
       {isStatusShown && (
         <View style={styles.statusCol}>
           <View style={[styles.statusBadge, isPaid ? styles.paidBadge : styles.unpaidBadge]}>
@@ -87,17 +94,19 @@ export default function TransactionRow({
         </View>
       )}
 
-      <View style={styles.actionCol}>
-        <Pressable
-          onPress={(event) => {
-            event.stopPropagation();
-            onDelete();
-          }}
-          style={({ pressed }) => [styles.deleteButton, pressed && styles.deleteButtonPressed]}
-        >
-          <Text style={styles.deleteText}>Delete</Text>
-        </Pressable>
-      </View>
+      {isDeleteButtonShown && (
+        <View style={styles.actionCol}>
+          <Pressable
+            onPress={(event: GestureResponderEvent) => {
+              event.stopPropagation();
+              onDelete();
+            }}
+            style={({ pressed }) => [styles.deleteButton, pressed && styles.deleteButtonPressed]}
+          >
+            <Text style={styles.deleteText}>Delete</Text>
+          </Pressable>
+        </View>
+      )}
     </Pressable>
   );
 }
@@ -110,6 +119,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#EDF0F4',
+    gap: 6,
   },
 
   selectedRow: {
@@ -120,32 +130,38 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
 
+  // Relative column widths
   dateCol: {
-    width: 80,
+    flex: 1.4,
+    minWidth: 0,
   },
 
   customerCol: {
-    flex: 1,
+    flex: 2.2,
     minWidth: 0,
   },
 
   itemsCol: {
-    width: 50,
+    flex: 0.55,
+    minWidth: 0,
     alignItems: 'center',
   },
 
   totalCol: {
-    width: 100,
+    flex: 1.2,
+    minWidth: 0,
     alignItems: 'flex-end',
   },
 
   statusCol: {
-    width: 80,
+    flex: 0.9,
+    minWidth: 0,
     alignItems: 'center',
   },
 
   actionCol: {
-    width: 80,
+    flex: 0.8,
+    minWidth: 0,
     alignItems: 'flex-end',
   },
 
@@ -201,9 +217,13 @@ const styles = StyleSheet.create({
     color: '#151A23',
   },
 
+  smallTotalText: {
+    fontSize: f(8),
+  },
+
   statusBadge: {
-    minWidth: 62,
-    paddingHorizontal: 9,
+    minWidth: 0,
+    paddingHorizontal: 8,
     paddingVertical: 5,
     borderRadius: 6,
     alignItems: 'center',
@@ -232,7 +252,7 @@ const styles = StyleSheet.create({
   },
 
   deleteButton: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 7,
     borderRadius: 6,
   },

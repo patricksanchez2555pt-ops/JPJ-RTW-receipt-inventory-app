@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   },
 
   sizeGroupName: {
-    fontSize: f(12),
+    fontSize: f(15),
     fontWeight: '700',
     color: '#e8eaee',
   },
@@ -222,14 +222,14 @@ const styles = StyleSheet.create({
   },
 
   sizeHeaderLabel: {
-    fontSize: f(9),
+    fontSize: f(8),
     color: '#7f8080',
     fontWeight: '600',
     marginBottom: 3,
   },
 
   sizeHeaderValue: {
-    fontSize: f(12),
+    fontSize: f(14),
     color: '#c8c8cb',
     fontWeight: '700',
   },

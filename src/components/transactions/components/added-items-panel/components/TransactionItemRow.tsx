@@ -60,7 +60,7 @@ export default function TransactionItemRow({
               ]}
             />
 
-            <Text style={styles.sizeName}>{label}</Text>
+            <Text style={styles.sizeName}>{label?.slice(0, 5)}</Text>
           </View>
         ) : (
           <Text style={[styles.sizeName]}>{label}</Text>
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   },
 
   sizeName: {
-    fontSize: f(10),
+    fontSize: f(15),
     fontWeight: '600',
   },
 
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
   },
 
   unitPrice: {
-    fontSize: f(10),
+    fontSize: f(15),
     fontWeight: '600',
     color: '#4F5868',
   },
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
   },
 
   rowTotal: {
-    fontSize: f(10),
+    fontSize: f(15),
     fontWeight: '700',
     color: '#20242B',
   },
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   },
 
   rowQuantity: {
-    fontSize: f(14),
+    fontSize: f(15),
     fontWeight: '700',
     color: '#20242B',
   },
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
 
   quantityText: {
     fontWeight: '600',
-    fontSize: f(10),
+    fontSize: f(15),
   },
 
   buttonText: {

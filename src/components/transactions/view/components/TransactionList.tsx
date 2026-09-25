@@ -184,6 +184,8 @@ export default function TransactionList({ transactions, selectedTransactionId, o
             <TransactionRow
               key={transaction.id}
               isStatusShown={selectedTransactionId === null}
+              isDeleteButtonShown={selectedTransactionId === null}
+              isSmallTotal={selectedTransactionId !== null}
               transaction={transaction}
               selected={transaction.id === selectedTransactionId}
               onPress={() =>

@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { formatDate, formatTime } from '@/utils/dateUtils';
 import { f } from '@/utils/fontScale';
 
+import { useTransactionStore } from '../../../../store/useTransactionStore';
 import type { Transaction } from '../../../../types/localModels';
 import AddedItemsPanel from '../../components/added-items-panel/AddedItemsPanel';
 import type { AddedTransactionItem } from '../../form/types';
@@ -16,99 +17,179 @@ type Props = {
 };
 
 export default function TransactionDetails({ transaction, addedItems, onClose, onEdit }: Props) {
-  const paidAmount = transaction.paidAmount ?? 0;
+  const [isTopExpanded, setIsTopExpanded] = useState(true);
+
+  const updateTransaction = useTransactionStore((state) => state.updateTransaction);
+
+  const paidAmount = Number(transaction.paidAmount ?? 0);
 
   const subtotal = useMemo(() => {
     return (transaction.items ?? []).reduce((sum, item) => sum + item.total, 0);
   }, [transaction.items]);
 
-  const discount = transaction.discount ?? 0;
+  const discount = Number(transaction.discount ?? 0);
 
-  const total = useMemo(() => {
-    return subtotal - discount;
-  }, [subtotal, discount]);
+  const total = Math.max(0, subtotal - discount);
 
-  const remainingBalance = total - paidAmount;
+  const remainingBalance = Math.max(0, total - paidAmount);
+
+  const isPaid = paidAmount >= total;
+
+  function handleMarkAsPaid() {
+    if (isPaid) {
+      return;
+    }
+
+    Alert.alert(
+      'Mark as Paid',
+      `Mark transaction #${transaction.id.replace(
+        'tx-',
+        '',
+      )} as fully paid?\n\nRemaining balance: ₱${remainingBalance.toLocaleString()}`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Mark as Paid',
+          onPress: () => {
+            updateTransaction({
+              ...transaction,
+              paidAmount: total,
+            });
+
+            Alert.alert('Payment Updated', 'Transaction has been marked as fully paid.');
+          },
+        },
+      ],
+    );
+  }
 
   return (
     <View style={styles.container}>
-      {/* HEADER */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Transaction Details</Text>
-
-          <Text style={styles.id}>#{transaction.id.replace('tx-', '')}</Text>
-
-          <Text style={styles.date}>
-            {formatDate(transaction.date)} • {formatTime(transaction.date)}
-          </Text>
-        </View>
-
-        <View style={styles.headerActions}>
+      {/* COLLAPSIBLE TOP SECTION */}
+      <View style={styles.topSection}>
+        {/* HEADER */}
+        <View style={styles.header}>
           <Pressable
-            onPress={onEdit}
-            style={({ pressed }) => [styles.editButton, pressed && styles.editButtonPressed]}
+            onPress={() => setIsTopExpanded((current) => !current)}
+            style={styles.headerTitleContainer}
           >
-            <Text style={styles.editText}>Edit</Text>
+            
+            <View style={styles.headerTitleRow}>
+              
+              <Text style={styles.title}>Transaction Details</Text>
+              <Text style={styles.collapseIcon}>{isTopExpanded ? '−' : '+'}</Text>
+            </View>
+            {!isTopExpanded && (
+              <View style={styles.collapsedInfo}>
+                <Text style={styles.collapsedId}>#{transaction.id.replace('tx-', '')}</Text>
+
+                <Text style={styles.collapsedSeparator}>•</Text>
+
+                <Text style={styles.collapsedCustomer} numberOfLines={1}>
+                  {transaction.buyerName || 'Walk-in Customer'}
+                </Text>
+
+                <Text style={styles.collapsedSeparator}>•</Text>
+
+                <Text style={styles.collapsedTotal}>₱{total.toLocaleString()}</Text>
+              </View>
+            )}
+            {isTopExpanded && (
+              <View>
+                <Text style={styles.id}>#{transaction.id.replace('tx-', '')}</Text>
+
+                <Text style={styles.date}>
+                  {formatDate(transaction.date)} • {formatTime(transaction.date)}
+                </Text>
+              </View>
+            )}
           </Pressable>
 
-          <Pressable
-            onPress={onClose}
-            style={({ pressed }) => [styles.closeButton, pressed && styles.closeButtonPressed]}
-          >
-            <Text style={styles.closeText}>×</Text>
-          </Pressable>
+          <View style={styles.headerActions}>
+            <Pressable
+              onPress={onEdit}
+              style={({ pressed }) => [styles.editButton, pressed && styles.editButtonPressed]}
+            >
+              <Text style={styles.editText}>Edit</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={onClose}
+              style={({ pressed }) => [styles.closeButton, pressed && styles.closeButtonPressed]}
+            >
+              <Text style={styles.closeText}>×</Text>
+            </Pressable>
+          </View>
         </View>
+        {/* CUSTOMER + PAYMENT + SUMMARY */}
+        {isTopExpanded && (
+          <View style={styles.customerRow}>
+            {/* CUSTOMER */}
+            <View style={styles.customer}>
+              <Text style={styles.customerLabel}>CUSTOMER</Text>
+
+              <Text style={styles.customerName} numberOfLines={2}>
+                {transaction.buyerName || 'Walk-in Customer'}
+              </Text>
+            </View>
+
+            {/* PAYMENT */}
+            <View style={styles.payment}>
+              <View style={styles.paymentRow}>
+                <Text style={styles.paymentLabel}>Paid Amount</Text>
+
+                <Text style={styles.paidValue}>₱{paidAmount.toLocaleString()}</Text>
+              </View>
+
+              <View style={styles.paymentRow}>
+                <Text style={styles.paymentLabel}>Remaining Balance</Text>
+
+                <Text style={[styles.remainingValue, isPaid && styles.paidInFullValue]}>
+                  ₱{remainingBalance.toLocaleString()}
+                </Text>
+              </View>
+
+              <Pressable
+                onPress={handleMarkAsPaid}
+                disabled={isPaid}
+                style={({ pressed }) => [
+                  styles.markPaidButton,
+                  isPaid && styles.markPaidButtonDisabled,
+                  pressed && !isPaid && styles.markPaidButtonPressed,
+                ]}
+              >
+                <Text style={[styles.markPaidText, isPaid && styles.markPaidTextDisabled]}>
+                  {isPaid ? '✓ Fully Paid' : 'Mark as Paid'}
+                </Text>
+              </Pressable>
+            </View>
+
+            {/* SUMMARY */}
+            <View style={styles.summary}>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Subtotal</Text>
+
+                <Text style={styles.summaryValue}>₱{subtotal.toLocaleString()}</Text>
+              </View>
+
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Discount</Text>
+
+                <Text style={styles.discountValue}>-₱{discount.toLocaleString()}</Text>
+              </View>
+
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Total</Text>
+
+                <Text style={styles.totalValue}>₱{total.toLocaleString()}</Text>
+              </View>
+            </View>
+          </View>
+        )}
       </View>
-
-      {/* CUSTOMER + PAYMENT + SUMMARY */}
-      <View style={styles.customerRow}>
-        {/* CUSTOMER */}
-        <View style={styles.customer}>
-          <Text style={styles.customerLabel}>CUSTOMER</Text>
-
-          <Text style={styles.customerName}>{transaction.buyerName || 'Walk-in Customer'}</Text>
-        </View>
-
-        {/* PAYMENT */}
-        <View style={styles.payment}>
-          <View style={styles.paymentRow}>
-            <Text style={styles.paymentLabel}>Paid Amount</Text>
-
-            <Text style={styles.paidValue}>₱{paidAmount.toLocaleString()}</Text>
-          </View>
-
-          <View style={styles.paymentRow}>
-            <Text style={styles.paymentLabel}>Remaining Balance</Text>
-
-            <Text style={[styles.remainingValue, remainingBalance === 0 && styles.paidInFullValue]}>
-              ₱{remainingBalance.toLocaleString()}
-            </Text>
-          </View>
-        </View>
-
-        {/* SUMMARY */}
-        <View style={styles.summary}>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Subtotal</Text>
-
-            <Text style={styles.summaryValue}>₱{subtotal.toLocaleString()}</Text>
-          </View>
-
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Discount</Text>
-
-            <Text style={styles.discountValue}>-₱{discount.toLocaleString()}</Text>
-          </View>
-
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Total</Text>
-
-            <Text style={styles.totalValue}>₱{total.toLocaleString()}</Text>
-          </View>
-        </View>
-      </View>
-
       {/* GROUPED ITEMS */}
       <View style={styles.items}>
         <AddedItemsPanel
@@ -126,7 +207,6 @@ export default function TransactionDetails({ transaction, addedItems, onClose, o
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    height: '100%',
     overflow: 'hidden',
     borderRadius: 12,
     borderWidth: 1,
@@ -134,14 +214,32 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
 
+  // TOP COLLAPSIBLE SECTION
+  topSection: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E8ED',
+  },
+
+  // HEADER
   header: {
-    minHeight: 72,
+    minHeight: 64,
     paddingHorizontal: 18,
+    paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E8ED',
+  },
+
+  headerTitleContainer: {
+    flex: 1,
+    minWidth: 0,
+    justifyContent: 'center',
+  },
+
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
 
   title: {
@@ -163,10 +261,52 @@ const styles = StyleSheet.create({
     color: '#7A8494',
   },
 
+  collapseIcon: {
+    width: 24,
+    height: 24,
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    fontSize: f(20),
+    fontWeight: '700',
+    color: '#687284',
+  },
+
+  collapsedInfo: {
+    marginTop: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minWidth: 0,
+  },
+
+  collapsedId: {
+    fontSize: f(11),
+    fontWeight: '700',
+    color: '#1745D1',
+  },
+
+  collapsedCustomer: {
+    flexShrink: 1,
+    fontSize: f(11),
+    color: '#7A8494',
+  },
+
+  collapsedSeparator: {
+    fontSize: f(11),
+    color: '#B0B6C0',
+  },
+
+  collapsedTotal: {
+    fontSize: f(12),
+    fontWeight: '800',
+    color: '#1745D1',
+  },
+
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    marginLeft: 12,
   },
 
   editButton: {
@@ -208,16 +348,19 @@ const styles = StyleSheet.create({
     color: '#687284',
   },
 
+  // CUSTOMER + PAYMENT + SUMMARY
   customerRow: {
     marginHorizontal: 16,
-    marginTop: 14,
+    marginBottom: 14,
     flexDirection: 'row',
     alignItems: 'stretch',
     gap: 12,
   },
 
+  // CUSTOMER
   customer: {
     flex: 1,
+    minWidth: 0,
     minHeight: 86,
     padding: 14,
     justifyContent: 'center',
@@ -239,8 +382,10 @@ const styles = StyleSheet.create({
     color: '#252B35',
   },
 
+  // PAYMENT
   payment: {
-    width: 210,
+    flex: 1.15,
+    minWidth: 0,
     minHeight: 86,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -253,10 +398,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 8,
     paddingVertical: 5,
   },
 
   paymentLabel: {
+    flexShrink: 1,
     fontSize: f(11),
     color: '#7A8494',
   },
@@ -277,8 +424,38 @@ const styles = StyleSheet.create({
     color: '#2F6B45',
   },
 
+  markPaidButton: {
+    minHeight: 30,
+    marginTop: 8,
+    paddingHorizontal: 10,
+    borderRadius: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1745D1',
+  },
+
+  markPaidButtonPressed: {
+    opacity: 0.75,
+  },
+
+  markPaidButtonDisabled: {
+    backgroundColor: '#EAF7EF',
+  },
+
+  markPaidText: {
+    fontSize: f(11),
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+
+  markPaidTextDisabled: {
+    color: '#21864A',
+  },
+
+  // SUMMARY
   summary: {
-    width: 250,
+    flex: 1.1,
+    minWidth: 0,
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 10,
@@ -289,6 +466,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 8,
     paddingVertical: 3,
   },
 
@@ -331,9 +509,10 @@ const styles = StyleSheet.create({
     color: '#1745D1',
   },
 
+  // ITEMS
   items: {
     flex: 1,
-    height: '100%',
+    minHeight: 0,
     marginTop: 10,
   },
 });

@@ -2,9 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import type { Href } from 'expo-router';
 import { router, usePathname } from 'expo-router';
 import React from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { seedInitialData } from '@/store/seedInitData';
 import { f } from '@/utils/fontScale';
 
 type SidebarItem = {
@@ -60,20 +59,6 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
 
   const activeItem = NAV_ITEMS.find((item) => item.route === pathname)?.label ?? '';
-
-  function handleReinitialize() {
-    Alert.alert('Reinitialize Inventory', 'This will seed initial inventory data. Continue?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Reinitialize',
-        style: 'destructive',
-        onPress: () => {
-          seedInitialData();
-          Alert.alert('Done', 'Inventory data reinitialized.');
-        },
-      },
-    ]);
-  }
 
   const handleNavigation = (route: Href) => {
     router.push(route);
@@ -140,19 +125,6 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
       {/* Logout always at bottom */}
       <View style={[styles.bottomSection, collapsed && styles.bottomSectionCollapsed]}>
-        <Pressable
-          onPress={handleReinitialize}
-          style={({ pressed }) => [
-            styles.reinitButton,
-            collapsed && styles.reinitButtonCollapsed,
-            pressed && styles.pressedNavItem,
-          ]}
-        >
-          <Ionicons name="refresh-outline" size={27} color="#FFFFFF" />
-
-          {!collapsed && <Text style={styles.reinitText}>Reinitialize</Text>}
-        </Pressable>
-
         <Pressable
           onPress={handleLogout}
           style={({ pressed }) => [
@@ -295,27 +267,6 @@ const styles = StyleSheet.create({
   },
 
   logoutText: {
-    color: '#FFFFFF',
-    fontSize: f(16),
-    fontWeight: '600',
-  },
-
-  reinitButton: {
-    minHeight: 58,
-    borderRadius: 11,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    gap: 16,
-    marginBottom: 8,
-  },
-
-  reinitButtonCollapsed: {
-    justifyContent: 'center',
-    paddingHorizontal: 0,
-  },
-
-  reinitText: {
     color: '#FFFFFF',
     fontSize: f(16),
     fontWeight: '600',

@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   },
 
   colorName: {
-    fontSize: f(12),
+    fontSize: f(15),
     fontWeight: '700',
     color: '#e8eaee',
   },
@@ -210,14 +210,14 @@ const styles = StyleSheet.create({
   },
 
   colorHeaderLabel: {
-    fontSize: f(12),
+    fontSize: f(8),
     color: '#7f8080',
     fontWeight: '600',
     marginBottom: 3,
   },
 
   colorHeaderValue: {
-    fontSize: f(12),
+    fontSize: f(14),
     fontWeight: '700',
     color: '#c8c8cb',
   },

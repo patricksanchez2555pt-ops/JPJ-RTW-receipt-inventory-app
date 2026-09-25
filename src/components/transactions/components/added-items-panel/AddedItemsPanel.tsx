@@ -144,7 +144,6 @@ export default function AddedItemsPanel({
 
   async function printTransaction() {
     try {
-      console.log('onnn');
       const receiptText = toPrintableFormat(
         colorProductGroups,
         productSizeGroups,

@@ -1,4 +1,4 @@
-import { formatDate } from '@/utils/dateFormat';
+import { formatDate } from '@/utils/dateUtils';
 
 import type { AddedTransactionItem } from '../../form/types';
 import type { ViewMode } from './AddedItemsPanel';

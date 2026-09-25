@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { formatDate, formatTime } from '@/utils/dateFormat';
+import { formatDate, formatTime } from '@/utils/dateUtils';
 import { f } from '@/utils/fontScale';
 
 import type { Transaction } from '../../../../types/localModels';

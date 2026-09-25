@@ -1,9 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { toPrintableProducts } from '@/helper/receiptBuilder';
-import type { PrintableTransaction } from '@/service/escPos';
-import { printerService } from '@/service/printerService';
 import { f } from '@/utils/fontScale';
 
 import { useColorStore } from '../../../store/useColorStore';
@@ -12,7 +9,7 @@ import { useCustomerStore } from '../../../store/useCustomerStore';
 import { useProductStore } from '../../../store/useProductStore';
 import { useSizeStore } from '../../../store/useSizeStore';
 import { useTransactionStore } from '../../../store/useTransactionStore';
-import type { Color, Product, Size, Transaction } from '../../../types/localModels';
+import type { Color, Customer, Product, Size, Transaction } from '../../../types/localModels';
 import AddedItemsPanel from '../components/added-items-panel/AddedItemsPanel';
 import ColorSelector from './components/ColorSelector';
 import ProductSelector from './components/ProductSelector';
@@ -46,16 +43,10 @@ export default function TransactionForm({
 
   const CUSTOMERS = useCustomerStore((state) => state.customers);
 
-  /*
-   * Customer-specific pricing.
-   *
-   * Subscribe to customerPrices directly so the component
-   * re-renders whenever pricing is changed.
-   */
   const customerPrices = useCustomerPricingStore((state) => state.customerPrices);
 
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(
-    transaction?.customerId ?? null,
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | undefined>(
+    useCustomerStore((state) => state.getCustomer(transaction?.customerId ?? '')),
   );
 
   const [discount, setDiscount] = useState(transaction?.discount ?? 0);
@@ -98,22 +89,14 @@ export default function TransactionForm({
 
   const total = Math.max(0, subtotal - discount);
 
-  /*
-   * Get the effective price for a product/size.
-   *
-   * If a customer is selected and has a custom price,
-   * that price is used.
-   *
-   * Otherwise, the normal size price is used.
-   */
   function getEffectivePrice(productId: string, sizeId: string, defaultPrice: number) {
-    if (!selectedCustomerId) {
+    if (!selectedCustomer) {
       return defaultPrice;
     }
 
     const customerPrice = customerPrices.find(
       (price) =>
-        price.customerId === selectedCustomerId &&
+        price.customerId === selectedCustomer.id &&
         price.productId === productId &&
         price.sizeId === sizeId,
     );
@@ -168,10 +151,6 @@ export default function TransactionForm({
       const updated = [...current];
 
       for (const size of selectedSizes) {
-        /*
-         * Use the customer-specific price when
-         * available.
-         */
         const unitPrice = getEffectivePrice(selectedProduct.id, size.id, size.price);
 
         const existingIndex = updated.findIndex(
@@ -220,7 +199,6 @@ export default function TransactionForm({
     });
 
     setHighlightedItemIds(newItemIds);
-
     setSelectedSizes([]);
   }
 
@@ -250,23 +228,19 @@ export default function TransactionForm({
     setItems((current) => current.filter((item) => item.id !== itemId));
   }
 
-  /*
-   * Change the selected customer.
-   *
-   * Existing transaction items are repriced
-   * using the newly selected customer's pricing.
-   */
   function handleCustomerSelect(customerId: string | null) {
-    setSelectedCustomerId(customerId);
+    const customer = customerId ? useCustomerStore.getState().getCustomer(customerId) : undefined;
+
+    setSelectedCustomer(customer);
 
     setItems((current) =>
       current.map((item) => {
         const defaultPrice = item.size?.price ?? item.unitPrice;
 
-        const customerPrice = customerId
+        const customerPrice = customer
           ? customerPrices.find(
               (price) =>
-                price.customerId === customerId &&
+                price.customerId === customer.id &&
                 price.productId === item.productId &&
                 price.sizeId === item.sizeId,
             )
@@ -294,15 +268,15 @@ export default function TransactionForm({
      * If the user typed a buyer name without selecting
      * an existing customer, create the customer first.
      */
-    if (!selectedCustomerId && buyerName.trim()) {
-      const customer = useCustomerStore.getState().addCustomer({
+    let customer = selectedCustomer;
+
+    if (!customer && buyerName.trim()) {
+      customer = useCustomerStore.getState().addCustomer({
         name: buyerName.trim(),
       });
 
-      setSelectedCustomerId(customer.id);
+      setSelectedCustomer(customer);
     }
-
-    const customer = useCustomerStore.getState().getCustomer(selectedCustomerId ?? '');
 
     if (transaction?.id) {
       const updatedTransaction = useTransactionStore.getState().updateTransaction({
@@ -315,6 +289,7 @@ export default function TransactionForm({
         total,
         items,
       });
+
       Alert.alert(
         'Transaction Updated',
         `Transaction #${updatedTransaction?.id}\nTotal: ₱${updatedTransaction?.total.toFixed(2)}`,
@@ -343,7 +318,7 @@ export default function TransactionForm({
     setItems([]);
     setDiscount(0);
     setPaidAmount(0);
-    setSelectedCustomerId(null);
+    setSelectedCustomer(undefined);
 
     setBuyerName('');
     setQuantity(0);
@@ -352,29 +327,6 @@ export default function TransactionForm({
     setSelectedProduct(PRODUCTS[0] ?? null);
     setSelectedSizes([]);
     setSelectedColor(null);
-  }
-
-  async function printTransaction() {
-    try {
-      const products = toPrintableProducts(items);
-
-      const printableTransaction: PrintableTransaction = {
-        buyerName,
-        date: new Date().toISOString(),
-        subtotal,
-        discount,
-        total,
-        products,
-      };
-
-      await printerService.printReceipt(printableTransaction);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-
-      console.error('PRINT TRANSACTION ERROR:', error);
-
-      Alert.alert('Print Failed', message);
-    }
   }
 
   return (
@@ -472,6 +424,7 @@ export default function TransactionForm({
         <AddedItemsPanel
           items={items}
           highlightedItemIds={highlightedItemIds}
+          total={total}
           onIncrease={(id) => updateQuantity(id, 1)}
           onDecrease={(id) => updateQuantity(id, -1)}
           onRemove={removeItem}
@@ -479,7 +432,7 @@ export default function TransactionForm({
 
         <TransactionSummary
           customers={CUSTOMERS}
-          selectedCustomerId={selectedCustomerId}
+          selectedCustomerId={selectedCustomer?.id ?? null}
           itemCount={itemCount}
           discount={discount}
           subtotal={subtotal}
@@ -490,7 +443,6 @@ export default function TransactionForm({
           onDiscountChange={setDiscount}
           onPaidAmountChange={setPaidAmount}
           onSave={saveTransaction}
-          onPrint={printTransaction}
         />
       </View>
     </View>

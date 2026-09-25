@@ -22,7 +22,6 @@ type Props = {
   onCustomerNameChange: (name: string) => void;
   onPaidAmountChange: (amount: number) => void;
   onSave: () => void;
-  onPrint: () => void;
 };
 
 export default function TransactionSummary({
@@ -38,7 +37,6 @@ export default function TransactionSummary({
   onDiscountChange,
   onPaidAmountChange,
   onSave,
-  onPrint,
 }: Props) {
   const [collapsed, setCollapsed] = useState(false);
   const [customerSearch, setCustomerSearch] = useState('');
@@ -280,17 +278,6 @@ export default function TransactionSummary({
               ]}
             >
               <Text style={styles.buttonText}>Save Transaction</Text>
-            </Pressable>
-
-            <Pressable
-              onPress={onPrint}
-              style={({ pressed }) => [
-                styles.actionButton,
-                styles.printButton,
-                pressed && styles.buttonPressed,
-              ]}
-            >
-              <Text style={styles.buttonText}>Print Receipt</Text>
             </Pressable>
           </View>
         </View>
@@ -569,10 +556,6 @@ const styles = StyleSheet.create({
 
   saveButton: {
     backgroundColor: '#1745D1',
-  },
-
-  printButton: {
-    backgroundColor: '#087F23',
   },
 
   buttonText: {

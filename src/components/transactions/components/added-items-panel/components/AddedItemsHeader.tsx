@@ -10,6 +10,7 @@ type Props = {
   onViewModeChange: (mode: ViewMode) => void;
   onShowColorsChange: (value: boolean) => void;
   onShowUnitPriceChange: (value: boolean) => void;
+  onPrint: () => void;
 };
 
 const FONT_SCALE = 1.25;
@@ -23,6 +24,7 @@ export default function AddedItemsHeader({
   onViewModeChange,
   onShowColorsChange,
   onShowUnitPriceChange,
+  onPrint,
 }: Props) {
   return (
     <View style={styles.header}>
@@ -38,6 +40,13 @@ export default function AddedItemsHeader({
         bounces={false}
       >
         <Pressable
+          onPress={onPrint}
+          style={({ pressed }) => [styles.button, styles.printButton, pressed && styles.pressed]}
+        >
+          <Text style={[styles.buttonText, styles.printButtonText]}>Print</Text>
+        </Pressable>
+
+        <Pressable
           onPress={() => onShowUnitPriceChange(!showUnitPrice)}
           style={({ pressed }) => [
             styles.button,
@@ -45,9 +54,7 @@ export default function AddedItemsHeader({
             pressed && styles.pressed,
           ]}
         >
-          <Text style={[styles.buttonText, showUnitPrice && styles.buttonTextActive]}>
-            Unit Price
-          </Text>
+          <Text style={[styles.buttonText, showUnitPrice && styles.buttonTextActive]}>Price</Text>
         </Pressable>
 
         {viewMode === 'size' && (
@@ -63,6 +70,7 @@ export default function AddedItemsHeader({
           </Pressable>
         )}
       </ScrollView>
+
       <View style={styles.modeSelector}>
         <Pressable
           onPress={() => onViewModeChange('color')}
@@ -84,8 +92,9 @@ export default function AddedItemsHeader({
           </Text>
         </Pressable>
       </View>
+
       <View style={styles.count}>
-        <Text style={styles.countText}>{itemCount} items</Text>
+        <Text style={styles.countText}>{itemCount}</Text>
       </View>
     </View>
   );
@@ -130,6 +139,16 @@ const styles = StyleSheet.create({
     borderColor: '#D8DDE5',
     borderRadius: 8,
     backgroundColor: '#FFFFFF',
+  },
+
+  printButton: {
+    backgroundColor: '#1745D1',
+    borderColor: '#1745D1',
+  },
+
+  printButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
 
   buttonActive: {

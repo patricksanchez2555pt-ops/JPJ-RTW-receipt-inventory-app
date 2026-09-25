@@ -111,7 +111,13 @@ export default function TransactionDetails({ transaction, addedItems, onClose, o
 
       {/* GROUPED ITEMS */}
       <View style={styles.items}>
-        <AddedItemsPanel items={addedItems} isViewOnly />
+        <AddedItemsPanel
+          items={addedItems}
+          buyersName={transaction.buyerName}
+          transactionDate={transaction.date}
+          total={total}
+          isViewOnly
+        />
       </View>
     </View>
   );

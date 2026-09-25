@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { Device } from 'react-native-ble-plx';
 
 import { printerService } from '@/service/printerService';
@@ -10,6 +10,7 @@ export default function PrinterSettings() {
   const [connecting, setConnecting] = useState(false);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [printing, setPrinting] = useState(false);
+  const [testText, setTestText] = useState('');
 
   const startScan = useCallback(() => {
     setDevices([]);
@@ -19,7 +20,9 @@ export default function PrinterSettings() {
       setDevices((previous) => {
         const exists = previous.some((item) => item.id === device.id);
 
-        if (exists) return previous;
+        if (exists) {
+          return previous;
+        }
 
         return [...previous, device];
       });
@@ -33,7 +36,9 @@ export default function PrinterSettings() {
 
   const connectToPrinter = useCallback(
     async (device: Device) => {
-      if (connecting) return;
+      if (connecting) {
+        return;
+      }
 
       setConnecting(true);
 
@@ -74,7 +79,9 @@ export default function PrinterSettings() {
   }, []);
 
   const printTest = useCallback(async () => {
-    if (printing) return;
+    if (printing) {
+      return;
+    }
 
     const connected = await printerService.isConnected();
 
@@ -86,12 +93,18 @@ export default function PrinterSettings() {
       return;
     }
 
+    if (!testText.trim()) {
+      Alert.alert('Enter Test Text', 'Please enter some text to print.');
+
+      return;
+    }
+
     setPrinting(true);
 
     try {
-      await printerService.printTest();
+      await printerService.printText(testText);
 
-      Alert.alert('Test Sent', 'The test receipt was sent to the printer.');
+      Alert.alert('Test Sent', 'The test text was sent to the printer.');
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
 
@@ -101,13 +114,15 @@ export default function PrinterSettings() {
     } finally {
       setPrinting(false);
     }
-  }, [printing]);
+  }, [printing, testText]);
 
   useEffect(() => {
     const checkConnection = async () => {
       const connected = await printerService.isConnected();
 
-      if (connected) setConnectedDevice(printerService.getConnectedDevice());
+      if (connected) {
+        setConnectedDevice(printerService.getConnectedDevice());
+      }
     };
 
     void checkConnection();
@@ -121,7 +136,11 @@ export default function PrinterSettings() {
 
   if (connectedDevice) {
     return (
-      <View style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.title}>Printer</Text>
 
         <View style={styles.connectedCard}>
@@ -135,9 +154,25 @@ export default function PrinterSettings() {
 
           <Text style={styles.deviceId}>{connectedDevice.id}</Text>
 
+          <View style={styles.testSection}>
+            <Text style={styles.inputLabel}>Test Text</Text>
+
+            <TextInput
+              value={testText}
+              onChangeText={setTestText}
+              placeholder="Enter text to print"
+              placeholderTextColor="#8A93A1"
+              multiline
+              numberOfLines={5}
+              textAlignVertical="top"
+              style={styles.testInput}
+              editable={!printing}
+            />
+          </View>
+
           <View style={styles.actionRow}>
             <Pressable
-              style={styles.printButton}
+              style={[styles.printButton, printing && styles.disabledButton]}
               onPress={() => {
                 void printTest();
               }}
@@ -151,71 +186,76 @@ export default function PrinterSettings() {
               onPress={() => {
                 void disconnectPrinter();
               }}
+              disabled={printing}
             >
               <Text style={styles.buttonText}>Disconnect</Text>
             </Pressable>
           </View>
         </View>
-      </View>
+      </ScrollView>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+    >
       <Text style={styles.title}>Printer</Text>
 
-      <FlatList
-        data={devices}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Pressable
-            style={styles.deviceCard}
-            disabled={connecting}
-            onPress={() => {
-              void connectToPrinter(item);
-            }}
-          >
-            <View style={styles.deviceInfo}>
-              <Text style={styles.deviceName}>{getDeviceName(item)}</Text>
+      <Pressable
+        style={[styles.scanButton, scanning && styles.disabledButton]}
+        onPress={startScan}
+        disabled={scanning}
+      >
+        <Text style={styles.buttonText}>{scanning ? 'Scanning...' : 'Scan for Printers'}</Text>
+      </Pressable>
 
-              <Text style={styles.deviceId}>{item.id}</Text>
-            </View>
+      <Text style={styles.sectionTitle}>Available Printers</Text>
 
-            <Text style={styles.connectText}>{connecting ? 'Connecting...' : 'Connect'}</Text>
-          </Pressable>
-        )}
-        ListHeaderComponent={
-          <View>
-            <Pressable style={styles.scanButton} onPress={startScan} disabled={scanning}>
-              <Text style={styles.buttonText}>
-                {scanning ? 'Scanning...' : 'Scan for Printers'}
-              </Text>
-            </Pressable>
+      {devices.length === 0 && !scanning && (
+        <Text style={styles.emptyText}>
+          No printers found.{'\n'}
+          Tap the Scan for Printers button to search.
+        </Text>
+      )}
 
-            <Text style={styles.sectionTitle}>Available Printers</Text>
+      {scanning && devices.length === 0 && (
+        <Text style={styles.emptyText}>Searching for Bluetooth printers...</Text>
+      )}
 
-            {devices.length === 0 && !scanning && (
-              <Text style={styles.emptyText}>
-                No printers found.{'\n'}Tap the Scan for Printers button to search.
-              </Text>
-            )}
+      {devices.map((device) => (
+        <Pressable
+          key={device.id}
+          style={styles.deviceCard}
+          disabled={connecting}
+          onPress={() => {
+            void connectToPrinter(device);
+          }}
+        >
+          <View style={styles.deviceInfo}>
+            <Text style={styles.deviceName}>{getDeviceName(device)}</Text>
 
-            {scanning && devices.length === 0 && (
-              <Text style={styles.emptyText}>Searching for Bluetooth printers...</Text>
-            )}
+            <Text style={styles.deviceId}>{device.id}</Text>
           </View>
-        }
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={null}
-      />
-    </View>
+
+          <Text style={styles.connectText}>{connecting ? 'Connecting...' : 'Connect'}</Text>
+        </Pressable>
+      ))}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
+    paddingHorizontal: 24,
+  },
+
+  scrollContent: {
+    paddingTop: 24,
+    paddingBottom: 40,
   },
 
   title: {
@@ -229,6 +269,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
     marginBottom: 20,
+    borderColor: '#DCE1E9',
+    backgroundColor: '#FFFFFF',
   },
 
   statusRow: {
@@ -241,19 +283,21 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#16a34a',
+    backgroundColor: '#16A34A',
     marginRight: 8,
   },
 
   connectedLabel: {
     fontSize: 14,
     fontWeight: '700',
+    color: '#252B35',
   },
 
   printerName: {
     fontSize: 20,
     fontWeight: '700',
     marginBottom: 6,
+    color: '#151A23',
   },
 
   deviceInfo: {
@@ -263,19 +307,43 @@ const styles = StyleSheet.create({
   deviceName: {
     fontSize: 17,
     fontWeight: '700',
+    color: '#252B35',
   },
 
   deviceId: {
     fontSize: 11,
     marginTop: 5,
-    opacity: 0.6,
+    color: '#8A93A1',
+  },
+
+  testSection: {
+    marginTop: 20,
+  },
+
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 8,
+    color: '#252B35',
+  },
+
+  testInput: {
+    minHeight: 110,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: '#DCE1E9',
+    borderRadius: 8,
+    backgroundColor: '#F8F9FB',
+    fontSize: 15,
+    color: '#151A23',
   },
 
   scanButton: {
     padding: 16,
     borderRadius: 10,
     alignItems: 'center',
-    backgroundColor: '#222',
+    backgroundColor: '#222222',
     marginBottom: 24,
   },
 
@@ -290,7 +358,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 8,
     alignItems: 'center',
-    backgroundColor: '#087f23',
+    backgroundColor: '#087F23',
   },
 
   disconnectButton: {
@@ -298,11 +366,15 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 8,
     alignItems: 'center',
-    backgroundColor: '#922',
+    backgroundColor: '#992222',
+  },
+
+  disabledButton: {
+    opacity: 0.5,
   },
 
   buttonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontWeight: '700',
   },
 
@@ -310,6 +382,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 10,
+    color: '#252B35',
   },
 
   deviceCard: {
@@ -317,23 +390,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderWidth: 1,
+    borderColor: '#DCE1E9',
     borderRadius: 10,
     marginBottom: 10,
+    backgroundColor: '#FFFFFF',
   },
 
   connectText: {
     fontWeight: '700',
     marginLeft: 12,
-  },
-
-  listContent: {
-    paddingBottom: 20,
+    color: '#1745D1',
   },
 
   emptyText: {
     textAlign: 'center',
     marginTop: 30,
     lineHeight: 22,
-    opacity: 0.6,
+    color: '#8A93A1',
   },
 });

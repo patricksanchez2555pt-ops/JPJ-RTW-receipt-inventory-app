@@ -1,16 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+
+import { printerService } from '@/service/printerService';
 
 import type { AddedTransactionItem } from '../../form/types';
 import AddedItemsHeader from './components/AddedItemsHeader';
 import ColorView from './components/ColorView';
 import SizeView from './components/SizeView';
-import { computeGroups, getSortedSizeGroup } from './helpers';
+import { computeGroups, getSortedSizeGroup, toPrintableFormat } from './helpers';
 
 type Props = {
   items: AddedTransactionItem[];
   highlightedItemIds?: string[];
   isViewOnly?: boolean;
+  transactionDate?: string;
+  buyersName?: string;
+  total?: number;
   onIncrease?: (itemId: string) => void;
   onDecrease?: (itemId: string) => void;
   onRemove?: (itemId: string) => void;
@@ -22,6 +27,8 @@ export default function AddedItemsPanel({
   items,
   highlightedItemIds = [],
   isViewOnly = false,
+  transactionDate,
+  buyersName,
   onIncrease = () => undefined,
   onDecrease = () => undefined,
   onRemove = () => undefined,
@@ -135,6 +142,31 @@ export default function AddedItemsPanel({
     });
   }
 
+  async function printTransaction() {
+    try {
+      console.log('onnn');
+      const receiptText = toPrintableFormat(
+        colorProductGroups,
+        productSizeGroups,
+        viewMode,
+        showColors,
+        transactionDate ?? new Date().toDateString(),
+        buyersName ?? '',
+      );
+      console.log('--------');
+      console.log(receiptText);
+      console.log('--------');
+
+      await printerService.printText(receiptText);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+
+      console.error('PRINT TRANSACTION ERROR:', error);
+
+      Alert.alert('Print Failed', message);
+    }
+  }
+
   return (
     <View style={styles.container}>
       <AddedItemsHeader
@@ -145,6 +177,7 @@ export default function AddedItemsPanel({
         onViewModeChange={setViewMode}
         onShowColorsChange={setShowColors}
         onShowUnitPriceChange={setShowUnitPrice}
+        onPrint={printTransaction}
       />
 
       <ScrollView

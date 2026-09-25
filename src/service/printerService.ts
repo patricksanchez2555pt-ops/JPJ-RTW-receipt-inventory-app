@@ -1,8 +1,6 @@
 import type { Device } from 'react-native-ble-plx';
 import { BleManager, State } from 'react-native-ble-plx';
 
-import { buildReceipt, type PrintableTransaction } from './escPos';
-
 const PRINTER_SERVICE_UUID = '49535343-fe7d-4ae5-8fa9-9fafd205e455';
 
 const PRINTER_CHARACTERISTIC_UUID = '49535343-8841-43f4-a8d4-ecbe34729bb3';
@@ -230,67 +228,8 @@ class PrinterService {
    * Full receipt formatting will be added to escPos.ts.
    */
   async printText(text: string): Promise<void> {
-    const data = this.textToBytes(text);
-
-    await this.write(data);
-  }
-
-  async printReceipt(transaction: PrintableTransaction): Promise<void> {
-    const data = buildReceipt(transaction);
-
-    await this.write(data);
-  }
-
-  /**
-   * Print a basic ESC/POS test.
-   *
-   * This is useful for testing the service independently
-   * from the transaction system.
-   */
-  async printTest(): Promise<void> {
-    const data = buildReceipt({
-      buyerName: 'Juan',
-      date: '2026-08-22',
-      subtotal: 960,
-      discount: 0,
-      total: 960,
-      products: [
-        {
-          name: 'Jogging Pants',
-          items: [
-            {
-              size: 'S',
-              price: 120,
-              quantity: 2,
-              subtotal: 240,
-            },
-            {
-              size: 'M',
-              price: 140,
-              quantity: 2,
-              subtotal: 280,
-            },
-          ],
-        },
-        {
-          name: 'Leotard',
-          items: [
-            {
-              size: 'S',
-              price: 100,
-              quantity: 2,
-              subtotal: 200,
-            },
-            {
-              size: 'M',
-              price: 120,
-              quantity: 2,
-              subtotal: 240,
-            },
-          ],
-        },
-      ],
-    });
+    const fontSizeCommand = [0x1b, 0x21, 0x10];
+    const data = [...fontSizeCommand, ...this.textToBytes(text)];
 
     await this.write(data);
   }

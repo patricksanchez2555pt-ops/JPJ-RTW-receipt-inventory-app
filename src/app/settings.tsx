@@ -1,14 +1,14 @@
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 
 import FontScaleSettings from '@/components/settings/FontScaleSettings';
 import PrinterSettings from '@/components/settings/PrinterSettings';
 
 export default function SettingsScreen() {
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <FontScaleSettings />
       <PrinterSettings />
-    </View>
+    </ScrollView>
   );
 }
 

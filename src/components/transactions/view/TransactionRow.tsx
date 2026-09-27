@@ -52,13 +52,9 @@ export default function TransactionRow({
   const total = Number(transaction.total ?? 0);
   const isPaid = paidAmount >= total;
 
-  const showMarkAsPaid =
-    isMarkAsPaidButtonShown && !isPaid && onMarkAsPaid;
+  const showMarkAsPaid = isMarkAsPaidButtonShown && !isPaid && onMarkAsPaid;
 
-  const showActions =
-    isEditButtonShown ||
-    showMarkAsPaid ||
-    isDeleteButtonShown;
+  const showActions = isEditButtonShown || showMarkAsPaid || isDeleteButtonShown;
 
   return (
     <Pressable
@@ -83,10 +79,7 @@ export default function TransactionRow({
         <Text
           numberOfLines={1}
           ellipsizeMode="tail"
-          style={[
-            styles.customerText,
-            !transaction.buyerName && styles.walkInText,
-          ]}
+          style={[styles.customerText, !transaction.buyerName && styles.walkInText]}
         >
           {transaction.buyerName || 'Walk-in Customer'}
         </Text>
@@ -98,38 +91,20 @@ export default function TransactionRow({
 
       <View style={styles.itemsCol}>
         <View style={styles.itemBadge}>
-          <Text style={styles.itemBadgeText}>
-            {transaction.items?.length ?? 0}
-          </Text>
+          <Text style={styles.itemBadgeText}>{transaction.items?.length ?? 0}</Text>
         </View>
       </View>
 
       <View style={styles.totalCol}>
-        <Text
-          style={[
-            styles.totalText,
-            isSmallTotal && styles.smallTotalText,
-          ]}
-          numberOfLines={1}
-        >
+        <Text style={[styles.totalText, isSmallTotal && styles.smallTotalText]} numberOfLines={1}>
           ₱{formatNumber(total)}
         </Text>
       </View>
 
       {isStatusShown && (
         <View style={styles.statusCol}>
-          <View
-            style={[
-              styles.statusBadge,
-              isPaid ? styles.paidBadge : styles.unpaidBadge,
-            ]}
-          >
-            <Text
-              style={[
-                styles.statusText,
-                isPaid ? styles.paidText : styles.unpaidText,
-              ]}
-            >
+          <View style={[styles.statusBadge, isPaid ? styles.paidBadge : styles.unpaidBadge]}>
+            <Text style={[styles.statusText, isPaid ? styles.paidText : styles.unpaidText]}>
               {isPaid ? 'Paid' : 'Unpaid'}
             </Text>
           </View>

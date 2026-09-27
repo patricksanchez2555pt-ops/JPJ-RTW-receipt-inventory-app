@@ -76,9 +76,7 @@ export default function TransactionDetails({ transaction, addedItems, onClose, o
             onPress={() => setIsTopExpanded((current) => !current)}
             style={styles.headerTitleContainer}
           >
-            
             <View style={styles.headerTitleRow}>
-              
               <Text style={styles.title}>Transaction Details</Text>
               <Text style={styles.collapseIcon}>{isTopExpanded ? '−' : '+'}</Text>
             </View>

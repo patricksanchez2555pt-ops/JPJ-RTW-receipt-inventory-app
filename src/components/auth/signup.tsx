@@ -63,7 +63,9 @@ export default function SignUp() {
           onPress={handleCreateAccount}
           style={[styles.primaryButton, loading && styles.disabledButton]}
         >
-          <Text style={styles.primaryButtonText}>{loading ? 'Please wait...' : 'Create account'}</Text>
+          <Text style={styles.primaryButtonText}>
+            {loading ? 'Please wait...' : 'Create account'}
+          </Text>
         </Pressable>
 
         <Pressable onPress={() => router.push('/auth')} style={styles.secondaryButton}>

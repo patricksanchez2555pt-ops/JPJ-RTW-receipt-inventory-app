@@ -65,7 +65,11 @@ export default function LogIn() {
           <Text style={styles.primaryButtonText}>{loading ? 'Please wait...' : 'Sign in'}</Text>
         </Pressable>
 
-        <Pressable disabled={loading} onPress={() => router.push('/signup')} style={styles.secondaryButton}>
+        <Pressable
+          disabled={loading}
+          onPress={() => router.push('/signup')}
+          style={styles.secondaryButton}
+        >
           <Text style={styles.secondaryButtonText}>Create account</Text>
         </Pressable>
       </View>

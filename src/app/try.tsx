@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+
+import { useAuth } from '@/contexts/AuthContext';
 
 import { supabase } from '../lib/supabase';
 
@@ -9,6 +11,7 @@ type Instrument = {
 };
 
 export default function App() {
+  const { session } = useAuth();
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,8 +26,9 @@ export default function App() {
     setInstruments(data ?? []);
   }
 
-  useEffect(async () => {
-    await getInstruments();
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void getInstruments();
   }, []);
 
   if (error) {
@@ -42,6 +46,18 @@ export default function App() {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => <Text style={styles.item}>{item.name}</Text>}
       />
+
+      <Pressable
+        onPress={async () => {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          getInstruments();
+
+          console.log('-------');
+          console.log(session);
+        }}
+      >
+        <Text>tryy</Text>
+      </Pressable>
     </View>
   );
 }

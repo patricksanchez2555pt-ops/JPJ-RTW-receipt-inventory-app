@@ -4,29 +4,33 @@ import { StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AuthProvider } from '@/contexts/AuthContext';
+
 import Sidebar from '../components/layout/Sidebar/Sidebar';
 
 export default function RootLayout() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
   return (
-    <GestureHandlerRootView style={styles.root}>
-      <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left']}>
-        <Sidebar
-          collapsed={isSidebarCollapsed}
-          onToggle={() => setIsSidebarCollapsed((previous) => !previous)}
-        />
-
-        <View style={styles.content}>
-          <Tabs
-            screenOptions={{
-              headerShown: false,
-              tabBarStyle: { display: 'none' },
-            }}
+    <AuthProvider>
+      <GestureHandlerRootView style={styles.root}>
+        <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left']}>
+          <Sidebar
+            collapsed={isSidebarCollapsed}
+            onToggle={() => setIsSidebarCollapsed((previous) => !previous)}
           />
-        </View>
-      </SafeAreaView>
-    </GestureHandlerRootView>
+
+          <View style={styles.content}>
+            <Tabs
+              screenOptions={{
+                headerShown: false,
+                tabBarStyle: { display: 'none' },
+              }}
+            />
+          </View>
+        </SafeAreaView>
+      </GestureHandlerRootView>
+    </AuthProvider>
   );
 }
 

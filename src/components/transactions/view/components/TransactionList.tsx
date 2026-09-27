@@ -185,6 +185,8 @@ export default function TransactionList({ transactions, selectedTransactionId, o
               key={transaction.id}
               isStatusShown={selectedTransactionId === null}
               isDeleteButtonShown={selectedTransactionId === null}
+              isEditButtonShown={selectedTransactionId === null}
+              isMarkAsPaidButtonShown={selectedTransactionId === null}
               isSmallTotal={selectedTransactionId !== null}
               transaction={transaction}
               selected={transaction.id === selectedTransactionId}
@@ -192,6 +194,8 @@ export default function TransactionList({ transactions, selectedTransactionId, o
                 onSelect(transaction.id === selectedTransactionId ? null : transaction.id)
               }
               onDelete={() => handleDelete(transaction)}
+              onEdit={() => {}}
+              onMarkAsPaid={() => {}}
             />
           ))}
         </ScrollView>

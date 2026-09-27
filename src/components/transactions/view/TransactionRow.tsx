@@ -11,9 +11,13 @@ type Props = {
   selected: boolean;
   isStatusShown: boolean;
   isDeleteButtonShown?: boolean;
+  isEditButtonShown?: boolean;
+  isMarkAsPaidButtonShown?: boolean;
   isSmallTotal?: boolean;
   onPress: () => void;
   onDelete: () => void;
+  onEdit?: () => void;
+  onMarkAsPaid?: () => void;
 };
 
 export default function TransactionRow({
@@ -21,9 +25,13 @@ export default function TransactionRow({
   selected,
   isStatusShown,
   isDeleteButtonShown,
+  isEditButtonShown,
+  isMarkAsPaidButtonShown,
   isSmallTotal,
   onPress,
   onDelete,
+  onEdit,
+  onMarkAsPaid,
 }: Props) {
   function formatDate(date: string) {
     return new Date(date).toLocaleDateString('en-PH', {
@@ -44,6 +52,14 @@ export default function TransactionRow({
   const total = Number(transaction.total ?? 0);
   const isPaid = paidAmount >= total;
 
+  const showMarkAsPaid =
+    isMarkAsPaidButtonShown && !isPaid && onMarkAsPaid;
+
+  const showActions =
+    isEditButtonShown ||
+    showMarkAsPaid ||
+    isDeleteButtonShown;
+
   return (
     <Pressable
       onPress={onPress}
@@ -57,15 +73,20 @@ export default function TransactionRow({
         <Text style={styles.dateText} numberOfLines={1}>
           {formatDate(transaction.date)}
         </Text>
+
         <Text style={styles.timeText} numberOfLines={1}>
           {formatTime(transaction.date)}
         </Text>
       </View>
+
       <View style={styles.customerCol}>
         <Text
           numberOfLines={1}
           ellipsizeMode="tail"
-          style={[styles.customerText, !transaction.buyerName && styles.walkInText]}
+          style={[
+            styles.customerText,
+            !transaction.buyerName && styles.walkInText,
+          ]}
         >
           {transaction.buyerName || 'Walk-in Customer'}
         </Text>
@@ -74,37 +95,96 @@ export default function TransactionRow({
           #{transaction.id.replace('tx-', '')}
         </Text>
       </View>
+
       <View style={styles.itemsCol}>
         <View style={styles.itemBadge}>
-          <Text style={styles.itemBadgeText}>{transaction.items?.length ?? 0}</Text>
+          <Text style={styles.itemBadgeText}>
+            {transaction.items?.length ?? 0}
+          </Text>
         </View>
       </View>
+
       <View style={styles.totalCol}>
-        <Text style={[styles.totalText, isSmallTotal && styles.smallTotalText]} numberOfLines={1}>
+        <Text
+          style={[
+            styles.totalText,
+            isSmallTotal && styles.smallTotalText,
+          ]}
+          numberOfLines={1}
+        >
           ₱{formatNumber(total)}
         </Text>
       </View>
+
       {isStatusShown && (
         <View style={styles.statusCol}>
-          <View style={[styles.statusBadge, isPaid ? styles.paidBadge : styles.unpaidBadge]}>
-            <Text style={[styles.statusText, isPaid ? styles.paidText : styles.unpaidText]}>
+          <View
+            style={[
+              styles.statusBadge,
+              isPaid ? styles.paidBadge : styles.unpaidBadge,
+            ]}
+          >
+            <Text
+              style={[
+                styles.statusText,
+                isPaid ? styles.paidText : styles.unpaidText,
+              ]}
+            >
               {isPaid ? 'Paid' : 'Unpaid'}
             </Text>
           </View>
         </View>
       )}
 
-      {isDeleteButtonShown && (
+      {showActions && (
         <View style={styles.actionCol}>
-          <Pressable
-            onPress={(event: GestureResponderEvent) => {
-              event.stopPropagation();
-              onDelete();
-            }}
-            style={({ pressed }) => [styles.deleteButton, pressed && styles.deleteButtonPressed]}
-          >
-            <Text style={styles.deleteText}>Delete</Text>
-          </Pressable>
+          {showMarkAsPaid && (
+            <Pressable
+              onPress={(event: GestureResponderEvent) => {
+                event.stopPropagation();
+                onMarkAsPaid?.();
+              }}
+              style={({ pressed }) => [
+                styles.actionButton,
+                styles.markPaidButton,
+                pressed && styles.markPaidButtonPressed,
+              ]}
+            >
+              <Text style={styles.markPaidText}>Mark Paid</Text>
+            </Pressable>
+          )}
+
+          {isEditButtonShown && onEdit && (
+            <Pressable
+              onPress={(event: GestureResponderEvent) => {
+                event.stopPropagation();
+                onEdit();
+              }}
+              style={({ pressed }) => [
+                styles.actionButton,
+                styles.editButton,
+                pressed && styles.editButtonPressed,
+              ]}
+            >
+              <Text style={styles.editText}>Edit</Text>
+            </Pressable>
+          )}
+
+          {isDeleteButtonShown && (
+            <Pressable
+              onPress={(event: GestureResponderEvent) => {
+                event.stopPropagation();
+                onDelete();
+              }}
+              style={({ pressed }) => [
+                styles.actionButton,
+                styles.deleteButton,
+                pressed && styles.deleteButtonPressed,
+              ]}
+            >
+              <Text style={styles.deleteText}>Delete</Text>
+            </Pressable>
+          )}
         </View>
       )}
     </Pressable>
@@ -130,7 +210,6 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
 
-  // Relative column widths
   dateCol: {
     flex: 1.4,
     minWidth: 0,
@@ -160,9 +239,12 @@ const styles = StyleSheet.create({
   },
 
   actionCol: {
-    flex: 0.8,
+    flex: 1.8,
     minWidth: 0,
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 4,
   },
 
   customerText: {
@@ -251,10 +333,42 @@ const styles = StyleSheet.create({
     color: '#C66A16',
   },
 
-  deleteButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 7,
+  actionButton: {
+    paddingHorizontal: 7,
+    paddingVertical: 6,
     borderRadius: 6,
+  },
+
+  editButton: {
+    backgroundColor: '#EEF2FF',
+  },
+
+  editButtonPressed: {
+    backgroundColor: '#DDE5FF',
+  },
+
+  editText: {
+    fontSize: f(11),
+    fontWeight: '700',
+    color: '#1745D1',
+  },
+
+  markPaidButton: {
+    backgroundColor: '#EAF7EF',
+  },
+
+  markPaidButtonPressed: {
+    backgroundColor: '#D7F0E0',
+  },
+
+  markPaidText: {
+    fontSize: f(11),
+    fontWeight: '700',
+    color: '#21864A',
+  },
+
+  deleteButton: {
+    backgroundColor: '#FFFFFF',
   },
 
   deleteButtonPressed: {
@@ -262,7 +376,7 @@ const styles = StyleSheet.create({
   },
 
   deleteText: {
-    fontSize: f(12),
+    fontSize: f(11),
     fontWeight: '700',
     color: '#D64545',
   },

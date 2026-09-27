@@ -5,6 +5,7 @@ node_modules/
 ### Expo / React Native local directories
 
 .expo/
+.expo-export
 *.jks
 *.p8
 *.p12
@@ -43,3 +44,6 @@ yarn-error.log*
 
 expo-env.d.ts
 # @end expo-cli
+
+# agents
+.agents

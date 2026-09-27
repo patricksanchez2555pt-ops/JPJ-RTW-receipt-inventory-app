@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { f } from '@/utils/fontScale';
 
-import type { Product } from '../../../../types/localModels.js';
+import type { Product } from '../../../../types/localModels';
 
 type Props = {
   products: Product[];

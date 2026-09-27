@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { f } from '@/utils/fontScale';
 
-import type { Color } from '../../../../types/localModels.js';
+import type { Color } from '../../../../types/localModels';
 
 type Props = {
   colors: Color[];

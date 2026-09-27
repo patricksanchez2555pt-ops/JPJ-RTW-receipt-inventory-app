@@ -5,7 +5,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import { f } from '@/utils/fontScale';
 
-import type { Size } from '../../../../types/localModels.js';
+import type { Size } from '../../../../types/localModels';
 
 type Props = {
   sizes: Size[];

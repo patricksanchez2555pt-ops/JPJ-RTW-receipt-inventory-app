@@ -1,4 +1,4 @@
-import type { Color, Product, Size, TransactionItem } from '../../../types/localModels.js';
+import type { Color, Product, Size, TransactionItem } from '../../../types/localModels';
 
 export type SelectedSize = {
   size: Size;

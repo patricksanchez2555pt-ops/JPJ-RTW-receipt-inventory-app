@@ -43,6 +43,11 @@ const NAV_ITEMS: SidebarItem[] = [
     icon: 'people-outline',
     route: '/customers',
   },
+  {
+    label: 'try',
+    icon: 'people-outline',
+    route: '/try',
+  },
   // {
   //   label: 'Reports',
   //   icon: 'bar-chart-outline',

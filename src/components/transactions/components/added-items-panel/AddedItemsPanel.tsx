@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 
+import { formatPrintGroupedItems } from '@/helpers/printerFormatters';
 import { printerService } from '@/service/printerService';
 
 import type { AddedTransactionItem } from '../../form/types';
 import AddedItemsHeader from './components/AddedItemsHeader';
 import ColorView from './components/ColorView';
 import SizeView from './components/SizeView';
-import { computeGroups, getSortedSizeGroup, toPrintableFormat } from './helpers';
+import { computeGroups, getSortedSizeGroup } from './helpers';
 
 type Props = {
   items: AddedTransactionItem[];
@@ -144,7 +145,7 @@ export default function AddedItemsPanel({
 
   async function printTransaction() {
     try {
-      const receiptText = toPrintableFormat(
+      const receiptText = formatPrintGroupedItems(
         colorProductGroups,
         productSizeGroups,
         viewMode,

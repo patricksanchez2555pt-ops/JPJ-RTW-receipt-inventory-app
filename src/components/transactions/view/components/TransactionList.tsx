@@ -12,6 +12,8 @@ type Props = {
   transactions: Transaction[];
   selectedTransactionId: string | null;
   onDeleteTransaction: (id: string) => void;
+  onDeleteTransactions: (id: string[]) => void;
+  onMarkTransactionsAsPaid: (ids: string[]) => void;
   onSelect: (id: string | null) => void;
 };
 
@@ -19,6 +21,8 @@ export default function TransactionList({
   transactions,
   selectedTransactionId,
   onDeleteTransaction,
+  onDeleteTransactions,
+  onMarkTransactionsAsPaid,
   onSelect,
 }: Props) {
   const [nameFilter, setNameFilter] = useState('');
@@ -50,24 +54,86 @@ export default function TransactionList({
         text: 'Delete',
         style: 'destructive',
         onPress: () => {
-          onDeleteTransaction(transaction.id);
-
-          setSelectedTransactionIds((current) => current.filter((id) => id !== transaction.id));
-
-          if (selectedTransactionId === transaction.id) {
-            onSelect(null);
-          }
+          onDeleteTransactions(selectedTransactionIds);
         },
       },
     ]);
   }
 
+  /*
+   * Bulk delete selected transactions
+   */
+  function handleDeleteSelected() {
+    if (selectedTransactionIds.length === 0) {
+      return;
+    }
+
+    const idsToDelete = [...selectedTransactionIds];
+
+    Alert.alert(
+      'Delete Selected Transactions',
+      `Are you sure you want to delete ${idsToDelete.length} selected transaction(s)? This action cannot be undone.`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete All',
+          style: 'destructive',
+          onPress: () => {
+            idsToDelete.forEach((id) => {
+              onDeleteTransaction(id);
+            });
+
+            if (selectedTransactionId && idsToDelete.includes(selectedTransactionId)) {
+              onSelect(null);
+            }
+
+            setSelectedTransactionIds([]);
+          },
+        },
+      ],
+    );
+  }
+
+  /*
+   * Bulk mark as paid
+   */
+  function handleMarkSelectedAsPaid() {
+    if (selectedTransactionIds.length === 0) {
+      return;
+    }
+
+    Alert.alert(
+      'Mark Selected as Paid',
+      `Mark ${selectedTransactionIds.length} transaction(s) as fully paid?`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Mark as Paid',
+          onPress: () => {
+            onMarkTransactionsAsPaid(selectedTransactionIds);
+            setSelectedTransactionIds([]);
+          },
+        },
+      ],
+    );
+  }
+
+  /*
+   * Print selected transactions
+   */
   function handlePrint() {
     const printText = formatPrintTransactions(
-      selectedTransactionIds.map((curr): Transaction | undefined =>
-        transactions.find((t) => t.id === curr),
-      ),
+      selectedTransactionIds
+        .map((id) => transactions.find((transaction) => transaction.id === id))
+        .filter((transaction): transaction is Transaction => transaction !== undefined),
     );
+
     console.log(printText);
   }
 
@@ -78,9 +144,6 @@ export default function TransactionList({
   const dateFilterRange = parseDateInput(dateFilter);
 
   const filteredTransactions = transactions.filter((transaction) => {
-    /*
-     * Name filter
-     */
     if (normalizedName) {
       const buyerName = (transaction.buyerName ?? '').toLowerCase();
 
@@ -89,9 +152,6 @@ export default function TransactionList({
       }
     }
 
-    /*
-     * Date filter
-     */
     if (dateFilterRange?.type !== 'invalid') {
       const transactionDate = new Date(transaction.date);
       const startDate = new Date(dateFilterRange.startDate ?? '');
@@ -112,9 +172,6 @@ export default function TransactionList({
       }
     }
 
-    /*
-     * Unpaid filter
-     */
     if (unpaidOnly) {
       const paidAmount = Number(transaction.paidAmount ?? 0);
       const total = Number(transaction.total ?? 0);
@@ -128,20 +185,12 @@ export default function TransactionList({
   });
 
   /*
-   * Selection state for visible transactions
+   * Select All behavior preserved from your uploaded file.
    */
   const allVisibleSelected =
     filteredTransactions.length === selectedTransactionIds.length &&
-    filteredTransactions.every((t) => selectedTransactionIds.includes(t.id));
+    filteredTransactions.every((transaction) => selectedTransactionIds.includes(transaction.id));
 
-  /*
-   * Select / Deselect all visible transactions.
-   *
-   * Important:
-   * - Selecting adds only visible IDs.
-   * - Deselecting removes only visible IDs.
-   * - Selections belonging to hidden transactions are preserved.
-   */
   function handleSelectAll() {
     setSelectedTransactionIds(() => {
       if (allVisibleSelected) {
@@ -172,7 +221,6 @@ export default function TransactionList({
     <View style={styles.container}>
       {/* FILTER BAR */}
       <View style={styles.filterContainer}>
-        {/* NAME */}
         <View style={styles.filterInputContainer}>
           <Text style={styles.filterLabel}>Name</Text>
 
@@ -186,7 +234,6 @@ export default function TransactionList({
           />
         </View>
 
-        {/* DATE */}
         <View style={styles.filterInputContainer}>
           <Text style={styles.filterLabel}>Date</Text>
 
@@ -202,7 +249,6 @@ export default function TransactionList({
           />
         </View>
 
-        {/* UNPAID */}
         <Pressable
           accessibilityRole="checkbox"
           accessibilityState={{ checked: unpaidOnly }}
@@ -222,7 +268,6 @@ export default function TransactionList({
           </Text>
         </Pressable>
 
-        {/* CLEAR */}
         <Pressable
           onPress={clearFilters}
           style={({ pressed }) => [styles.clearButton, pressed && styles.pressed]}
@@ -234,7 +279,7 @@ export default function TransactionList({
       {/* ACTION BAR */}
       <View style={styles.actionBar}>
         <View style={styles.actionBarLeft}>
-          {/* SELECT ALL VISIBLE */}
+          {/* SELECT ALL */}
           <Pressable
             accessibilityRole="checkbox"
             accessibilityState={{
@@ -264,16 +309,50 @@ export default function TransactionList({
 
           {/* PRINT SUMMARY */}
           <Pressable
+            disabled={selectedTransactionIds.length === 0}
             onPress={handlePrint}
-            style={({ pressed }) => [styles.printButton, pressed && styles.pressed]}
+            style={({ pressed }) => [
+              styles.printButton,
+              selectedTransactionIds.length === 0 && styles.disabledButton,
+              pressed && styles.pressed,
+            ]}
           >
             <Text style={styles.printButtonIcon}>▤</Text>
 
             <Text style={styles.printButtonText}>Print Summary</Text>
           </Pressable>
+
+          {/* MARK AS PAID */}
+          <Pressable
+            disabled={selectedTransactionIds.length === 0}
+            onPress={handleMarkSelectedAsPaid}
+            style={({ pressed }) => [
+              styles.markPaidButton,
+              selectedTransactionIds.length === 0 && styles.disabledButton,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={styles.markPaidIcon}>✓</Text>
+
+            <Text style={styles.markPaidButtonText}>Mark as Paid</Text>
+          </Pressable>
+
+          {/* DELETE SELECTED */}
+          <Pressable
+            disabled={selectedTransactionIds.length === 0}
+            onPress={handleDeleteSelected}
+            style={({ pressed }) => [
+              styles.deleteSelectedButton,
+              selectedTransactionIds.length === 0 && styles.disabledButton,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={styles.deleteSelectedIcon}>×</Text>
+
+            <Text style={styles.deleteSelectedButtonText}>Delete</Text>
+          </Pressable>
         </View>
 
-        {/* SELECTED COUNT */}
         {selectedTransactionIds.length > 0 && (
           <Text style={styles.selectedCount}>{selectedTransactionIds.length} selected</Text>
         )}
@@ -295,12 +374,9 @@ export default function TransactionList({
 
             return (
               <View key={transaction.id} style={styles.transactionRow}>
-                {/* TRANSACTION CHECKBOX */}
                 <Pressable
                   accessibilityRole="checkbox"
-                  accessibilityState={{
-                    checked: isChecked,
-                  }}
+                  accessibilityState={{ checked: isChecked }}
                   onPress={() => toggleTransactionSelection(transaction.id)}
                   style={({ pressed }) => [styles.checkboxButton, pressed && styles.pressed]}
                 >
@@ -314,7 +390,6 @@ export default function TransactionList({
                   </View>
                 </Pressable>
 
-                {/* TRANSACTION */}
                 <View style={styles.transactionContent}>
                   <TransactionRow
                     isStatusShown={selectedTransactionId === null}
@@ -352,90 +427,8 @@ const styles = StyleSheet.create({
   },
 
   /*
-   * ACTION BAR
-   */
-
-  actionBar: {
-    minHeight: 58,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E8ED',
-    backgroundColor: '#FFFFFF',
-  },
-
-  actionBarLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-
-  printButton: {
-    height: 38,
-    paddingHorizontal: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 7,
-    borderRadius: 7,
-    borderWidth: 1,
-    borderColor: '#2563EB',
-    backgroundColor: '#2563EB',
-  },
-
-  printButtonIcon: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-
-  printButtonText: {
-    fontSize: f(12),
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-
-  selectAllButton: {
-    height: 38,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 7,
-    borderWidth: 1,
-    borderColor: '#D8DDE5',
-    borderRadius: 7,
-    backgroundColor: '#FFFFFF',
-  },
-
-  selectAllButtonActive: {
-    backgroundColor: '#EEF4FF',
-    borderColor: '#AFC8F5',
-  },
-
-  selectAllButtonText: {
-    fontSize: f(12),
-    fontWeight: '700',
-    color: '#596273',
-  },
-
-  selectAllButtonTextActive: {
-    color: '#2563EB',
-  },
-
-  selectedCount: {
-    fontSize: f(12),
-    fontWeight: '600',
-    color: '#687284',
-  },
-
-  /*
    * FILTER BAR
    */
-
   filterContainer: {
     padding: 12,
     flexDirection: 'row',
@@ -470,9 +463,144 @@ const styles = StyleSheet.create({
   },
 
   /*
+   * ACTION BAR
+   */
+  actionBar: {
+    minHeight: 58,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E8ED',
+    backgroundColor: '#FFFFFF',
+  },
+
+  actionBarLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+
+  selectAllButton: {
+    height: 38,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    borderWidth: 1,
+    borderColor: '#D8DDE5',
+    borderRadius: 7,
+    backgroundColor: '#FFFFFF',
+  },
+
+  selectAllButtonActive: {
+    backgroundColor: '#EEF4FF',
+    borderColor: '#AFC8F5',
+  },
+
+  selectAllButtonText: {
+    fontSize: f(12),
+    fontWeight: '700',
+    color: '#596273',
+  },
+
+  selectAllButtonTextActive: {
+    color: '#2563EB',
+  },
+
+  printButton: {
+    height: 38,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    borderRadius: 7,
+    borderWidth: 1,
+    borderColor: '#2563EB',
+    backgroundColor: '#2563EB',
+  },
+
+  printButtonIcon: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+
+  printButtonText: {
+    fontSize: f(12),
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+
+  markPaidButton: {
+    height: 38,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderRadius: 7,
+    borderWidth: 1,
+    borderColor: '#15803D',
+    backgroundColor: '#15803D',
+  },
+
+  markPaidIcon: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+
+  markPaidButtonText: {
+    fontSize: f(12),
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+
+  deleteSelectedButton: {
+    height: 38,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    borderRadius: 7,
+    borderWidth: 1,
+    borderColor: '#DC2626',
+    backgroundColor: '#FFFFFF',
+  },
+
+  deleteSelectedIcon: {
+    fontSize: 20,
+    lineHeight: 22,
+    fontWeight: '600',
+    color: '#DC2626',
+  },
+
+  deleteSelectedButtonText: {
+    fontSize: f(12),
+    fontWeight: '700',
+    color: '#DC2626',
+  },
+
+  disabledButton: {
+    opacity: 0.4,
+  },
+
+  selectedCount: {
+    fontSize: f(12),
+    fontWeight: '600',
+    color: '#687284',
+  },
+
+  /*
    * UNPAID
    */
-
   unpaidButton: {
     height: 38,
     paddingHorizontal: 12,
@@ -504,7 +632,6 @@ const styles = StyleSheet.create({
   /*
    * CHECKBOXES
    */
-
   checkbox: {
     width: 17,
     height: 17,
@@ -536,7 +663,6 @@ const styles = StyleSheet.create({
   /*
    * CLEAR
    */
-
   clearButton: {
     height: 38,
     paddingHorizontal: 12,
@@ -561,7 +687,6 @@ const styles = StyleSheet.create({
   /*
    * TRANSACTION ROWS
    */
-
   transactionRow: {
     flexDirection: 'row',
     alignItems: 'stretch',
@@ -607,7 +732,6 @@ const styles = StyleSheet.create({
   /*
    * EMPTY STATES
    */
-
   emptyContainer: {
     flex: 1,
     borderRadius: 12,

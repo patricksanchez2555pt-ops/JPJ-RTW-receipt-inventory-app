@@ -55,6 +55,18 @@ export default function Transactions() {
 
   const hasSelectedTransaction = !!selectedTransaction;
 
+  function handleMarkTransactionsPaid(selectedIds: string[]) {
+    selectedIds?.forEach((id) => {
+      const transaction = transactions?.find((t) => t.id === id);
+      if (!transaction) return;
+      if (transaction?.paidAmount >= transaction?.total) return;
+      updateTransaction({
+        ...transaction,
+        paidAmount: transaction?.total,
+      });
+    });
+  }
+
   if (isEditMode) {
     return (
       <TransactionForm
@@ -101,6 +113,8 @@ export default function Transactions() {
           <TransactionList
             transactions={transactions}
             selectedTransactionId={selectedTransactionId}
+            onDeleteTransactions={(ids) => ids?.forEach((id) => deleteTransaction(id))}
+            onMarkTransactionsAsPaid={handleMarkTransactionsPaid}
             onDeleteTransaction={deleteTransaction}
             onSelect={setSelectedTransactionId}
           />

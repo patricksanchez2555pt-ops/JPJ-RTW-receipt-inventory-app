@@ -4,9 +4,9 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useColorStore } from '@/store/useColorStore';
 import { useProductStore } from '@/store/useProductStore';
 import { useSizeStore } from '@/store/useSizeStore';
+import { useTransactionStore } from '@/store/useTransactionStore';
 import { f } from '@/utils/fontScale';
 
-import { useTransactionStore } from '../../../store/useTransactionStore';
 import TransactionForm from '../form/TransactionForm';
 import type { AddedTransactionItem } from '../form/types';
 import TransactionDetails from './components/TransactionDetails';
@@ -14,6 +14,8 @@ import TransactionList from './components/TransactionList';
 
 export default function Transactions() {
   const transactions = useTransactionStore((state) => state.transactions);
+  const deleteTransaction = useTransactionStore((state) => state.deleteTransaction);
+  const updateTransaction = useTransactionStore((state) => state.updateTransaction);
 
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
@@ -99,6 +101,7 @@ export default function Transactions() {
           <TransactionList
             transactions={transactions}
             selectedTransactionId={selectedTransactionId}
+            onDeleteTransaction={deleteTransaction}
             onSelect={setSelectedTransactionId}
           />
         </View>
@@ -107,6 +110,7 @@ export default function Transactions() {
           <View style={styles.transactionDetails}>
             <TransactionDetails
               addedItems={addedItems}
+              onAmountPaid={updateTransaction}
               onEdit={() => {
                 setIsEditMode(true);
               }}

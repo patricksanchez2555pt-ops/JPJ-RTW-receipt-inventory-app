@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabase';
 import { formatDate, formatTime } from '@/utils/dateUtils';
 import { f } from '@/utils/fontScale';
 
-import { useTransactionStore } from '../../../../store/useTransactionStore';
 import type { Transaction } from '../../../../types/localModels';
 import AddedItemsPanel from '../../components/added-items-panel/AddedItemsPanel';
 import type { AddedTransactionItem } from '../../form/types';
@@ -13,16 +12,21 @@ import type { AddedTransactionItem } from '../../form/types';
 type Props = {
   transaction: Transaction;
   addedItems: AddedTransactionItem[];
+  onAmountPaid: (transactionData: Transaction) => Transaction | undefined;
   onClose: () => void;
   onEdit: () => void;
 };
 
-export default function TransactionDetails({ transaction, addedItems, onClose, onEdit }: Props) {
+export default function TransactionDetails({
+  transaction,
+  addedItems,
+  onAmountPaid,
+  onClose,
+  onEdit,
+}: Props) {
   const [isTopExpanded, setIsTopExpanded] = useState(true);
 
   const [createdBy, setCreatedBy] = useState('');
-
-  const updateTransaction = useTransactionStore((state) => state.updateTransaction);
 
   const paidAmount = Number(transaction.paidAmount ?? 0);
 
@@ -57,7 +61,7 @@ export default function TransactionDetails({ transaction, addedItems, onClose, o
         {
           text: 'Mark as Paid',
           onPress: () => {
-            updateTransaction({
+            onAmountPaid({
               ...transaction,
               paidAmount: total,
             });

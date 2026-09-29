@@ -4,19 +4,22 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 
 import { parseDateInput } from '@/utils/dateUtils';
 import { f } from '@/utils/fontScale';
 
-import { useTransactionStore } from '../../../../store/useTransactionStore';
 import type { Transaction } from '../../../../types/localModels';
 import TransactionRow from '../TransactionRow';
 
 type Props = {
   transactions: Transaction[];
   selectedTransactionId: string | null;
+  onDeleteTransaction: (id: string) => void;
   onSelect: (id: string | null) => void;
 };
 
-export default function TransactionList({ transactions, selectedTransactionId, onSelect }: Props) {
-  const deleteTransaction = useTransactionStore((state) => state.deleteTransaction);
-
+export default function TransactionList({
+  transactions,
+  selectedTransactionId,
+  onDeleteTransaction,
+  onSelect,
+}: Props) {
   const [nameFilter, setNameFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const [unpaidOnly, setUnpaidOnly] = useState(false);
@@ -31,7 +34,7 @@ export default function TransactionList({ transactions, selectedTransactionId, o
         text: 'Delete',
         style: 'destructive',
         onPress: () => {
-          deleteTransaction(transaction.id);
+          onDeleteTransaction(transaction.id);
 
           if (selectedTransactionId === transaction.id) {
             onSelect(null);

@@ -7,19 +7,21 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function SignUp() {
   const router = useRouter();
   const { signUp } = useAuth();
+
+  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function handleCreateAccount() {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert('Missing details', 'Please enter your email and password.');
+    if (!displayName.trim() || !email.trim() || !password.trim()) {
+      Alert.alert('Missing details', 'Please enter your display name, email, and password.');
       return;
     }
 
     setLoading(true);
 
-    const { error } = await signUp(email.trim(), password);
+    const { error } = await signUp(email.trim(), password, displayName.trim());
 
     setLoading(false);
 
@@ -37,6 +39,15 @@ export default function SignUp() {
       <View style={styles.card}>
         <Text style={styles.title}>Create account</Text>
         <Text style={styles.subtitle}>Set up your JPJ RTW account</Text>
+
+        <TextInput
+          autoCapitalize="words"
+          autoCorrect={false}
+          onChangeText={setDisplayName}
+          placeholder="Display name"
+          style={styles.input}
+          value={displayName}
+        />
 
         <TextInput
           autoCapitalize="none"

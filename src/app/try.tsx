@@ -16,7 +16,24 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
 
   async function getInstruments() {
+    // const { error: err } = await supabase
+    //   .from('instruments')
+    //   .delete()
+    //   .eq('id', instruments[instruments.length-1]?.id);
+    // console.log('-----')
+    // console.log(err)
+
     const { data, error } = await supabase.from('instruments').select();
+    const { error: err } = await supabase.from('instruments').insert({ name: 'patrick' });
+
+    const session = (await supabase.auth.getSession())?.data?.session;
+    const userId = session?.user?.id;
+    supabase
+      .from('users')
+      .update({
+        display_name: 'patrick',
+      })
+      .eq('id', userId);
 
     if (error) {
       setError(error.message);
@@ -51,9 +68,6 @@ export default function App() {
         onPress={async () => {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           getInstruments();
-
-          console.log('-------');
-          console.log(session);
         }}
       >
         <Text>tryy</Text>

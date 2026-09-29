@@ -11,7 +11,7 @@ type AuthContextValue = {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<SignInResult>;
-  signUp: (email: string, password: string) => Promise<SignUpResult>;
+  signUp: (email: string, password: string, displayName: string) => Promise<SignUpResult>;
   signOut: () => Promise<void>;
 };
 
@@ -62,12 +62,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return result;
   }, []);
 
-  const signUp = useCallback(async (email: string, password: string) => {
+  const signUp = useCallback(async (email: string, password: string, displayName: string) => {
     const result = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: 'jpj-rtw://auth',
+        data: {
+          display_name: displayName,
+        },
       },
     });
 

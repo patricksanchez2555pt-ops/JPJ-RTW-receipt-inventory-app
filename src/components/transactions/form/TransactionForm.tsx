@@ -297,22 +297,31 @@ export default function TransactionForm({
 
       onUpdate();
     } else {
-      const newTransaction = useTransactionStore.getState().addTransaction({
-        customerId: customer?.id,
-        buyerName: customer?.name ?? buyerName,
-        subtotal,
-        paidAmount,
-        discount,
-        total,
-        items,
-      });
+      useTransactionStore
+        .getState()
+        .addTransaction({
+          customerId: customer?.id,
+          buyerName: customer?.name ?? buyerName,
+          subtotal,
+          paidAmount,
+          discount,
+          total,
+          items,
+        })
+        .then((newTransaction) => {
+          if (!newTransaction) {
+            Alert.alert('Transaction Saving Failed');
+            return;
+          }
 
-      console.log('TRANSACTION SAVED:', newTransaction);
+          console.log('TRANSACTION SAVED:', newTransaction);
 
-      Alert.alert(
-        'Transaction Saved',
-        `Transaction #${newTransaction.id}\nTotal: ₱${newTransaction.total.toFixed(2)}`,
-      );
+          Alert.alert(
+            'Transaction Saved',
+            `Transaction #${newTransaction.id}\nTotal: ₱${newTransaction.total.toFixed(2)}`,
+          );
+        })
+        .catch(Alert.alert);
     }
 
     setItems([]);

@@ -61,6 +61,7 @@ export type TransactionItem = {
 export type Transaction = {
   id: string;
   date: string;
+  createdBy: string;
 
   customerId?: string;
   buyerName: string;

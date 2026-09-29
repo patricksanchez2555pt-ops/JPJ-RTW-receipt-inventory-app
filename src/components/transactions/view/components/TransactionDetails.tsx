@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { supabase } from '@/lib/supabase';
 import { formatDate, formatTime } from '@/utils/dateUtils';
 import { f } from '@/utils/fontScale';
 
@@ -18,6 +19,8 @@ type Props = {
 
 export default function TransactionDetails({ transaction, addedItems, onClose, onEdit }: Props) {
   const [isTopExpanded, setIsTopExpanded] = useState(true);
+
+  const [createdBy, setCreatedBy] = useState('');
 
   const updateTransaction = useTransactionStore((state) => state.updateTransaction);
 
@@ -66,6 +69,18 @@ export default function TransactionDetails({ transaction, addedItems, onClose, o
     );
   }
 
+  useEffect(() => {
+    supabase
+      .from('users')
+      .select('id, display_name, email, created_at, updated_at')
+      .eq('id', transaction?.createdBy)
+      .maybeSingle()
+      .then((result) => {
+        console.log(transaction.createdBy);
+        setCreatedBy(result?.data?.display_name);
+      });
+  }, [transaction]);
+
   return (
     <View style={styles.container}>
       {/* COLLAPSIBLE TOP SECTION */}
@@ -78,8 +93,10 @@ export default function TransactionDetails({ transaction, addedItems, onClose, o
           >
             <View style={styles.headerTitleRow}>
               <Text style={styles.title}>Transaction Details</Text>
+
               <Text style={styles.collapseIcon}>{isTopExpanded ? '−' : '+'}</Text>
             </View>
+
             {!isTopExpanded && (
               <View style={styles.collapsedInfo}>
                 <Text style={styles.collapsedId}>#{transaction.id.replace('tx-', '')}</Text>
@@ -95,6 +112,7 @@ export default function TransactionDetails({ transaction, addedItems, onClose, o
                 <Text style={styles.collapsedTotal}>₱{total.toLocaleString()}</Text>
               </View>
             )}
+
             {isTopExpanded && (
               <View>
                 <Text style={styles.id}>#{transaction.id.replace('tx-', '')}</Text>
@@ -122,15 +140,22 @@ export default function TransactionDetails({ transaction, addedItems, onClose, o
             </Pressable>
           </View>
         </View>
+
         {/* CUSTOMER + PAYMENT + SUMMARY */}
         {isTopExpanded && (
           <View style={styles.customerRow}>
-            {/* CUSTOMER */}
+            {/* CUSTOMER + CREATED BY */}
             <View style={styles.customer}>
               <Text style={styles.customerLabel}>CUSTOMER</Text>
 
               <Text style={styles.customerName} numberOfLines={2}>
                 {transaction.buyerName || 'Walk-in Customer'}
+              </Text>
+
+              <Text style={styles.createdByLabel}>CREATED BY</Text>
+
+              <Text style={styles.createdByName} numberOfLines={1}>
+                {createdBy || 'Unknown'}
               </Text>
             </View>
 
@@ -188,6 +213,7 @@ export default function TransactionDetails({ transaction, addedItems, onClose, o
           </View>
         )}
       </View>
+
       {/* GROUPED ITEMS */}
       <View style={styles.items}>
         <AddedItemsPanel
@@ -355,7 +381,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
 
-  // CUSTOMER
+  // CUSTOMER + CREATED BY
   customer: {
     flex: 1,
     minWidth: 0,
@@ -378,6 +404,21 @@ const styles = StyleSheet.create({
     fontSize: f(15),
     fontWeight: '800',
     color: '#252B35',
+  },
+
+  createdByLabel: {
+    marginTop: 12,
+    fontSize: f(10),
+    fontWeight: '800',
+    color: '#8A93A1',
+    letterSpacing: 0.5,
+  },
+
+  createdByName: {
+    marginTop: 4,
+    fontSize: f(13),
+    fontWeight: '700',
+    color: '#3A424F',
   },
 
   // PAYMENT

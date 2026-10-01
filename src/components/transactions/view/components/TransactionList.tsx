@@ -188,6 +188,7 @@ export default function TransactionList({
    * Select All behavior preserved from your uploaded file.
    */
   const allVisibleSelected =
+    filteredTransactions.length > 0 &&
     filteredTransactions.length === selectedTransactionIds.length &&
     filteredTransactions.every((transaction) => selectedTransactionIds.includes(transaction.id));
 

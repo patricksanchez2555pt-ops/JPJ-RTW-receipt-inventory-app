@@ -9,7 +9,7 @@ type Props = {
   addItems: (quantity?: number) => void;
 };
 
-const QUANTITIES = Array.from({ length: 12 }, (_, index) => {
+const PER_PCS = Array.from({ length: 12 }, (_, index) => {
   const value = index + 1;
 
   return {
@@ -18,21 +18,38 @@ const QUANTITIES = Array.from({ length: 12 }, (_, index) => {
   };
 });
 
+const PER_DZN = Array.from({ length: 12 }, (_, index) => {
+  const value = index + 1;
+
+  return {
+    label: `${value} ${value === 1 ? 'dzn' : 'dzns'}`,
+    value: value * 12,
+  };
+});
+
+type QuantityMode = 'pcs' | 'dzn';
+
 export default function QuantitySelector({ quantity, onChange, addItems }: Props) {
   const [customQuantity, setCustomQuantity] = useState('');
-
   const [clickedQuantity, setClickedQuantity] = useState<number | null>(null);
+  const [quantityMode, setQuantityMode] = useState<QuantityMode>('pcs');
 
-  const isPresetQuantity = QUANTITIES.some((item) => item.value === quantity);
+  const presets = quantityMode === 'pcs' ? PER_PCS : PER_DZN;
+
+  const isPresetQuantity = presets.some((item) => item.value === quantity);
+
+  const handleModeChange = (mode: QuantityMode) => {
+    setQuantityMode(mode);
+    setCustomQuantity('');
+    onChange(1);
+  };
 
   const handleCustomQuantityChanged = (value: string) => {
-    // Allow completely empty input
     if (value === '') {
       setCustomQuantity('');
       return;
     }
 
-    // Numbers only
     if (!/^\d+$/.test(value)) {
       return;
     }
@@ -41,16 +58,41 @@ export default function QuantitySelector({ quantity, onChange, addItems }: Props
 
     if (parsed > 0) {
       setCustomQuantity(value);
-      onChange(parsed);
+
+      const actualQuantity = quantityMode === 'dzn' ? parsed * 12 : parsed;
+
+      onChange(actualQuantity);
     }
   };
 
   return (
     <View>
-      <Text style={styles.title}>Choose Quantity</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Choose Quantity</Text>
+
+        <View style={styles.modeContainer}>
+          <Pressable
+            onPress={() => handleModeChange('pcs')}
+            style={[styles.modeButton, quantityMode === 'pcs' && styles.modeButtonSelected]}
+          >
+            <Text style={[styles.modeText, quantityMode === 'pcs' && styles.modeTextSelected]}>
+              Piece
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => handleModeChange('dzn')}
+            style={[styles.modeButton, quantityMode === 'dzn' && styles.modeButtonSelected]}
+          >
+            <Text style={[styles.modeText, quantityMode === 'dzn' && styles.modeTextSelected]}>
+              Dozen
+            </Text>
+          </Pressable>
+        </View>
+      </View>
 
       <View style={styles.container}>
-        {QUANTITIES.map((item) => {
+        {presets.map((item) => {
           const isClicked = clickedQuantity === item.value;
 
           return (
@@ -59,13 +101,12 @@ export default function QuantitySelector({ quantity, onChange, addItems }: Props
               onPress={() => {
                 const value = Number(item.value);
 
-                // update parent quantity state first
                 onChange(value);
 
-                // highlight button
+                setCustomQuantity(quantityMode === 'dzn' ? String(value / 12) : String(value));
+
                 setClickedQuantity(item.value);
 
-                // call addItems with the explicit value to avoid stale state
                 addItems(value);
 
                 setTimeout(() => {
@@ -79,19 +120,20 @@ export default function QuantitySelector({ quantity, onChange, addItems }: Props
           );
         })}
 
-        {/* Custom quantity */}
         <View
           style={[
             styles.customContainer,
             !isPresetQuantity && quantity > 0 && styles.customSelected,
           ]}
         >
-          <Text style={styles.customLabel}>Custom</Text>
+          <Text style={styles.customLabel}>
+            Custom {quantityMode === 'dzn' ? 'Dozens' : 'Quantity'}
+          </Text>
 
           <TextInput
             value={customQuantity}
             onChangeText={handleCustomQuantityChanged}
-            placeholder="Qty"
+            placeholder={quantityMode === 'dzn' ? 'Dzns' : 'Qty'}
             placeholderTextColor="#9AA3B2"
             keyboardType="number-pad"
             inputMode="numeric"
@@ -105,10 +147,49 @@ export default function QuantitySelector({ quantity, onChange, addItems }: Props
 }
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+
   title: {
     fontSize: f(16),
     fontWeight: '700',
-    marginBottom: 12,
+  },
+
+  modeContainer: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: '#D9DEE8',
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+  },
+
+  modeButton: {
+    height: 36,
+    minWidth: 72,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+
+  modeButtonSelected: {
+    backgroundColor: '#EEF3FF',
+  },
+
+  modeText: {
+    fontSize: f(13),
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+
+  modeTextSelected: {
+    color: '#1745D1',
+    fontWeight: '700',
   },
 
   container: {

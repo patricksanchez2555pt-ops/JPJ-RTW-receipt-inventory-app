@@ -4,7 +4,7 @@ import { router, usePathname } from 'expo-router';
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { useAuth } from '@/contexts/AuthContext';
+// import { useAuth } from '@/contexts/AuthContext';
 import { f } from '@/utils/fontScale';
 
 type SidebarItem = {
@@ -44,11 +44,11 @@ const NAV_ITEMS: SidebarItem[] = [
     icon: 'people-outline',
     route: '/customers',
   },
-  {
-    label: 'try',
-    icon: 'people-outline',
-    route: '/try',
-  },
+  // {
+  //   label: 'try',
+  //   icon: 'people-outline',
+  //   route: '/try',
+  // },
   {
     label: 'Settings',
     icon: 'settings-outline',
@@ -57,7 +57,7 @@ const NAV_ITEMS: SidebarItem[] = [
 ];
 
 export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
-  const { session, signOut } = useAuth();
+  // const { session, signOut } = useAuth();
 
   const pathname = usePathname();
 
@@ -73,7 +73,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     console.log('Logout');
   };
 
-  if (!session) return null;
+  // if (!session) return null;
 
   return (
     <View style={[styles.sidebar, collapsed ? styles.sidebarCollapsed : styles.sidebarExpanded]}>

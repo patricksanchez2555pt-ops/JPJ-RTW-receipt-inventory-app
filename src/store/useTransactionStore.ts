@@ -2,8 +2,7 @@ import { createMMKV } from 'react-native-mmkv';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { supabase } from '@/lib/supabase';
-
+// import { supabase } from '@/lib/supabase';
 import type { Transaction, TransactionItem } from '../types/localModels';
 import { getInventoryKey, useInventoryStore } from './useInventoryStore';
 
@@ -40,13 +39,13 @@ export const useTransactionStore = create<TransactionStore>()(
        * Creates a transaction AND automatically deducts sold items from Inventory.
        */
       addTransaction: async (data) => {
-        const session = (await supabase.auth.getSession())?.data?.session;
-        const userId = session?.user?.id;
+        // const session = (await supabase.auth.getSession())?.data?.session;
+        // const userId = session?.user?.id;
 
-        console.log('-----');
-        console.log(userId);
+        // console.log('-----');
+        // console.log(userId);
 
-        if (!userId) return null;
+        // if (!userId) return null;
 
         const transactionId = `tx-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
         const date = data.date ?? new Date().toISOString();
@@ -68,7 +67,7 @@ export const useTransactionStore = create<TransactionStore>()(
           discount,
           total,
           items,
-          createdBy: userId,
+          // createdBy: userId,
         };
 
         // 1. DEDUCT SOLD QUANTITIES FROM GLOBAL INVENTORY STORE

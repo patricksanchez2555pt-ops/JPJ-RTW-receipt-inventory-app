@@ -1,5 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useColorStore } from '../../store/useColorStore';
 import { useProductStore } from '../../store/useProductStore';
@@ -14,6 +15,7 @@ export default function Products() {
   const sizes = useSizeStore((state) => state.sizes);
 
   const [creatingProduct, setCreatingProduct] = useState(false);
+  const [isListCollapsed, setIsListCollapsed] = useState(false);
 
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
     products[0]?.id ?? null,
@@ -29,22 +31,48 @@ export default function Products() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.listPanel}>
-        <ProductList
-          products={products}
-          colors={colors}
-          sizes={sizes}
-          selectedProductId={selectedProductId}
-          onSelect={(product) => {
-            setCreatingProduct(false);
-            setSelectedProductId(product.id);
-          }}
-          onCreateProduct={() => {
-            setCreatingProduct(true);
-            setSelectedProductId(null);
-          }}
-        />
-      </View>
+      {!isListCollapsed && (
+        <View style={styles.listPanel}>
+          <View style={styles.listHeader}>
+            <Pressable
+              style={styles.collapseButton}
+              onPress={() => setIsListCollapsed(true)}
+              accessibilityLabel="Collapse product list"
+            >
+              <Ionicons name="chevron-back" size={20} color="#4B5563" />
+            </Pressable>
+          </View>
+
+          <View style={styles.listContent}>
+            <ProductList
+              products={products}
+              colors={colors}
+              sizes={sizes}
+              selectedProductId={selectedProductId}
+              onSelect={(product) => {
+                setCreatingProduct(false);
+                setSelectedProductId(product.id);
+              }}
+              onCreateProduct={() => {
+                setCreatingProduct(true);
+                setSelectedProductId(null);
+              }}
+            />
+          </View>
+        </View>
+      )}
+
+      {isListCollapsed && (
+        <View style={styles.collapsedPanel}>
+          <Pressable
+            style={styles.expandButton}
+            onPress={() => setIsListCollapsed(false)}
+            accessibilityLabel="Expand product list"
+          >
+            <Ionicons name="chevron-forward" size={20} color="#4B5563" />
+          </Pressable>
+        </View>
+      )}
 
       <View style={styles.editorPanel}>
         {creatingProduct ? (
@@ -83,7 +111,47 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
 
+  listHeader: {
+    height: 48,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+
+  listContent: {
+    flex: 1,
+  },
+
+  collapsedPanel: {
+    width: 48,
+    borderRightWidth: 1,
+    borderRightColor: '#DCE1E9',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    paddingTop: 8,
+  },
+
+  collapseButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  expandButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   editorPanel: {
     flex: 1,
+    minWidth: 0,
   },
 });

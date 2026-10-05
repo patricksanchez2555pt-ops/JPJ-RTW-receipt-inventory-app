@@ -38,7 +38,7 @@ export default function ProductList({
         >
           <Ionicons name="add" size={18} color="#FFFFFF" />
 
-          <Text style={styles.createButtonText}>Create Product</Text>
+          <Text style={styles.createButtonText}>Create</Text>
         </Pressable>
       </View>
 
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: f(20),
+    fontSize: f(18),
     fontWeight: '800',
     color: '#151A23',
   },

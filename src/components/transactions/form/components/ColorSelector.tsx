@@ -82,8 +82,11 @@ const styles = StyleSheet.create({
   },
 
   colorButton: {
-    minWidth: 120,
-    height: 52,
+    // minWidth: 180,
+    // height: 52,
+    // paddingHorizontal: 14,
+    minWidth: 50,
+    minHeight: 30,
     paddingHorizontal: 14,
     borderWidth: 1,
     borderColor: '#D9DEE8',

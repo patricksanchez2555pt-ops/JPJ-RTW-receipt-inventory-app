@@ -28,10 +28,6 @@ export default function AddedItemsHeader({
 }: Props) {
   return (
     <View style={styles.header}>
-      <View style={styles.headerTitleContainer}>
-        <Text style={styles.title}>Items</Text>
-      </View>
-
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}

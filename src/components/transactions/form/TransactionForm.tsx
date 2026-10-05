@@ -317,7 +317,7 @@ export default function TransactionForm({
           console.log('TRANSACTION SAVED:', newTransaction);
 
           Alert.alert(
-            'Transaction Saved',
+            `Transaction Saved For ${customer?.name ?? buyerName}`,
             `Transaction #${newTransaction.id}\nTotal: ₱${newTransaction.total.toFixed(2)}`,
           );
         })
@@ -431,6 +431,7 @@ export default function TransactionForm({
       {/* RIGHT SIDE */}
       <View style={styles.right}>
         <AddedItemsPanel
+          buyersName={selectedCustomer?.name ?? buyerName}
           items={items}
           highlightedItemIds={highlightedItemIds}
           total={total}
@@ -478,7 +479,6 @@ const styles = StyleSheet.create({
 
   right: {
     flex: 1,
-    padding: 20,
     gap: 14,
   },
 

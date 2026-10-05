@@ -42,6 +42,13 @@ export default function TransactionSummary({
   const [customerSearch, setCustomerSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  // Keep the input values as strings so "-" can exist while typing.
+  const [discountInput, setDiscountInput] = useState(discount === 0 ? '' : String(discount));
+
+  const [paidAmountInput, setPaidAmountInput] = useState(
+    paidAmount === 0 ? '' : String(paidAmount),
+  );
+
   const selectedCustomer = useMemo(() => {
     if (!selectedCustomerId) {
       return null;
@@ -101,6 +108,97 @@ export default function TransactionSummary({
     setCustomerSearch('');
     onCustomerSelect(null);
     setShowSuggestions(false);
+  }
+
+  function handleDiscountChange(value: string) {
+    // Allow empty value
+    if (value === '') {
+      setDiscountInput('');
+      onDiscountChange(0);
+      return;
+    }
+
+    // Allow "-" while the user is typing
+    if (value === '-') {
+      setDiscountInput('-');
+      return;
+    }
+
+    // Allow negative/positive integers and decimals
+    if (!/^-?\d*\.?\d*$/.test(value)) {
+      return;
+    }
+
+    setDiscountInput(value);
+
+    const numeric = Number(value);
+
+    if (!Number.isNaN(numeric)) {
+      onDiscountChange(numeric);
+    }
+  }
+
+  function handleDiscountBlur() {
+    if (discountInput === '-' || discountInput === '') {
+      setDiscountInput('');
+      onDiscountChange(0);
+      return;
+    }
+
+    const numeric = Number(discountInput);
+
+    if (!Number.isNaN(numeric)) {
+      onDiscountChange(numeric);
+      setDiscountInput(String(numeric));
+    }
+  }
+
+  function handlePaidAmountChange(value: string) {
+    // Allow empty value
+    if (value === '') {
+      setPaidAmountInput('');
+      onPaidAmountChange(0);
+      return;
+    }
+
+    // Allow "-" while the user is typing
+    if (value === '-') {
+      setPaidAmountInput('-');
+      return;
+    }
+
+    // Allow negative/positive integers and decimals
+    if (!/^-?\d*\.?\d*$/.test(value)) {
+      return;
+    }
+
+    setPaidAmountInput(value);
+
+    const numeric = Number(value);
+
+    if (!Number.isNaN(numeric)) {
+      onPaidAmountChange(numeric);
+    }
+  }
+
+  function handlePaidAmountBlur() {
+    if (paidAmountInput === '-' || paidAmountInput === '') {
+      setPaidAmountInput('');
+      onPaidAmountChange(0);
+      return;
+    }
+
+    const numeric = Number(paidAmountInput);
+
+    if (!Number.isNaN(numeric)) {
+      onPaidAmountChange(numeric);
+      setPaidAmountInput(String(numeric));
+    }
+  }
+
+  function handlePayFull() {
+    setPaidAmountInput(String(total));
+    onPaidAmountChange(total);
   }
 
   return (
@@ -198,27 +296,32 @@ export default function TransactionSummary({
 
             <View style={styles.discountControls}>
               <Pressable
-                onPress={() => onDiscountChange(2 * itemCount)}
+                onPress={() => {
+                  const value = 2 * itemCount;
+                  setDiscountInput(String(value));
+                  onDiscountChange(value);
+                }}
                 style={({ pressed }) => [styles.lessButton, pressed && styles.buttonPressed]}
               >
                 <Text style={styles.lessButtonText}>Less 2</Text>
               </Pressable>
 
               <Pressable
-                onPress={() => onDiscountChange(5 * itemCount)}
+                onPress={() => {
+                  const value = 5 * itemCount;
+                  setDiscountInput(String(value));
+                  onDiscountChange(value);
+                }}
                 style={({ pressed }) => [styles.lessButton, pressed && styles.buttonPressed]}
               >
                 <Text style={styles.lessButtonText}>Less 5</Text>
               </Pressable>
 
               <TextInput
-                value={discount === 0 ? '' : String(discount)}
-                onChangeText={(value) => {
-                  const numeric = Number(value.replace(/[^0-9.]/g, ''));
-
-                  onDiscountChange(Number.isNaN(numeric) ? 0 : numeric);
-                }}
-                keyboardType="decimal-pad"
+                value={discountInput}
+                onChangeText={handleDiscountChange}
+                onBlur={handleDiscountBlur}
+                keyboardType="numbers-and-punctuation"
                 placeholder="0"
                 placeholderTextColor="#9AA2AF"
                 style={styles.discountInput}
@@ -239,20 +342,17 @@ export default function TransactionSummary({
 
             <View style={styles.paidAmountControls}>
               <TextInput
-                value={paidAmount === 0 ? '' : String(paidAmount)}
-                onChangeText={(value) => {
-                  const numeric = Number(value.replace(/[^0-9.]/g, ''));
-
-                  onPaidAmountChange(Number.isNaN(numeric) ? 0 : numeric);
-                }}
-                keyboardType="decimal-pad"
+                value={paidAmountInput}
+                onChangeText={handlePaidAmountChange}
+                onBlur={handlePaidAmountBlur}
+                keyboardType="numbers-and-punctuation"
                 placeholder="0"
                 placeholderTextColor="#9AA2AF"
                 style={styles.paidAmountInput}
               />
 
               <Pressable
-                onPress={() => onPaidAmountChange(total)}
+                onPress={handlePayFull}
                 style={({ pressed }) => [styles.payFullButton, pressed && styles.buttonPressed]}
               >
                 <Text style={styles.payFullButtonText}>Pay Full</Text>
@@ -294,8 +394,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'visible',
     zIndex: 10,
-
-    // Allows the summary to size itself based on its content.
     flexGrow: 0,
   },
 

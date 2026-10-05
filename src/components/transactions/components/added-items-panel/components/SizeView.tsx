@@ -94,7 +94,7 @@ export default function SizeView({
                       key={item.id}
                       item={item}
                       highlighted={highlightedSet.has(item.id)}
-                      showUnitPrice={showUnitPrice}
+                      showUnitPrice={false}
                       itemLayoutsRef={itemLayoutsRef}
                       label={item.color?.name ?? 'Unknown Color'}
                       colorHex={item.color?.hexValue ?? '#000000'}

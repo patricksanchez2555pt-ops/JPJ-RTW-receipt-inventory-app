@@ -150,6 +150,7 @@ export default function AddedItemsPanel({
         productSizeGroups,
         viewMode,
         showColors,
+        showUnitPrice,
         transactionDate ?? new Date().toDateString(),
         buyersName ?? '',
       );

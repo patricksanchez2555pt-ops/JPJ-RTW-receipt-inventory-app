@@ -11,6 +11,8 @@ import TransactionRow from '../TransactionRow';
 type Props = {
   transactions: Transaction[];
   selectedTransactionId: string | null;
+  onMarkAsPaid: (id: string) => void;
+  onEdit: (id: string) => void;
   onDeleteTransaction: (id: string) => void;
   onDeleteTransactions: (id: string[]) => void;
   onMarkTransactionsAsPaid: (ids: string[]) => void;
@@ -20,6 +22,8 @@ type Props = {
 export default function TransactionList({
   transactions,
   selectedTransactionId,
+  onMarkAsPaid,
+  onEdit,
   onDeleteTransaction,
   onDeleteTransactions,
   onMarkTransactionsAsPaid,
@@ -54,7 +58,7 @@ export default function TransactionList({
         text: 'Delete',
         style: 'destructive',
         onPress: () => {
-          onDeleteTransactions(selectedTransactionIds);
+          onDeleteTransaction(transaction?.id);
         },
       },
     ]);
@@ -82,9 +86,7 @@ export default function TransactionList({
           text: 'Delete All',
           style: 'destructive',
           onPress: () => {
-            idsToDelete.forEach((id) => {
-              onDeleteTransaction(id);
-            });
+            onDeleteTransactions(idsToDelete);
 
             if (selectedTransactionId && idsToDelete.includes(selectedTransactionId)) {
               onSelect(null);
@@ -404,8 +406,25 @@ export default function TransactionList({
                       onSelect(transaction.id === selectedTransactionId ? null : transaction.id)
                     }
                     onDelete={() => handleDelete(transaction)}
-                    onEdit={() => {}}
-                    onMarkAsPaid={() => {}}
+                    onEdit={() => onEdit(transaction.id)}
+                    onMarkAsPaid={() => {
+                      Alert.alert(
+                        'Mark as Paid',
+                        `Mark transaction #${transaction.id} as fully paid?`,
+                        [
+                          {
+                            text: 'Cancel',
+                            style: 'cancel',
+                          },
+                          {
+                            text: 'Mark as Paid',
+                            onPress: () => {
+                              onMarkAsPaid(transaction.id);
+                            },
+                          },
+                        ],
+                      );
+                    }}
                   />
                 </View>
               </View>

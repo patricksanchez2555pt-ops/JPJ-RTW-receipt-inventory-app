@@ -59,7 +59,8 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    maxWidth: 2160,
+    maxWidth: 1080,
+    maxHeight: 810,
   },
 
   keyboardVisible: {

@@ -18,15 +18,32 @@ function toPrintableLine(
   label2: string,
   label3: string | undefined,
   label4: string | undefined,
+  noSpace?: boolean | undefined,
 ): string {
   // 2 labels
-  if (!label3)
-    return `${label1?.padEnd(10, ' ')?.slice(0, 10)} ${label2?.padEnd(20, ' ')?.slice(0, 20)}`;
+  if (!label3) {
+    const { label1Length, label2Length } = { label1Length: noSpace ? 10 : 9, label2Length: 20 };
+    return `${noSpace ? '' : ' '}${label1?.padEnd(label1Length, ' ')?.slice(0, label1Length)} ${label2?.padEnd(label2Length, ' ')?.slice(0, label2Length)}`;
+  }
+
   // 3 labels
-  if (!label4)
-    return `${label1?.padEnd(5, ' ')?.slice(0, 5)} ${label2?.padEnd(12, ' ')?.slice(0, 12)} ${label3?.padEnd(12, ' ')?.slice(0, 12)}`;
+  if (!label4) {
+    const { label1Length, label2Length, label3Length } = {
+      label1Length: noSpace ? 5 : 4,
+      label2Length: 12,
+      label3Length: 12,
+    };
+    return `${noSpace ? '' : ' '}${label1?.padEnd(label1Length, ' ')?.slice(0, label1Length)} ${label2?.padEnd(label2Length, ' ')?.slice(0, label2Length)} ${label3?.padEnd(label3Length, ' ')?.slice(0, label3Length)}`;
+  }
+
   // 4 labels
-  return `${label1?.padEnd(5, ' ')?.slice(0, 5)} ${label2?.padEnd(8, ' ')?.slice(0, 8)} ${label3?.padEnd(8, ' ')?.slice(0, 8)} ${label4?.padEnd(8, ' ')?.slice(0, 8)}`;
+  const { label1Length, label2Length, label3Length, label4Length } = {
+    label1Length: noSpace ? 5 : 4,
+    label2Length: 8,
+    label3Length: 8,
+    label4Length: 8,
+  };
+  return `${noSpace ? '' : ' '}${label1?.padEnd(label1Length, ' ')?.slice(0, label1Length)} ${label2?.padEnd(label2Length, ' ')?.slice(0, label2Length)} ${label3?.padEnd(label3Length, ' ')?.slice(0, label3Length)} ${label4?.padEnd(label4Length, ' ')?.slice(0, label4Length)}`;
 }
 
 export function formatPrintGroupedItems(
@@ -34,6 +51,7 @@ export function formatPrintGroupedItems(
   productSizeGroups: SizeProductGroup[],
   viewMode: ViewMode,
   showColorsForSizeView: boolean,
+  showUnitPrice: boolean,
   transactionDate: string,
   buyersName: string,
 ): string {
@@ -47,14 +65,14 @@ export function formatPrintGroupedItems(
         (groupedColor, currColor) => {
           const colorName = currColor?.name?.slice(0, lineLength);
           const items = currColor.items.reduce((groupedItems, item) => {
-            return `${groupedItems}${toPrintableLine(item?.size?.name, `P${formatNumber(item?.unitPrice)}`, `${item.quantity}`, `P${formatNumber(item.total)}`)}\n`;
+            return `${groupedItems}${toPrintableLine(item?.size?.name, showUnitPrice ? `P${formatNumber(item?.unitPrice)}` : '', `${item.quantity}`, `P${formatNumber(item.total)}`)}\n`;
           }, '');
           return `${groupedColor}${colorName ?? 'color'}\n${items}`;
         },
         '',
       );
 
-      return `${groupedProd}${productName ?? 'product'}\n${colorGroupText}`;
+      return `${groupedProd}${'\n'.padStart(lineLength, '-')}${productName ?? 'product'}\n${colorGroupText}`;
     }, '');
   } else if (viewMode === 'size') {
     finalText = productSizeGroups.reduce((groupedProd, currProduct) => {
@@ -64,30 +82,31 @@ export function formatPrintGroupedItems(
         (groupedSize, currSize) => {
           const sizeText = toPrintableLine(
             currSize?.name,
-            `P${formatNumber(currSize?.price)}`,
-            `${currSize.quantity}`,
+            showUnitPrice && !showColorsForSizeView ? `P${formatNumber(currSize?.price)}` : '',
+            !showColorsForSizeView ? `${currSize.quantity}` : '',
             `P${formatNumber(currSize.subTotal)}`,
+            true,
           );
 
           let colors = '';
           if (showColorsForSizeView)
             colors = currSize.items.reduce((groupedItems, item) => {
-              return `${groupedItems}${toPrintableLine(item?.color?.name, `P${formatNumber(item?.unitPrice)}`, `${item.quantity}`, `P${formatNumber(item.total)}`)}\n`;
+              return `${groupedItems}${toPrintableLine(item?.color?.name, showUnitPrice ? `P${formatNumber(item?.unitPrice)}` : '', `${item.quantity}`, `P${formatNumber(item.total)}`)}\n`;
             }, '');
           return `${groupedSize}${sizeText ?? 'size'}\n${colors}`;
         },
         '',
       );
 
-      return `${groupedProd}${productName ?? 'product'}\n${sizeGroupText}`;
+      return `${groupedProd}${'\n'.padStart(lineLength, '-')}${productName ?? 'product'}\n${sizeGroupText}`;
     }, '');
   }
 
+  const padding = (lineLength + 7) / 2;
   finalText = `
-JPJ RTW
+${'JPJ RTW'.padStart(padding, ' ')}
 Date: ${formatDate(transactionDate, false, true).slice(0, lineLength)}
 Name: ${buyersName}
-${''.padEnd(lineLength, '-')}
 ${finalText}
 ${''.padEnd(lineLength, '-')}
 Signature: 

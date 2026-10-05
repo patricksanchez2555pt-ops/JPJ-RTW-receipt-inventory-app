@@ -114,6 +114,13 @@ export default function Transactions() {
             transactions={transactions}
             selectedTransactionId={selectedTransactionId}
             onDeleteTransactions={(ids) => ids?.forEach((id) => deleteTransaction(id))}
+            onMarkAsPaid={(id) => {
+              handleMarkTransactionsPaid([id]);
+            }}
+            onEdit={(id) => {
+              setSelectedTransactionId(id);
+              setIsEditMode(true);
+            }}
             onMarkTransactionsAsPaid={handleMarkTransactionsPaid}
             onDeleteTransaction={deleteTransaction}
             onSelect={setSelectedTransactionId}

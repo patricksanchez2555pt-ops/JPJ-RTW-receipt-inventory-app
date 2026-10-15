@@ -73,12 +73,44 @@ export const useTransactionStore = create<TransactionStore>()(
         // 1. DEDUCT SOLD QUANTITIES FROM GLOBAL INVENTORY STORE
         const inventoryStore = useInventoryStore.getState();
         items.forEach((item: TransactionItem) => {
-          const key = getInventoryKey(item.productId, item.colorId, item.sizeId);
+          // TODO: remove once bundle handling is implemented
+          if (item.productId === 'leotard-set-long' || item.productId === 'leotard-set-short') {
+            const topProductId = item.productId.replace('-set', '');
+            const topColorId = item.colorId.replace('-set', '');
+            const topSizeId = item.sizeId.replace('-set', '');
+            const topKey = getInventoryKey(topProductId, topColorId, topSizeId);
 
-          const currentQty = inventoryStore.getQuantity(key);
-          const updatedQty = Math.max(0, currentQty - item.quantity);
+            const currentQty = inventoryStore.getQuantity(topKey);
+            const updatedQty = Math.max(0, currentQty - item.quantity);
 
-          inventoryStore.setQuantity(item.productId, item.colorId, item.sizeId, updatedQty);
+            inventoryStore.setQuantity(topProductId, topColorId, topSizeId, updatedQty);
+
+            const bottomProductId = 'tights-sakbet';
+            const bottomColorId = item.colorId
+              .replace('leotard-set-long', 'tights-sakbet')
+              .replace('leotard-set-short', 'tights-sakbet');
+            const bottomSizeId = item.sizeId
+              .replace('leotard-set-long', 'tights-sakbet')
+              .replace('leotard-set-short', 'tights-sakbet');
+            const bottomKey = getInventoryKey(bottomProductId, bottomColorId, bottomSizeId);
+
+            const currentBottomQty = inventoryStore.getQuantity(bottomKey);
+            const updatedBottomQty = Math.max(0, currentBottomQty - item.quantity);
+
+            inventoryStore.setQuantity(
+              bottomProductId,
+              bottomColorId,
+              bottomSizeId,
+              updatedBottomQty,
+            );
+          } else {
+            const key = getInventoryKey(item.productId, item.colorId, item.sizeId);
+
+            const currentQty = inventoryStore.getQuantity(key);
+            const updatedQty = Math.max(0, currentQty - item.quantity);
+
+            inventoryStore.setQuantity(item.productId, item.colorId, item.sizeId, updatedQty);
+          }
         });
 
         // 2. SAVE TRANSACTION LOCALLY (Latest transactions first)

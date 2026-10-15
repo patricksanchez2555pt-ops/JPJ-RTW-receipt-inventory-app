@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { useAuth } from '@/contexts/AuthContext';
-
+// import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
 type Instrument = {
@@ -11,7 +10,7 @@ type Instrument = {
 };
 
 export default function App() {
-  const { session } = useAuth();
+  // const { session } = useAuth();
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,7 +23,7 @@ export default function App() {
     // console.log(err)
 
     const { data, error } = await supabase.from('instruments').select();
-    const { error: err } = await supabase.from('instruments').insert({ name: 'patrick' });
+    // const { error: err } = await supabase.from('instruments').insert({ name: 'patrick' });
 
     const session = (await supabase.auth.getSession())?.data?.session;
     const userId = session?.user?.id;

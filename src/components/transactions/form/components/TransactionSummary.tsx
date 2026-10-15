@@ -22,6 +22,7 @@ type Props = {
   onCustomerNameChange: (name: string) => void;
   onPaidAmountChange: (amount: number) => void;
   onSave: () => void;
+  onQuickDiscountSelect: (value: 2 | 5 | null) => void;
 };
 
 export default function TransactionSummary({
@@ -37,6 +38,7 @@ export default function TransactionSummary({
   onDiscountChange,
   onPaidAmountChange,
   onSave,
+  onQuickDiscountSelect,
 }: Props) {
   const [collapsed, setCollapsed] = useState(false);
   const [customerSearch, setCustomerSearch] = useState('');
@@ -44,6 +46,17 @@ export default function TransactionSummary({
 
   // Keep the input values as strings so "-" can exist while typing.
   const [discountInput, setDiscountInput] = useState(discount === 0 ? '' : String(discount));
+  const [selectedQuickDiscount, setSelectedQuickDiscount] = useState<2 | 5 | null>(() => {
+    if (itemCount > 0 && discount === 2 * itemCount) {
+      return 2;
+    }
+
+    if (itemCount > 0 && discount === 5 * itemCount) {
+      return 5;
+    }
+
+    return null;
+  });
 
   const [paidAmountInput, setPaidAmountInput] = useState(
     paidAmount === 0 ? '' : String(paidAmount),
@@ -296,25 +309,53 @@ export default function TransactionSummary({
 
             <View style={styles.discountControls}>
               <Pressable
+                accessibilityRole="radio"
+                accessibilityState={{ checked: selectedQuickDiscount === 2 }}
+                disabled={itemCount === 0}
                 onPress={() => {
-                  const value = 2 * itemCount;
-                  setDiscountInput(String(value));
-                  onDiscountChange(value);
+                  onQuickDiscountSelect(selectedQuickDiscount === 2 ? null : 2);
+                  setSelectedQuickDiscount(selectedQuickDiscount === 2 ? null : 2);
                 }}
-                style={({ pressed }) => [styles.lessButton, pressed && styles.buttonPressed]}
+                style={({ pressed }) => [
+                  styles.lessButton,
+                  selectedQuickDiscount === 2 && styles.lessButtonActive,
+                  itemCount === 0 && styles.lessButtonDisabled,
+                  pressed && styles.buttonPressed,
+                ]}
               >
-                <Text style={styles.lessButtonText}>Less 2</Text>
+                <Text
+                  style={[
+                    styles.lessButtonText,
+                    selectedQuickDiscount === 2 && styles.lessButtonTextActive,
+                  ]}
+                >
+                  Less 2
+                </Text>
               </Pressable>
 
               <Pressable
+                accessibilityRole="radio"
+                accessibilityState={{ checked: selectedQuickDiscount === 5 }}
+                disabled={itemCount === 0}
                 onPress={() => {
-                  const value = 5 * itemCount;
-                  setDiscountInput(String(value));
-                  onDiscountChange(value);
+                  setSelectedQuickDiscount(selectedQuickDiscount === 5 ? null : 5);
+                  onQuickDiscountSelect(selectedQuickDiscount === 5 ? null : 5);
                 }}
-                style={({ pressed }) => [styles.lessButton, pressed && styles.buttonPressed]}
+                style={({ pressed }) => [
+                  styles.lessButton,
+                  selectedQuickDiscount === 5 && styles.lessButtonActive,
+                  itemCount === 0 && styles.lessButtonDisabled,
+                  pressed && styles.buttonPressed,
+                ]}
               >
-                <Text style={styles.lessButtonText}>Less 5</Text>
+                <Text
+                  style={[
+                    styles.lessButtonText,
+                    selectedQuickDiscount === 5 && styles.lessButtonTextActive,
+                  ]}
+                >
+                  Less 5
+                </Text>
               </Pressable>
 
               <TextInput
@@ -534,17 +575,30 @@ const styles = StyleSheet.create({
     height: 42,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: '#F0F3F8',
+    // backgroundColor: '#F0F3F8',
     borderWidth: 1,
     borderColor: '#D8DDE5',
     alignItems: 'center',
     justifyContent: 'center',
   },
 
+  lessButtonActive: {
+    backgroundColor: '#E8F5EC',
+    borderColor: '#B8DCC2',
+  },
+
+  lessButtonDisabled: {
+    opacity: 0.45,
+  },
+
   lessButtonText: {
     fontSize: f(13),
     fontWeight: '700',
-    color: '#1745D1',
+    // color: '#1745D1',
+  },
+
+  lessButtonTextActive: {
+    color: '#087F23',
   },
 
   discountInput: {

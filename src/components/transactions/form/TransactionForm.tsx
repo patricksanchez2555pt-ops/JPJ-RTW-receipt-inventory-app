@@ -49,6 +49,8 @@ export default function TransactionForm({
     useCustomerStore((state) => state.getCustomer(transaction?.customerId ?? '')),
   );
 
+  const [selectedQtyDiscount, setSelectedQtyDiscount] = useState<2 | 5 | null>(null);
+
   const [discount, setDiscount] = useState(transaction?.discount ?? 0);
 
   const [paidAmount, setPaidAmount] = useState(transaction?.paidAmount ?? 0);
@@ -89,19 +91,30 @@ export default function TransactionForm({
 
   const total = Math.max(0, subtotal - discount);
 
-  function getEffectivePrice(productId: string, sizeId: string, defaultPrice: number) {
-    if (!selectedCustomer) {
-      return defaultPrice;
+  function getEffectivePrice(
+    productId: string,
+    sizeId: string,
+    defaultPrice: number,
+    quickDiscount: number | null = selectedQtyDiscount,
+  ) {
+    let effectivePrice = defaultPrice;
+
+    if (selectedCustomer) {
+      const customerPrice = customerPrices.find(
+        (price) =>
+          price.customerId === selectedCustomer.id &&
+          price.productId === productId &&
+          price.sizeId === sizeId,
+      );
+
+      effectivePrice = customerPrice?.price ?? defaultPrice;
     }
 
-    const customerPrice = customerPrices.find(
-      (price) =>
-        price.customerId === selectedCustomer.id &&
-        price.productId === productId &&
-        price.sizeId === sizeId,
-    );
-
-    return customerPrice?.price ?? defaultPrice;
+    // TODO: remove once bundle handling is implemented
+    if (productId === 'leotard-set-long' || productId === 'leotard-set-short') {
+      return effectivePrice - (quickDiscount ?? 0) * 2;
+    }
+    return effectivePrice - (quickDiscount ?? 0);
   }
 
   function handleProductSelect(product: Product) {
@@ -235,18 +248,7 @@ export default function TransactionForm({
 
     setItems((current) =>
       current.map((item) => {
-        const defaultPrice = item.size?.price ?? item.unitPrice;
-
-        const customerPrice = customer
-          ? customerPrices.find(
-              (price) =>
-                price.customerId === customer.id &&
-                price.productId === item.productId &&
-                price.sizeId === item.sizeId,
-            )
-          : undefined;
-
-        const unitPrice = customerPrice?.price ?? defaultPrice;
+        const unitPrice = getEffectivePrice(item.productId, item.sizeId, item.size?.price ?? 0);
 
         return {
           ...item,
@@ -328,6 +330,7 @@ export default function TransactionForm({
     setDiscount(0);
     setPaidAmount(0);
     setSelectedCustomer(undefined);
+    setSelectedQtyDiscount(null);
 
     setBuyerName('');
     setQuantity(0);
@@ -453,6 +456,25 @@ export default function TransactionForm({
           onDiscountChange={setDiscount}
           onPaidAmountChange={setPaidAmount}
           onSave={saveTransaction}
+          onQuickDiscountSelect={(value) => {
+            setSelectedQtyDiscount(value);
+            setItems((current) =>
+              current.map((item) => {
+                const unitPrice = getEffectivePrice(
+                  item.productId,
+                  item.sizeId,
+                  item.size?.price ?? item.unitPrice,
+                  value,
+                );
+
+                return {
+                  ...item,
+                  unitPrice,
+                  total: item.quantity * unitPrice,
+                };
+              }),
+            );
+          }}
         />
       </View>
     </View>

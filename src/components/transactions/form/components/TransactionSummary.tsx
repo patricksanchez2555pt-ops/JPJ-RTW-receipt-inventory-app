@@ -12,6 +12,7 @@ type Props = {
   selectedCustomerId: string | null;
 
   itemCount: number;
+  selectedQtyDiscount: 2 | 5 | null;
   discount: number;
   subtotal: number;
   total: number;
@@ -29,6 +30,7 @@ export default function TransactionSummary({
   customers,
   selectedCustomerId,
   itemCount,
+  selectedQtyDiscount,
   discount,
   subtotal,
   total,
@@ -46,17 +48,6 @@ export default function TransactionSummary({
 
   // Keep the input values as strings so "-" can exist while typing.
   const [discountInput, setDiscountInput] = useState(discount === 0 ? '' : String(discount));
-  const [selectedQuickDiscount, setSelectedQuickDiscount] = useState<2 | 5 | null>(() => {
-    if (itemCount > 0 && discount === 2 * itemCount) {
-      return 2;
-    }
-
-    if (itemCount > 0 && discount === 5 * itemCount) {
-      return 5;
-    }
-
-    return null;
-  });
 
   const [paidAmountInput, setPaidAmountInput] = useState(
     paidAmount === 0 ? '' : String(paidAmount),
@@ -310,15 +301,14 @@ export default function TransactionSummary({
             <View style={styles.discountControls}>
               <Pressable
                 accessibilityRole="radio"
-                accessibilityState={{ checked: selectedQuickDiscount === 2 }}
+                accessibilityState={{ checked: selectedQtyDiscount === 2 }}
                 disabled={itemCount === 0}
                 onPress={() => {
-                  onQuickDiscountSelect(selectedQuickDiscount === 2 ? null : 2);
-                  setSelectedQuickDiscount(selectedQuickDiscount === 2 ? null : 2);
+                  onQuickDiscountSelect(selectedQtyDiscount === 2 ? null : 2);
                 }}
                 style={({ pressed }) => [
                   styles.lessButton,
-                  selectedQuickDiscount === 2 && styles.lessButtonActive,
+                  selectedQtyDiscount === 2 && styles.lessButtonActive,
                   itemCount === 0 && styles.lessButtonDisabled,
                   pressed && styles.buttonPressed,
                 ]}
@@ -326,7 +316,7 @@ export default function TransactionSummary({
                 <Text
                   style={[
                     styles.lessButtonText,
-                    selectedQuickDiscount === 2 && styles.lessButtonTextActive,
+                    selectedQtyDiscount === 2 && styles.lessButtonTextActive,
                   ]}
                 >
                   Less 2
@@ -335,15 +325,14 @@ export default function TransactionSummary({
 
               <Pressable
                 accessibilityRole="radio"
-                accessibilityState={{ checked: selectedQuickDiscount === 5 }}
+                accessibilityState={{ checked: selectedQtyDiscount === 5 }}
                 disabled={itemCount === 0}
                 onPress={() => {
-                  setSelectedQuickDiscount(selectedQuickDiscount === 5 ? null : 5);
-                  onQuickDiscountSelect(selectedQuickDiscount === 5 ? null : 5);
+                  onQuickDiscountSelect(selectedQtyDiscount === 5 ? null : 5);
                 }}
                 style={({ pressed }) => [
                   styles.lessButton,
-                  selectedQuickDiscount === 5 && styles.lessButtonActive,
+                  selectedQtyDiscount === 5 && styles.lessButtonActive,
                   itemCount === 0 && styles.lessButtonDisabled,
                   pressed && styles.buttonPressed,
                 ]}
@@ -351,7 +340,7 @@ export default function TransactionSummary({
                 <Text
                   style={[
                     styles.lessButtonText,
-                    selectedQuickDiscount === 5 && styles.lessButtonTextActive,
+                    selectedQtyDiscount === 5 && styles.lessButtonTextActive,
                   ]}
                 >
                   Less 5

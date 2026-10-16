@@ -91,29 +91,33 @@ export default function TransactionForm({
 
   const total = Math.max(0, subtotal - discount);
 
+  const itemCount = useMemo(() => {
+    return items.reduce((sum, item) => sum + item.quantity, 0);
+  }, [items]);
+
   function getEffectivePrice(
     productId: string,
     sizeId: string,
     defaultPrice: number,
-    quickDiscount: number | null = selectedQtyDiscount,
+    customerId: string | null,
+    quickDiscount: number | null,
   ) {
-    let effectivePrice = defaultPrice;
+    const customerPrice = customerId
+      ? customerPrices.find(
+          (price) =>
+            price.customerId === customerId &&
+            price.productId === productId &&
+            price.sizeId === sizeId,
+        )
+      : undefined;
 
-    if (selectedCustomer) {
-      const customerPrice = customerPrices.find(
-        (price) =>
-          price.customerId === selectedCustomer.id &&
-          price.productId === productId &&
-          price.sizeId === sizeId,
-      );
-
-      effectivePrice = customerPrice?.price ?? defaultPrice;
-    }
+    const effectivePrice = customerPrice?.price ?? defaultPrice;
 
     // TODO: remove once bundle handling is implemented
     if (productId === 'leotard-set-long' || productId === 'leotard-set-short') {
       return effectivePrice - (quickDiscount ?? 0) * 2;
     }
+
     return effectivePrice - (quickDiscount ?? 0);
   }
 
@@ -121,10 +125,6 @@ export default function TransactionForm({
     setSelectedProduct(product);
     setSelectedColor(null);
     setSelectedSizes([]);
-  }
-
-  function handleColorSelect(color: Color) {
-    setSelectedColor(color);
   }
 
   function handleSizeToggle(size: Size) {
@@ -164,7 +164,13 @@ export default function TransactionForm({
       const updated = [...current];
 
       for (const size of selectedSizes) {
-        const unitPrice = getEffectivePrice(selectedProduct.id, size.id, size.price);
+        const unitPrice = getEffectivePrice(
+          selectedProduct.id,
+          size.id,
+          size.price,
+          selectedCustomer?.id ?? null,
+          selectedQtyDiscount,
+        );
 
         const existingIndex = updated.findIndex(
           (item) =>
@@ -215,10 +221,6 @@ export default function TransactionForm({
     setSelectedSizes([]);
   }
 
-  const itemCount = useMemo(() => {
-    return items.reduce((sum, item) => sum + item.quantity, 0);
-  }, [items]);
-
   function updateQuantity(itemId: string, amount: number) {
     setItems((current) =>
       current.map((item) => {
@@ -248,7 +250,13 @@ export default function TransactionForm({
 
     setItems((current) =>
       current.map((item) => {
-        const unitPrice = getEffectivePrice(item.productId, item.sizeId, item.size?.price ?? 0);
+        const unitPrice = getEffectivePrice(
+          item.productId,
+          item.sizeId,
+          item.size?.price ?? item.unitPrice,
+          customer?.id ?? null,
+          selectedQtyDiscount,
+        );
 
         return {
           ...item,
@@ -379,7 +387,7 @@ export default function TransactionForm({
             <ColorSelector
               colors={productColors}
               selectedColor={selectedColor}
-              onSelect={handleColorSelect}
+              onSelect={setSelectedColor}
             />
           </View>
 
@@ -447,6 +455,7 @@ export default function TransactionForm({
           customers={CUSTOMERS}
           selectedCustomerId={selectedCustomer?.id ?? null}
           itemCount={itemCount}
+          selectedQtyDiscount={selectedQtyDiscount}
           discount={discount}
           subtotal={subtotal}
           total={total}
@@ -464,6 +473,7 @@ export default function TransactionForm({
                   item.productId,
                   item.sizeId,
                   item.size?.price ?? item.unitPrice,
+                  selectedCustomer?.id ?? null,
                   value,
                 );
 

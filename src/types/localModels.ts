@@ -1,4 +1,7 @@
-// configs
+// ==========================================
+// CONFIGS
+// ==========================================
+
 export type Product = {
   id: string;
   name: string;
@@ -35,7 +38,9 @@ export type CustomerPrice = {
   updatedAt: string;
 };
 
-// inventory
+// ==========================================
+// INVENTORY
+// ==========================================
 
 export type Inventory = {
   productId: string;
@@ -45,7 +50,9 @@ export type Inventory = {
   updatedAt?: string;
 };
 
-// transactions
+// ==========================================
+// TRANSACTIONS
+// ==========================================
 
 export type TransactionItem = {
   id: string;
@@ -73,4 +80,47 @@ export type Transaction = {
   total: number;
 
   items?: TransactionItem[];
+};
+
+// ==========================================
+// LABOR & OPERATIONS (STREAMLINED)
+// ==========================================
+
+export type Operation = {
+  id: string;
+  productId: string;
+  name: string; // e.g., "highspeed", "edging", "piping", "gathering"
+  description?: string;
+  createdAt: string;
+};
+
+export type Worker = {
+  id: string;
+  name: string;
+  phone?: string;
+  defaultOperations: string[]; // Array of operation IDs that the worker is skilled at
+  createdAt: string;
+};
+
+// Rate Master: Price per operation per product per size
+export type LaborRate = {
+  id: string;
+  productId: string;
+  sizeId: string;
+  operationId: string;
+  ratePerUnit: number; // Price paid to worker per unit completed
+  updatedAt: string;
+};
+
+// Individual labor log entry for weekly tally and payroll
+export type LaborItem = {
+  id: string;
+  productId: string;
+  sizeId: string;
+  operationId: string;
+  workerId: string;
+  quantity: number;
+  ratePerUnit: number; // Captured snapshot of rate
+  subtotal: number; // quantity * ratePerUnit
+  date: string; // Date of work completion
 };

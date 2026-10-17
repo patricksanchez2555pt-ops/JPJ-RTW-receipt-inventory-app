@@ -1,8 +1,11 @@
 import { useColorStore } from '@/store/useColorStore';
 import { useCustomerPricingStore } from '@/store/useCustomerPricingStore';
 import { useCustomerStore } from '@/store/useCustomerStore';
+import { useLaborRateStore } from '@/store/useLaborRateStore';
+import { useOperationStore } from '@/store/useOperationStore';
 import { useProductStore } from '@/store/useProductStore';
 import { useSizeStore } from '@/store/useSizeStore';
+import { useWorkerStore } from '@/store/useWorkerStore';
 import type { Color, Product, Size } from '@/types/localModels';
 
 // ==========================================
@@ -751,6 +754,10 @@ const CONFIG = {
   },
 } as const;
 
+const JOGGING_PANTS_LABOR_OPERATIONS = ['Highspeed', 'Edging', 'Piping', 'Gathering'] as const;
+const JOGGING_PANTS_WORKERS = ['Patrick', 'Joseph'] as const;
+const JOGGING_PANTS_LABOR_RATE = 5;
+
 // ==========================================
 // DERIVED DATA
 // ==========================================
@@ -943,6 +950,53 @@ function seedCustomers() {
   });
 }
 
+function seedJoggingPantsLabor() {
+  const operationStore = useOperationStore.getState();
+  const operationsByName = new Map(
+    operationStore
+      .getOperationsByProductId('jogging-pants')
+      .map((operation) => [operation.name, operation]),
+  );
+
+  const operations = JOGGING_PANTS_LABOR_OPERATIONS.map(
+    (name) =>
+      operationsByName.get(name) ??
+      operationStore.addOperation({
+        productId: 'jogging-pants',
+        name,
+      }),
+  );
+  const defaultOperations = operations.map((operation) => operation.id);
+
+  const workerStore = useWorkerStore.getState();
+
+  JOGGING_PANTS_WORKERS.forEach((name) => {
+    const existingWorker = workerStore
+      .getAllWorkers()
+      .find((worker) => worker.name.toLowerCase() === name.toLowerCase());
+
+    if (existingWorker) {
+      workerStore.updateWorker(existingWorker.id, { defaultOperations });
+      return;
+    }
+
+    workerStore.addWorker({ name, defaultOperations });
+  });
+
+  const laborRateStore = useLaborRateStore.getState();
+
+  CONFIG.JOGGING_PANTS.SIZES.forEach((size) => {
+    operations.forEach((operation) => {
+      laborRateStore.addLaborRate({
+        productId: 'jogging-pants',
+        sizeId: size.id,
+        operationId: operation.id,
+        ratePerUnit: JOGGING_PANTS_LABOR_RATE,
+      });
+    });
+  });
+}
+
 // ==========================================
 // SEED INITIAL DATA
 // ==========================================
@@ -960,6 +1014,9 @@ export function seedInitialData() {
 
   // Seed sizes.
   sizeStore.setAllSizes(SIZES);
+
+  // Seed Jogging Pants labor operations, workers, and rates.
+  seedJoggingPantsLabor();
 
   // Seed customers and customer-specific pricing.
   seedCustomers();

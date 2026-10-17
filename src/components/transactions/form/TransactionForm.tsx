@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import ProductSelector from '@/components/common/ProductSelector';
 import { f } from '@/utils/fontScale';
 
 import { useColorStore } from '../../../store/useColorStore';
@@ -12,7 +13,6 @@ import { useTransactionStore } from '../../../store/useTransactionStore';
 import type { Color, Customer, Product, Size, Transaction } from '../../../types/localModels';
 import AddedItemsPanel from '../components/added-items-panel/AddedItemsPanel';
 import ColorSelector from './components/ColorSelector';
-import ProductSelector from './components/ProductSelector';
 import QuantitySelector from './components/QuantitySelector';
 import SizeSelector from './components/SizeSelector';
 import TransactionSummary from './components/TransactionSummary';

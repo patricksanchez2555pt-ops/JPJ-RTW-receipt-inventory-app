@@ -4,14 +4,20 @@ import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { seedInitialData } from '@/store/seedInitData';
 import { useColorStore } from '@/store/useColorStore';
 import { useCustomerPricingStore } from '@/store/useCustomerPricingStore';
 import { useCustomerStore } from '@/store/useCustomerStore';
 import { useFontScaleStore } from '@/store/useFontScaleStore';
 import { useInventoryStore } from '@/store/useInventoryStore';
+import { useLaborItemStore } from '@/store/useLaborItemStore';
+import { useLaborRateStore } from '@/store/useLaborRateStore';
+import { useOperationStore } from '@/store/useOperationStore';
 import { useProductStore } from '@/store/useProductStore';
 import { useSizeStore } from '@/store/useSizeStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
+import { useWorkerStore } from '@/store/useWorkerStore';
+import type { LaborItem } from '@/types/localModels';
 
 const BACKUP_VERSION = 1;
 
@@ -24,9 +30,13 @@ type BackupData = {
   customers: ReturnType<typeof useCustomerStore.getState>['customers'];
   fontScale: number;
   inventory: ReturnType<typeof useInventoryStore.getState>['inventory'];
+  laborItems?: LaborItem[];
+  laborRates?: ReturnType<typeof useLaborRateStore.getState>['laborRates'];
+  operations?: ReturnType<typeof useOperationStore.getState>['operations'];
   products: ReturnType<typeof useProductStore.getState>['products'];
   sizes: ReturnType<typeof useSizeStore.getState>['sizes'];
   transactions: ReturnType<typeof useTransactionStore.getState>['transactions'];
+  workers?: ReturnType<typeof useWorkerStore.getState>['workers'];
 };
 
 export default function DataBackupSettings() {
@@ -39,9 +49,13 @@ export default function DataBackupSettings() {
     const customerState = useCustomerStore.getState();
     const fontScaleState = useFontScaleStore.getState();
     const inventoryState = useInventoryStore.getState();
+    const laborItemState = useLaborItemStore.getState();
+    const laborRateState = useLaborRateStore.getState();
+    const operationState = useOperationStore.getState();
     const productState = useProductStore.getState();
     const sizeState = useSizeStore.getState();
     const transactionState = useTransactionStore.getState();
+    const workerState = useWorkerStore.getState();
 
     return {
       version: BACKUP_VERSION,
@@ -52,9 +66,13 @@ export default function DataBackupSettings() {
       customers: customerState.customers,
       fontScale: fontScaleState.fontScale,
       inventory: inventoryState.inventory,
+      laborItems: laborItemState.getLaborItemsArray(),
+      laborRates: laborRateState.laborRates,
+      operations: operationState.operations,
       products: productState.products,
       sizes: sizeState.sizes,
       transactions: transactionState.transactions,
+      workers: workerState.workers,
     };
   }
 
@@ -155,6 +173,32 @@ export default function DataBackupSettings() {
     }
   }
 
+  function handleSeedData() {
+    Alert.alert(
+      'Seed Initial Data',
+      'This replaces the product, color, and size catalogs and resets seeded labor rates. Existing inventory and transactions will be kept.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Seed Data',
+          style: 'destructive',
+          onPress: () => {
+            try {
+              seedInitialData();
+              Alert.alert('Seed Complete', 'Initial catalog and labor data have been seeded.');
+            } catch (error) {
+              console.error('Seed data error:', error);
+              Alert.alert(
+                'Seed Failed',
+                error instanceof Error ? error.message : 'Unable to seed initial data.',
+              );
+            }
+          },
+        },
+      ],
+    );
+  }
+
   function validateBackup(backup: Partial<BackupData>) {
     if (!backup || typeof backup !== 'object') {
       throw new Error('The selected file is not a valid backup.');
@@ -194,6 +238,22 @@ export default function DataBackupSettings() {
       Array.isArray(backup.inventory)
     ) {
       throw new Error('Backup is missing inventory data.');
+    }
+
+    if (backup.laborItems !== undefined && !Array.isArray(backup.laborItems)) {
+      throw new Error('Backup labor items data is invalid.');
+    }
+
+    if (backup.laborRates !== undefined && !Array.isArray(backup.laborRates)) {
+      throw new Error('Backup labor rates data is invalid.');
+    }
+
+    if (backup.operations !== undefined && !Array.isArray(backup.operations)) {
+      throw new Error('Backup operations data is invalid.');
+    }
+
+    if (backup.workers !== undefined && !Array.isArray(backup.workers)) {
+      throw new Error('Backup workers data is invalid.');
     }
 
     if (typeof backup.fontScale !== 'number') {
@@ -236,6 +296,14 @@ export default function DataBackupSettings() {
        * Restore inventory
        */
       useInventoryStore.getState().setAllInventory(Object.values(backup.inventory));
+
+      /*
+       * Restore labor and operations
+       */
+      useLaborItemStore.getState().setAllLaborItems(backup.laborItems ?? []);
+      useLaborRateStore.getState().setAllLaborRates(backup.laborRates ?? []);
+      useOperationStore.getState().setAllOperations(backup.operations ?? []);
+      useWorkerStore.getState().setAllWorkers(backup.workers ?? []);
 
       /*
        * Restore transactions
@@ -302,7 +370,21 @@ export default function DataBackupSettings() {
         </Pressable>
       </View>
 
-      <Text style={styles.warning}>Importing a backup replaces the current application data.</Text>
+      <Pressable
+        onPress={handleSeedData}
+        disabled={isExporting || isImporting}
+        style={({ pressed }) => [
+          styles.seedButton,
+          pressed && styles.pressed,
+          (isExporting || isImporting) && styles.disabled,
+        ]}
+      >
+        <Text style={styles.seedButtonText}>Seed Initial Data</Text>
+      </Pressable>
+
+      <Text style={styles.warning}>
+        Importing a backup replaces all data. Seeding resets product, color, and size catalogs.
+      </Text>
     </View>
   );
 }
@@ -363,6 +445,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F7FA',
   },
 
+  seedButton: {
+    minHeight: 42,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#D8DDE5',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+
   exportButtonText: {
     fontSize: 13,
     fontWeight: '700',
@@ -373,6 +466,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: '#252B35',
+  },
+
+  seedButtonText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#596273',
   },
 
   warning: {

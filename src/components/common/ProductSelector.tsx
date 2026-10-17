@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { f } from '@/utils/fontScale';
 
-import type { Product } from '../../../../types/localModels';
+import type { Product } from '../../types/localModels';
 
 type Props = {
   products: Product[];
@@ -21,7 +21,6 @@ export default function ProductSelector({ products, selectedProduct, onSelect }:
 
   return (
     <View style={styles.container}>
-      {/* Dropdown button */}
       <Pressable
         onPress={() => setOpen((current) => !current)}
         style={({ pressed }) => [
@@ -37,7 +36,6 @@ export default function ProductSelector({ products, selectedProduct, onSelect }:
         <Text style={styles.arrow}>{open ? '▲' : '▼'}</Text>
       </Pressable>
 
-      {/* Dropdown options */}
       {open && (
         <View style={styles.dropdown}>
           {products.map((product) => {
@@ -87,11 +85,9 @@ const styles = StyleSheet.create({
     borderColor: '#D9DEE8',
     borderRadius: 10,
     backgroundColor: '#FFFFFF',
-
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-
     paddingHorizontal: 16,
   },
 
@@ -122,15 +118,11 @@ const styles = StyleSheet.create({
     top: 80,
     left: 0,
     right: 0,
-
     backgroundColor: '#FFFFFF',
-
     borderWidth: 1,
     borderColor: '#D9DEE8',
     borderRadius: 10,
-
     overflow: 'hidden',
-
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -138,21 +130,16 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.12,
     shadowRadius: 8,
-
     elevation: 8,
-
     zIndex: 1001,
   },
 
   option: {
     minHeight: 52,
-
     paddingHorizontal: 16,
-
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-
     borderBottomWidth: 1,
     borderBottomColor: '#EEF1F5',
   },

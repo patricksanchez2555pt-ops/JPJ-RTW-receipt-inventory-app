@@ -44,11 +44,11 @@ const NAV_ITEMS: SidebarItem[] = [
     icon: 'people-outline',
     route: '/customers',
   },
-  // {
-  //   label: 'try',
-  //   icon: 'people-outline',
-  //   route: '/try',
-  // },
+  {
+    label: 'Labor & Payroll', // Added link
+    icon: 'hammer-outline',
+    route: '/labor',
+  },
   {
     label: 'Settings',
     icon: 'settings-outline',

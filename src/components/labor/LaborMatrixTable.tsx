@@ -3,6 +3,7 @@ import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import ProductSelector from '@/components/common/ProductSelector';
+import { f } from '@/utils/fontScale';
 
 import { getLaborItemKey, useLaborItemStore } from '../../store/useLaborItemStore';
 import { useLaborRateStore } from '../../store/useLaborRateStore';
@@ -16,9 +17,9 @@ interface LaborMatrixTableProps {
 }
 
 const SIZE_COLUMN_WIDTH = 100;
-const ROW_HEIGHT = 64;
+const ROW_HEIGHT = 70;
 const HEADER_HEIGHT = 88;
-const WORKER_COLUMN_WIDTH = 112;
+const WORKER_COLUMN_WIDTH = 110; // Adjusted width now that buttons are removed
 const TOTAL_COLUMN_WIDTH = 68;
 const STATUS_COLUMN_WIDTH = 100;
 
@@ -249,7 +250,10 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ selectedDate
                         opTotals.length > 0 && opTotals.every((value) => value === opTotals[0]);
 
                       return (
-                        <View key={size.id} style={styles.dataRow}>
+                        <View
+                          key={size.id}
+                          style={[styles.dataRow, !isReconciled && styles.mismatchRow]}
+                        >
                           <View style={styles.sizeSpacer} />
 
                           {operations.map((op, opIndex) => {
@@ -269,18 +273,9 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ selectedDate
                                   const qty = laborItems[key]?.quantity ?? 0;
 
                                   return (
-                                    <View key={workerId} style={styles.stepperCell}>
-                                      <TouchableOpacity
-                                        style={styles.stepperBtn}
-                                        onPress={() =>
-                                          handleQuantityChange(size.id, op.id, workerId, qty - 1)
-                                        }
-                                      >
-                                        <Text style={styles.stepperBtnText}>−</Text>
-                                      </TouchableOpacity>
-
+                                    <View key={workerId} style={styles.inputOnlyCell}>
                                       <TextInput
-                                        style={styles.stepperInput}
+                                        style={styles.quantityInput}
                                         keyboardType="number-pad"
                                         selectTextOnFocus
                                         value={String(qty)}
@@ -294,15 +289,6 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ selectedDate
                                           );
                                         }}
                                       />
-
-                                      <TouchableOpacity
-                                        style={styles.stepperBtn}
-                                        onPress={() =>
-                                          handleQuantityChange(size.id, op.id, workerId, qty + 1)
-                                        }
-                                      >
-                                        <Text style={styles.stepperBtnText}>+</Text>
-                                      </TouchableOpacity>
                                     </View>
                                   );
                                 })}
@@ -349,11 +335,20 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ selectedDate
               onScroll={handleSizeColumnScroll}
               scrollEventThrottle={16}
             >
-              {sizes.map((size) => (
-                <View key={size.id} style={styles.sizeCell}>
-                  <Text style={styles.sizeText}>{size.name}</Text>
-                </View>
-              ))}
+              {sizes.map((size) => {
+                const opTotals = operations.map((op) => getOpTotalForSize(size.id, op.id));
+                const isReconciled =
+                  opTotals.length > 0 && opTotals.every((value) => value === opTotals[0]);
+
+                return (
+                  <View
+                    key={size.id}
+                    style={[styles.sizeCell, !isReconciled && styles.mismatchSizeCell]}
+                  >
+                    <Text style={styles.sizeText}>{size.name}</Text>
+                  </View>
+                );
+              })}
             </ScrollView>
           </View>
         </View>
@@ -371,7 +366,7 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 0,
     marginTop: 16,
-    padding: 16,
+    padding: 20,
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
   },
@@ -414,7 +409,7 @@ const styles = StyleSheet.create({
   },
   sizeSpacer: { width: SIZE_COLUMN_WIDTH, height: '100%' },
   headerCell: { justifyContent: 'center', alignItems: 'center' },
-  headerText: { color: '#06132F', fontWeight: '700', fontSize: 14 },
+  headerText: { color: '#06132F', fontWeight: '700', fontSize: f(15) },
   opGroupHeader: {
     height: HEADER_HEIGHT,
     borderRightWidth: 1,
@@ -433,7 +428,7 @@ const styles = StyleSheet.create({
     flex: 1,
     color: '#FFFFFF',
     fontWeight: '700',
-    fontSize: 13,
+    fontSize: f(13),
     marginRight: 8,
   },
   addWorkerBtn: {
@@ -443,7 +438,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     justifyContent: 'center',
   },
-  addWorkerBtnText: { color: '#FFFFFF', fontSize: 11, fontWeight: '600' },
+  addWorkerBtnText: { color: '#FFFFFF', fontSize: f(11), fontWeight: '600' },
   workerDropdown: {
     position: 'absolute',
     top: 38,
@@ -458,7 +453,7 @@ const styles = StyleSheet.create({
     zIndex: 30,
   },
   dropdownItem: { padding: 10, borderBottomWidth: 1, borderBottomColor: '#EEF0F3' },
-  dropdownItemText: { color: '#151A23', fontSize: 12 },
+  dropdownItemText: { color: '#151A23', fontSize: f(12) },
   subHeaderRow: {
     height: HEADER_HEIGHT - 40,
     flexDirection: 'row',
@@ -470,7 +465,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     borderRightWidth: 1,
     borderRightColor: '#D9DEE8',
   },
@@ -479,9 +474,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#E9EDF4',
     justifyContent: 'center',
   },
-  workerNameText: { color: '#252B35', fontSize: 11, fontWeight: '600', maxWidth: 80 },
-  removeWorkerText: { color: '#DC2626', fontWeight: 'bold', fontSize: 16 },
-  totalHeaderText: { color: '#596273', fontSize: 11, fontWeight: '700' },
+  workerNameText: { color: '#252B35', fontSize: f(11), fontWeight: '600', maxWidth: 68 },
+  removeWorkerText: { color: '#DC2626', fontWeight: 'bold', fontSize: f(16) },
+  totalHeaderText: { color: '#596273', fontSize: f(11), fontWeight: '700' },
   statusColumn: {
     width: STATUS_COLUMN_WIDTH,
     height: '100%',
@@ -494,6 +489,9 @@ const styles = StyleSheet.create({
     height: ROW_HEIGHT,
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
+  },
+  mismatchRow: {
+    backgroundColor: '#FEF2F2',
   },
   sizeColumnContainer: {
     position: 'absolute',
@@ -514,42 +512,34 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#D9DEE8',
   },
-  sizeText: { fontWeight: '600', color: '#06132F', fontSize: 15 },
+  mismatchSizeCell: {
+    backgroundColor: '#FEF2F2',
+    borderLeftWidth: 3,
+    borderLeftColor: '#EF4444',
+  },
+  sizeText: { fontWeight: '600', color: '#06132F', fontSize: f(16) },
   cell: {
     height: ROW_HEIGHT,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 6,
     borderBottomWidth: 1,
     borderColor: '#D9DEE8',
   },
   opGroupCells: { flexDirection: 'row' },
-  stepperCell: {
+  inputOnlyCell: {
     width: WORKER_COLUMN_WIDTH,
     height: ROW_HEIGHT,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    paddingHorizontal: 6,
     borderRightWidth: 1,
     borderBottomWidth: 1,
     borderColor: '#D9DEE8',
   },
-  stepperBtn: {
-    width: 30,
-    height: 30,
-    backgroundColor: '#E9EDF4',
-    borderRadius: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  stepperBtnText: { fontWeight: '700', fontSize: 16, color: '#06132F' },
-  stepperInput: {
-    width: 40,
-    height: 34,
+  quantityInput: {
+    width: 72,
+    height: 40,
     textAlign: 'center',
-    fontSize: 14,
+    fontSize: f(16),
     fontWeight: '600',
     borderWidth: 1,
     borderColor: '#CBD2DE',
@@ -563,11 +553,11 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderColor: '#D9DEE8',
   },
-  opTotalText: { fontWeight: '700', color: '#252B35', fontSize: 13 },
+  opTotalText: { fontWeight: '700', color: '#252B35', fontSize: f(15) },
   statusBadge: { paddingHorizontal: 8, paddingVertical: 5, borderRadius: 6 },
   badgeSuccess: { backgroundColor: '#E8F5EC' },
   badgeError: { backgroundColor: '#FDECEC' },
-  badgeText: { fontSize: 10, fontWeight: '800' },
+  badgeText: { fontSize: f(10), fontWeight: '800' },
   badgeTextSuccess: { color: '#087F23' },
   badgeTextError: { color: '#B42318' },
   emptyContainer: {
@@ -578,7 +568,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     color: '#687284',
-    fontSize: 15,
+    fontSize: f(15),
     fontWeight: '500',
   },
 });

@@ -134,8 +134,26 @@ export default function LaborManagementScreen() {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.presetBtn} onPress={handleSetThisWeek}>
-            <Text style={styles.presetBtnText}>This Week</Text>
+          <TouchableOpacity
+            style={[
+              styles.presetBtn,
+
+              startDate === weekDaysUpToToday[0]?.dateStr &&
+                endDate === todayStr &&
+                styles.activePresetBtn,
+            ]}
+            onPress={handleSetThisWeek}
+          >
+            <Text
+              style={[
+                styles.presetBtnText,
+                startDate === weekDaysUpToToday[0]?.dateStr &&
+                  endDate === todayStr &&
+                  styles.activePresetBtnText,
+              ]}
+            >
+              This Week
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -162,7 +180,7 @@ export default function LaborManagementScreen() {
       {/* Content Area */}
       <View style={styles.content}>
         {activeTab === 'matrix' ? (
-          <LaborMatrixTable selectedDate={startDate} />
+          <LaborMatrixTable startDate={startDate} endDate={endDate} />
         ) : (
           <WorkerDirectoryView />
         )}

@@ -13,35 +13,82 @@ import { useSizeStore } from '../../store/useSizeStore';
 import { useWorkerStore } from '../../store/useWorkerStore';
 
 interface LaborMatrixTableProps {
-  selectedDate: string; // ISO format YYYY-MM-DD
+  startDate: string; // MM-DD-YYYY format
+  endDate: string; // MM-DD-YYYY format
 }
 
 const SIZE_COLUMN_WIDTH = 100;
 const ROW_HEIGHT = 70;
 const HEADER_HEIGHT = 88;
-const WORKER_COLUMN_WIDTH = 110; // Adjusted width now that buttons are removed
+const WORKER_COLUMN_WIDTH = 110;
 const TOTAL_COLUMN_WIDTH = 68;
 const STATUS_COLUMN_WIDTH = 100;
 
-export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ selectedDate }) => {
-  const products = useProductStore((state) => state.products);
-  const [selectedProduct, setSelectedProduct] = useState(products[0] ?? null);
+type WorkerAssignmentOverrides = {
+  scope: string;
+  added: Record<string, string[]>;
+  hidden: Record<string, string[]>;
+};
+
+const parseDateString = (dateStr: string): Date | null => {
+  const match = /^(\d{2})-(\d{2})-(\d{4})$/.exec(dateStr);
+  if (!match) return null;
+
+  const month = Number(match[1]);
+  const day = Number(match[2]);
+  const year = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+    return null;
+  }
+
+  return date;
+};
+
+// Helper to convert Date object back to MM-DD-YYYY string
+const formatDateToString = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${month}-${day}-${year}`;
+};
+
+// Helper to generate all date strings (MM-DD-YYYY) inclusive between start and end
+const getDatesInRange = (startStr: string, endStr: string): string[] => {
+  const start = parseDateString(startStr);
+  const end = parseDateString(endStr);
+  if (!start || !end || start > end) return [];
+
+  const dates: string[] = [];
+  const current = new Date(start);
+  while (current <= end) {
+    dates.push(formatDateToString(current));
+    current.setDate(current.getDate() + 1);
+  }
+
+  return dates;
+};
+
+export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ startDate, endDate }) => {
+  const PRODUCTS = useProductStore((state) => state.products);
+  const [selectedProduct, setSelectedProduct] = useState(PRODUCTS[0] ?? null);
 
   const productId = selectedProduct?.id ?? '';
 
-  const allOperations = useOperationStore((state) => state.operations);
+  const OPERATIONS = useOperationStore((state) => state.operations);
   const operations = useMemo(
-    () => allOperations.filter((operation) => operation.productId === productId),
-    [allOperations, productId],
+    () => OPERATIONS.filter((operation) => operation.productId === productId),
+    [OPERATIONS, productId],
   );
 
-  const allSizes = useSizeStore((state) => state.sizes);
+  const SIZES = useSizeStore((state) => state.sizes);
   const sizes = useMemo(
-    () => allSizes.filter((size) => size.productId === productId),
-    [allSizes, productId],
+    () => SIZES.filter((size) => size.productId === productId),
+    [SIZES, productId],
   );
 
-  const workers = useWorkerStore((state) => state.workers);
+  const WORKERS = useWorkerStore((state) => state.workers);
 
   const laborItems = useLaborItemStore((state) => state.laborItems);
 
@@ -50,17 +97,74 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ selectedDate
   const deleteLaborItem = useLaborItemStore((state) => state.deleteLaborItem);
   const getLaborRate = useLaborRateStore((state) => state.getLaborRate);
 
-  // Safely initialize assigned workers using useMemo to avoid re-triggering render loops
-  const initialAssignedWorkers = useMemo(() => {
-    const initial: Record<string, string[]> = {};
-    operations.forEach((op) => {
-      initial[op.id] = workers.filter((w) => w.defaultOperations?.includes(op.id)).map((w) => w.id);
-    });
-    return initial;
-  }, [operations, workers]);
+  // Check if the range is strictly a single day
+  const isSingleDay = startDate === endDate && parseDateString(startDate) !== null;
 
-  const [assignedWorkers, setAssignedWorkers] =
-    useState<Record<string, string[]>>(initialAssignedWorkers);
+  // Get all date keys falling within the range
+  const activeRangeDates = useMemo(() => getDatesInRange(startDate, endDate), [startDate, endDate]);
+
+  const assignmentScope = `${productId}|${startDate}|${endDate}|${operations
+    .map((operation) => operation.id)
+    .join(',')}`;
+
+  const [assignmentOverrides, setAssignmentOverrides] = useState<WorkerAssignmentOverrides>({
+    scope: '',
+    added: {},
+    hidden: {},
+  });
+
+  // Base assignments combine worker defaults with anyone who has logged work in this range.
+  const defaultAssignedWorkers = useMemo(() => {
+    const result: Record<string, string[]> = {};
+
+    operations.forEach((operation) => {
+      const workerIdsSet = new Set<string>();
+
+      // 1. Include workers who have this operation in their defaultOperations
+      WORKERS.forEach((worker) => {
+        if (worker.defaultOperations?.includes(operation.id)) {
+          workerIdsSet.add(worker.id);
+        }
+      });
+
+      // 2. Include workers who have logged labor items for this operation across any date in the active range
+      activeRangeDates.forEach((dateStr) => {
+        sizes.forEach((size) => {
+          const key = getLaborItemKey(productId, size.id, operation.id, dateStr);
+          const workerRecords = laborItems[key];
+          if (workerRecords) {
+            Object.keys(workerRecords).forEach((workerId) => {
+              workerIdsSet.add(workerId);
+            });
+          }
+        });
+      });
+
+      result[operation.id] = Array.from(workerIdsSet);
+    });
+
+    return result;
+  }, [operations, WORKERS, activeRangeDates, sizes, productId, laborItems]);
+
+  const assignedWorkers = useMemo(() => {
+    const isCurrentScope = assignmentOverrides.scope === assignmentScope;
+    const result: Record<string, string[]> = {};
+
+    operations.forEach((operation) => {
+      const workerIds = new Set(defaultAssignedWorkers[operation.id] ?? []);
+      const added = isCurrentScope ? (assignmentOverrides.added[operation.id] ?? []) : [];
+      const hidden = new Set(
+        isCurrentScope ? (assignmentOverrides.hidden[operation.id] ?? []) : [],
+      );
+
+      added.forEach((workerId) => workerIds.add(workerId));
+      hidden.forEach((workerId) => workerIds.delete(workerId));
+      result[operation.id] = Array.from(workerIds);
+    });
+
+    return result;
+  }, [operations, defaultAssignedWorkers, assignmentOverrides, assignmentScope]);
+
   const [activeWorkerPickerOp, setActiveWorkerPickerOp] = useState<string | null>(null);
 
   const sizeColumnRef = useRef<ScrollView>(null);
@@ -88,33 +192,79 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ selectedDate
   };
 
   const handleAssignWorker = (operationId: string, workerId: string) => {
-    setAssignedWorkers((prev) => {
-      const current = prev[operationId] ?? [];
-      if (current.includes(workerId)) return prev;
-      return { ...prev, [operationId]: [...current, workerId] };
+    if (!isSingleDay) return;
+
+    setAssignmentOverrides((current) => {
+      const scoped =
+        current.scope === assignmentScope
+          ? current
+          : { scope: assignmentScope, added: {}, hidden: {} };
+      const added = scoped.added[operationId] ?? [];
+
+      return {
+        ...scoped,
+        added: {
+          ...scoped.added,
+          [operationId]: added.includes(workerId) ? added : [...added, workerId],
+        },
+        hidden: {
+          ...scoped.hidden,
+          [operationId]: (scoped.hidden[operationId] ?? []).filter((id) => id !== workerId),
+        },
+      };
     });
+
     setActiveWorkerPickerOp(null);
   };
 
   const handleRemoveWorker = (operationId: string, workerId: string) => {
-    setAssignedWorkers((prev) => ({
-      ...prev,
-      [operationId]: (prev[operationId] ?? []).filter((id) => id !== workerId),
-    }));
+    if (!isSingleDay) return;
+
+    setAssignmentOverrides((current) => {
+      const scoped =
+        current.scope === assignmentScope
+          ? current
+          : { scope: assignmentScope, added: {}, hidden: {} };
+      const hidden = scoped.hidden[operationId] ?? [];
+
+      return {
+        ...scoped,
+        added: {
+          ...scoped.added,
+          [operationId]: (scoped.added[operationId] ?? []).filter((id) => id !== workerId),
+        },
+        hidden: {
+          ...scoped.hidden,
+          [operationId]: hidden.includes(workerId) ? hidden : [...hidden, workerId],
+        },
+      };
+    });
   };
 
+  // Compute total quantity across the entire date range for a given cell
+  const getAggregatedQuantity = (sizeId: string, operationId: string, workerId: string): number => {
+    if (!productId) return 0;
+    return activeRangeDates.reduce((sum, dateStr) => {
+      const key = getLaborItemKey(productId, sizeId, operationId, dateStr);
+      return sum + (laborItems[key]?.[workerId]?.quantity ?? 0);
+    }, 0);
+  };
+
+  // Handle updates (only active when isSingleDay is true)
   const handleQuantityChange = (
     sizeId: string,
     operationId: string,
     workerId: string,
-    newQty: number,
+    newTotalQty: number,
   ) => {
-    if (!productId) return;
-    const key = getLaborItemKey(productId, sizeId, operationId, workerId, selectedDate);
-    const existing = laborItems[key];
+    if (!productId || !isSingleDay) return;
 
-    if (newQty <= 0 && existing) {
-      deleteLaborItem(existing.id);
+    const targetDate = startDate;
+    const key = getLaborItemKey(productId, sizeId, operationId, targetDate);
+    const existing = laborItems[key]?.[workerId];
+
+    if (newTotalQty <= 0) {
+      if (existing) deleteLaborItem(existing.id);
       return;
     }
 
@@ -122,15 +272,15 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ selectedDate
     const ratePerUnit = rateObj ? rateObj.ratePerUnit : 0;
 
     if (existing) {
-      updateLaborItem(existing.id, { quantity: newQty, ratePerUnit });
+      updateLaborItem(existing.id, { quantity: newTotalQty, ratePerUnit });
     } else {
       addLaborItem({
         productId,
         sizeId,
         operationId,
         workerId,
-        date: selectedDate,
-        quantity: newQty,
+        date: targetDate,
+        quantity: newTotalQty,
         ratePerUnit,
       });
     }
@@ -140,8 +290,7 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ selectedDate
     if (!productId) return 0;
     const opWorkers = assignedWorkers[operationId] ?? [];
     return opWorkers.reduce((acc, workerId) => {
-      const key = getLaborItemKey(productId, sizeId, operationId, workerId, selectedDate);
-      return acc + (laborItems[key]?.quantity ?? 0);
+      return acc + getAggregatedQuantity(sizeId, operationId, workerId);
     }, 0);
   };
 
@@ -150,9 +299,12 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ selectedDate
       {/* Product Selector Bar */}
       <View style={styles.selectorWrapper}>
         <ProductSelector
-          products={products}
+          products={PRODUCTS}
           selectedProduct={selectedProduct}
-          onSelect={(product) => setSelectedProduct(product)}
+          onSelect={(product) => {
+            setSelectedProduct(product);
+            setActiveWorkerPickerOp(null);
+          }}
         />
       </View>
 
@@ -178,21 +330,24 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ selectedDate
                           <Text style={styles.opTitleText} numberOfLines={1}>
                             {op.name}
                           </Text>
-                          <TouchableOpacity
-                            style={styles.addWorkerBtn}
-                            onPress={() =>
-                              setActiveWorkerPickerOp(activeWorkerPickerOp === op.id ? null : op.id)
-                            }
-                          >
-                            <Text style={styles.addWorkerBtnText}>+ Worker</Text>
-                          </TouchableOpacity>
+                          {isSingleDay && (
+                            <TouchableOpacity
+                              style={styles.addWorkerBtn}
+                              onPress={() =>
+                                setActiveWorkerPickerOp(
+                                  activeWorkerPickerOp === op.id ? null : op.id,
+                                )
+                              }
+                            >
+                              <Text style={styles.addWorkerBtnText}>+ Worker</Text>
+                            </TouchableOpacity>
+                          )}
                         </View>
 
                         {activeWorkerPickerOp === op.id && (
                           <View style={styles.workerDropdown}>
-                            {workers
-                              .filter((worker) => !opWorkers.includes(worker.id))
-                              .map((worker) => (
+                            {WORKERS.filter((worker) => !opWorkers.includes(worker.id)).map(
+                              (worker) => (
                                 <TouchableOpacity
                                   key={worker.id}
                                   style={styles.dropdownItem}
@@ -200,25 +355,28 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ selectedDate
                                 >
                                   <Text style={styles.dropdownItemText}>{worker.name}</Text>
                                 </TouchableOpacity>
-                              ))}
+                              ),
+                            )}
                           </View>
                         )}
 
                         <View style={styles.subHeaderRow}>
                           {opWorkers.map((workerId) => {
-                            const worker = workers.find((entry) => entry.id === workerId);
+                            const worker = WORKERS.find((entry) => entry.id === workerId);
 
                             return (
                               <View key={workerId} style={styles.workerSubHeaderCell}>
                                 <Text style={styles.workerNameText} numberOfLines={1}>
                                   {worker?.name ?? 'Worker'}
                                 </Text>
-                                <TouchableOpacity
-                                  onPress={() => handleRemoveWorker(op.id, workerId)}
-                                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                                >
-                                  <Text style={styles.removeWorkerText}>×</Text>
-                                </TouchableOpacity>
+                                {isSingleDay && (
+                                  <TouchableOpacity
+                                    onPress={() => handleRemoveWorker(op.id, workerId)}
+                                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                                  >
+                                    <Text style={styles.removeWorkerText}>×</Text>
+                                  </TouchableOpacity>
+                                )}
                               </View>
                             );
                           })}
@@ -263,23 +421,21 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ selectedDate
                             return (
                               <View key={op.id} style={styles.opGroupCells}>
                                 {opWorkers.map((workerId) => {
-                                  const key = getLaborItemKey(
-                                    productId,
-                                    size.id,
-                                    op.id,
-                                    workerId,
-                                    selectedDate,
-                                  );
-                                  const qty = laborItems[key]?.quantity ?? 0;
+                                  const qty = getAggregatedQuantity(size.id, op.id, workerId);
 
                                   return (
                                     <View key={workerId} style={styles.inputOnlyCell}>
                                       <TextInput
-                                        style={styles.quantityInput}
+                                        style={[
+                                          styles.quantityInput,
+                                          !isSingleDay && styles.disabledInput,
+                                        ]}
                                         keyboardType="number-pad"
-                                        selectTextOnFocus
+                                        selectTextOnFocus={isSingleDay}
+                                        editable={isSingleDay}
                                         value={String(qty)}
                                         onChangeText={(value) => {
+                                          if (!isSingleDay) return;
                                           const parsed = parseInt(value, 10);
                                           handleQuantityChange(
                                             size.id,
@@ -546,6 +702,11 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     color: '#06132F',
     backgroundColor: '#FFFFFF',
+  },
+  disabledInput: {
+    backgroundColor: '#F3F5F8',
+    color: '#687284',
+    borderColor: '#E9EDF4',
   },
   opTotalCell: {
     width: TOTAL_COLUMN_WIDTH,

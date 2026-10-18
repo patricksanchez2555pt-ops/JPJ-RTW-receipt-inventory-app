@@ -1,15 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { LaborItem } from '@/types/localModels';
+import type { LaborItem, Size } from '@/types/localModels';
 import { f } from '@/utils/fontScale';
 import { formatNumber } from '@/utils/formatNumber';
 
 import LaborItemRow from './components/LaborItemRow';
 
 type OperationOption = { id: string; name: string; productId: string };
-type SizeOption = { id: string; name: string; productId: string; price?: number };
 type PickerState = { itemId: string; type: 'operation' | 'size'; productId: string } | null;
 
 type Props = {
@@ -19,9 +18,9 @@ type Props = {
   totalPieces: number;
   totalEarned: number;
   operations: OperationOption[];
-  sizes: SizeOption[];
+  sizes: Size[];
   operationById: Map<string, OperationOption>;
-  sizeById: Map<string, SizeOption>;
+  sizeById: Map<string, Size>;
   activePicker: PickerState;
   setActivePicker: (value: PickerState) => void;
   onAddEntry: (productId: string, sizeId: string) => void;
@@ -49,11 +48,27 @@ export default function LaborProductGroup(props: Props) {
     onDelete,
   } = props;
 
-  const sizesInItems = useMemo(() => items.map((item) => item.sizeId), [items]);
-  const sizesOptions = useMemo(
-    () => sizes.filter((size) => size.productId === productId && !sizesInItems.includes(size.id)),
-    [sizes, sizesInItems, productId],
-  );
+  const sizesInItemsPerOperation = items.reduce<Record<string, string[]>>((acc, item) => {
+    if (!acc[item.operationId]) {
+      acc[item.operationId] = [item.sizeId];
+    } else {
+      acc[item.operationId].push(item.sizeId);
+    }
+    return acc;
+  }, {});
+
+  const sizesPerOperation = operations.reduce<Record<string, Size[]>>((acc, op) => {
+    acc[op.id] = sizes.filter(
+      (size) => size.productId === productId && !sizesInItemsPerOperation[op.id]?.includes(size.id),
+    );
+    return acc;
+  }, {});
+
+  // Fallback size ID for adding an entry
+  const firstOperationId = operations[0]?.id;
+  const defaultSizeId = firstOperationId
+    ? (sizesPerOperation[firstOperationId]?.[0]?.id ?? '')
+    : '';
 
   return (
     <View style={styles.productGroupCard}>
@@ -65,7 +80,9 @@ export default function LaborProductGroup(props: Props) {
           </Text>
           <Pressable
             style={({ pressed }) => [styles.addEntryBtn, pressed && styles.pressed]}
-            onPress={() => onAddEntry(productId, sizesOptions[0]?.id ?? '')}
+            onPress={() => {
+              onAddEntry(productId, defaultSizeId);
+            }}
           >
             <Ionicons name="add" size={13} color="#1745D1" />
             <Text style={styles.addEntryBtnText}>Add Entry</Text>
@@ -89,7 +106,7 @@ export default function LaborProductGroup(props: Props) {
           operationName={operationById.get(item.operationId)?.name ?? item.operationId}
           sizeName={sizeById.get(item.sizeId)?.name ?? 'N/A'}
           operations={operations}
-          sizesOptions={sizesOptions}
+          sizesOptions={sizesPerOperation[item.operationId] ?? []}
           activePicker={activePicker}
           setActivePicker={setActivePicker}
           onSelect={onSelect}

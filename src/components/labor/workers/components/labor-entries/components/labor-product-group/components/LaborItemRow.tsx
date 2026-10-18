@@ -2,12 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import type { LaborItem } from '@/types/localModels';
+import type { LaborItem, Size } from '@/types/localModels';
 import { f } from '@/utils/fontScale';
 import { formatNumber } from '@/utils/formatNumber';
 
 type OperationOption = { id: string; name: string; productId: string };
-type SizeOption = { id: string; name: string; productId: string; price?: number };
 type PickerState = { itemId: string; type: 'operation' | 'size'; productId: string } | null;
 
 type Props = {
@@ -15,7 +14,7 @@ type Props = {
   productId: string;
   operationName: string;
   sizeName: string;
-  sizesOptions: Record<string, string[]>;
+  sizesOptions: Size[];
   operations: OperationOption[];
   activePicker: PickerState;
   setActivePicker: (value: PickerState) => void;
@@ -109,24 +108,13 @@ export default function LaborItemRow({
         <View style={styles.inlineDropdownList}>
           <ScrollView nestedScrollEnabled style={styles.inlineScroll}>
             {options.map((option) => {
-              const selected = isOpOpen
-                ? item.operationId === option.id
-                : item.sizeId === option.id;
               return (
                 <Pressable
                   key={option.id}
-                  style={[styles.dropdownOptionItem, selected && styles.dropdownOptionSelected]}
+                  style={[styles.dropdownOptionItem]}
                   onPress={() => onSelect(item, isOpOpen ? 'operation' : 'size', option.id)}
                 >
-                  <Text
-                    style={[
-                      styles.dropdownOptionText,
-                      selected && styles.dropdownOptionTextSelected,
-                    ]}
-                  >
-                    {option.name}
-                  </Text>
-                  {selected && <Ionicons name="checkmark" size={14} color="#1745D1" />}
+                  <Text style={[styles.dropdownOptionText]}>{option.name}</Text>
                 </Pressable>
               );
             })}
@@ -252,16 +240,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 6,
   },
-  dropdownOptionSelected: {
-    backgroundColor: '#EEF2FF',
-  },
   dropdownOptionText: {
     fontSize: f(13),
     color: '#334155',
-  },
-  dropdownOptionTextSelected: {
-    color: '#1745D1',
-    fontWeight: '700',
   },
   colActionSpacer: {
     width: 24,

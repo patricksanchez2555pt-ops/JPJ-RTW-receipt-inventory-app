@@ -301,7 +301,6 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
     const updates: Partial<LaborItem> = {};
     const newOperationId = type === 'operation' ? newId : item.operationId;
     const newSizeId = type === 'size' ? newId : item.sizeId;
-    const newColorId = type === 'color' ? newId : item.colorId;
 
     if (type === 'operation') updates.operationId = newId;
     else if (type === 'size') updates.sizeId = newId;
@@ -405,14 +404,12 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
           groups={groupedWorkerEntries}
           operations={operations}
           sizes={sizes}
-          colors={colors}
           operationById={operationById}
           sizeById={sizeById}
-          colorById={colorById}
           activePicker={activePicker}
           setActivePicker={setActivePicker}
-          onAddEntry={(date, productId, colorId) =>
-            handleAddLaborItemForProduct(date, productId, '', colorId)
+          onAddEntry={(date, productId, colorId, sizeId) =>
+            handleAddLaborItemForProduct(date, productId, sizeId, colorId)
           }
           onSelect={handleUpdateItemSelection}
           onQuantityChange={(itemId, quantity) => updateLaborItem(itemId, { quantity })}

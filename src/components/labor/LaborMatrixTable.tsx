@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -84,12 +84,16 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ startDate, e
   );
 
   const [selectedColor, setSelectedColor] = useState(productColors[0] ?? null);
-  const colorId = selectedColor?.id ?? '';
 
-  // Reset or re-select color when product changes
-  useEffect(() => {
-    setSelectedColor(productColors[0] ?? null);
-  }, [productId, productColors]);
+  // Adjust selected color during render if the product changed or current color is invalid for this product
+  const activeColor = useMemo(() => {
+    if (selectedColor && productColors.some((c) => c.id === selectedColor.id)) {
+      return selectedColor;
+    }
+    return productColors[0] ?? null;
+  }, [selectedColor, productColors]);
+
+  const colorId = activeColor?.id ?? '';
 
   const OPERATIONS = useOperationStore((state) => state.operations);
   const operations = useMemo(
@@ -332,7 +336,7 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ startDate, e
             <Text style={styles.selectorLabel}>Select Color</Text>
             <ColorSelector
               colors={productColors}
-              selectedColor={selectedColor}
+              selectedColor={activeColor}
               onSelect={(color) => {
                 setSelectedColor(color);
                 setActiveWorkerPickerOp(null);
@@ -342,7 +346,7 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ startDate, e
         )}
       </View>
 
-      {selectedProduct && selectedColor ? (
+      {selectedProduct && activeColor ? (
         <View style={styles.tableContainer}>
           <View style={styles.cornerCell}>
             <Text style={styles.headerText}>Size</Text>
@@ -572,7 +576,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   productSelectorLayer: {
-    zIndex: 200, // Keeps product dropdown rendering above everything when expanded
+    zIndex: 200,
   },
   colorSelectorLayer: {
     zIndex: 100,

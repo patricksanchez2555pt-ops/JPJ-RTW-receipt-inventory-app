@@ -2,15 +2,13 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import type { Deduction, LaborItem } from '@/types/localModels';
+import type { Deduction, LaborItem, Size } from '@/types/localModels';
 import { f } from '@/utils/fontScale';
 import { formatNumber } from '@/utils/formatNumber';
 
 import LaborProductGroup from './components/labor-product-group/LaborProductGroup';
 
 type OperationOption = { id: string; name: string; productId: string };
-type SizeOption = { id: string; name: string; productId: string; price?: number };
-type ColorOption = { id: string; name: string; productId: string; hexValue: string };
 type PickerState = {
   itemId: string;
   type: 'operation' | 'size' | 'color';
@@ -47,14 +45,12 @@ type DateGroup = {
 type Props = {
   groups: DateGroup[];
   operations: OperationOption[];
-  sizes: SizeOption[];
-  colors: ColorOption[];
+  sizes: Size[];
   operationById: Map<string, OperationOption>;
-  sizeById: Map<string, SizeOption>;
-  colorById: Map<string, ColorOption>;
+  sizeById: Map<string, Size>;
   activePicker: PickerState;
   setActivePicker: (value: PickerState) => void;
-  onAddEntry: (date: string, productId: string, colorId: string) => void;
+  onAddEntry: (date: string, productId: string, colorId: string, sizeId: string) => void;
   onSelect: (item: LaborItem, type: 'operation' | 'size' | 'color', id: string) => void;
   onQuantityChange: (itemId: string, quantity: number) => void;
   onDelete: (itemId: string) => void;
@@ -74,10 +70,8 @@ export default function LaborEntriesList(props: Props) {
     groups,
     operations,
     sizes,
-    colors,
     operationById,
     sizeById,
-    colorById,
     activePicker,
     setActivePicker,
     onAddEntry,
@@ -202,9 +196,6 @@ export default function LaborEntriesList(props: Props) {
             </View>
 
             {dateGroup.products.map((productGroup) => {
-              // Flatten or handle color groups inside the product view as needed
-              const allProductItems = productGroup.colors.flatMap((c) => c.colors);
-
               return (
                 <View key={productGroup.productId} style={styles.productBlock}>
                   <View style={styles.productHeaderRow}>
@@ -240,7 +231,7 @@ export default function LaborEntriesList(props: Props) {
                         activePicker={activePicker}
                         setActivePicker={setActivePicker}
                         onAddEntry={(productId, sizeId) =>
-                          onAddEntry(dateGroup.date, productId, colorGroup.colorId)
+                          onAddEntry(dateGroup.date, productId, colorGroup.colorId, sizeId)
                         }
                         onSelect={onSelect}
                         onQuantityChange={onQuantityChange}

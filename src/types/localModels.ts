@@ -117,6 +117,7 @@ export type LaborItem = {
   id: string;
   productId: string;
   sizeId: string;
+  colorId: string;
   operationId: string;
   workerId: string;
   quantity: number;

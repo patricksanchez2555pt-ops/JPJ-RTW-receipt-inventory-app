@@ -18,9 +18,10 @@ const mmkvStorage = {
 export const getLaborItemKey = (
   productId: string,
   sizeId: string,
+  colorId: string,
   operationId: string,
   date: string,
-) => `${productId}:${sizeId}:${operationId}:${date}`;
+) => `${productId}:${sizeId}:${colorId}:${operationId}:${date}`;
 
 function toLaborItemRecord(items: PersistedLaborItems): LaborItemRecord {
   const laborItems: LaborItemRecord = {};
@@ -31,10 +32,16 @@ function toLaborItemRecord(items: PersistedLaborItems): LaborItemRecord {
       );
 
   for (const item of entries) {
-    const key = getLaborItemKey(item.productId, item.sizeId, item.operationId, item.date);
+    // Fallback gracefully if colorId is missing from older persisted data structures
+    const colorId = item.colorId ?? 'default-color';
+    const key = getLaborItemKey(item.productId, item.sizeId, colorId, item.operationId, item.date);
+
+    // Ensure item has colorId assigned for typing compliance
+    const normalizedItem: LaborItem = { ...item, colorId };
+
     laborItems[key] = {
       ...laborItems[key],
-      [item.workerId]: item,
+      [normalizedItem.workerId]: normalizedItem,
     };
   }
 
@@ -87,6 +94,7 @@ export const useLaborItemStore = create<LaborItemStore>()(
         const key = getLaborItemKey(
           createdLaborItem.productId,
           createdLaborItem.sizeId,
+          createdLaborItem.colorId,
           createdLaborItem.operationId,
           createdLaborItem.date,
         );
@@ -118,6 +126,7 @@ export const useLaborItemStore = create<LaborItemStore>()(
         const updatedKey = getLaborItemKey(
           updatedLaborItem.productId,
           updatedLaborItem.sizeId,
+          updatedLaborItem.colorId,
           updatedLaborItem.operationId,
           updatedLaborItem.date,
         );

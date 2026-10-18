@@ -1,10 +1,12 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import ColorSelector from '@/components/common/ColorSelector';
 import ProductSelector from '@/components/common/ProductSelector';
 import { f } from '@/utils/fontScale';
 
+import { useColorStore } from '../../store/useColorStore';
 import { getLaborItemKey, useLaborItemStore } from '../../store/useLaborItemStore';
 import { useLaborRateStore } from '../../store/useLaborRateStore';
 import { useOperationStore } from '../../store/useOperationStore';
@@ -73,8 +75,21 @@ const getDatesInRange = (startStr: string, endStr: string): string[] => {
 export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ startDate, endDate }) => {
   const PRODUCTS = useProductStore((state) => state.products);
   const [selectedProduct, setSelectedProduct] = useState(PRODUCTS[0] ?? null);
-
   const productId = selectedProduct?.id ?? '';
+
+  const COLORS = useColorStore((state) => state.colors);
+  const productColors = useMemo(
+    () => COLORS.filter((color) => color.productId === productId),
+    [COLORS, productId],
+  );
+
+  const [selectedColor, setSelectedColor] = useState(productColors[0] ?? null);
+  const colorId = selectedColor?.id ?? '';
+
+  // Reset or re-select color when product changes
+  useEffect(() => {
+    setSelectedColor(productColors[0] ?? null);
+  }, [productId, productColors]);
 
   const OPERATIONS = useOperationStore((state) => state.operations);
   const operations = useMemo(
@@ -103,7 +118,7 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ startDate, e
   // Get all date keys falling within the range
   const activeRangeDates = useMemo(() => getDatesInRange(startDate, endDate), [startDate, endDate]);
 
-  const assignmentScope = `${productId}|${startDate}|${endDate}|${operations
+  const assignmentScope = `${productId}|${colorId}|${startDate}|${endDate}|${operations
     .map((operation) => operation.id)
     .join(',')}`;
 
@@ -113,7 +128,7 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ startDate, e
     hidden: {},
   });
 
-  // Base assignments combine worker defaults with anyone who has logged work in this range.
+  // Base assignments combine worker defaults with anyone who has logged work in this range for this product/color.
   const defaultAssignedWorkers = useMemo(() => {
     const result: Record<string, string[]> = {};
 
@@ -128,23 +143,25 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ startDate, e
       });
 
       // 2. Include workers who have logged labor items for this operation across any date in the active range
-      activeRangeDates.forEach((dateStr) => {
-        sizes.forEach((size) => {
-          const key = getLaborItemKey(productId, size.id, operation.id, dateStr);
-          const workerRecords = laborItems[key];
-          if (workerRecords) {
-            Object.keys(workerRecords).forEach((workerId) => {
-              workerIdsSet.add(workerId);
-            });
-          }
+      if (colorId) {
+        activeRangeDates.forEach((dateStr) => {
+          sizes.forEach((size) => {
+            const key = getLaborItemKey(productId, size.id, colorId, operation.id, dateStr);
+            const workerRecords = laborItems[key];
+            if (workerRecords) {
+              Object.keys(workerRecords).forEach((workerId) => {
+                workerIdsSet.add(workerId);
+              });
+            }
+          });
         });
-      });
+      }
 
       result[operation.id] = Array.from(workerIdsSet);
     });
 
     return result;
-  }, [operations, WORKERS, activeRangeDates, sizes, productId, laborItems]);
+  }, [operations, WORKERS, activeRangeDates, sizes, productId, colorId, laborItems]);
 
   const assignedWorkers = useMemo(() => {
     const isCurrentScope = assignmentOverrides.scope === assignmentScope;
@@ -243,9 +260,9 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ startDate, e
 
   // Compute total quantity across the entire date range for a given cell
   const getAggregatedQuantity = (sizeId: string, operationId: string, workerId: string): number => {
-    if (!productId) return 0;
+    if (!productId || !colorId) return 0;
     return activeRangeDates.reduce((sum, dateStr) => {
-      const key = getLaborItemKey(productId, sizeId, operationId, dateStr);
+      const key = getLaborItemKey(productId, sizeId, colorId, operationId, dateStr);
       return sum + (laborItems[key]?.[workerId]?.quantity ?? 0);
     }, 0);
   };
@@ -257,10 +274,10 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ startDate, e
     workerId: string,
     newTotalQty: number,
   ) => {
-    if (!productId || !isSingleDay) return;
+    if (!productId || !colorId || !isSingleDay) return;
 
     const targetDate = startDate;
-    const key = getLaborItemKey(productId, sizeId, operationId, targetDate);
+    const key = getLaborItemKey(productId, sizeId, colorId, operationId, targetDate);
     const existing = laborItems[key]?.[workerId];
 
     if (newTotalQty <= 0) {
@@ -277,6 +294,7 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ startDate, e
       addLaborItem({
         productId,
         sizeId,
+        colorId,
         operationId,
         workerId,
         date: targetDate,
@@ -287,7 +305,7 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ startDate, e
   };
 
   const getOpTotalForSize = (sizeId: string, operationId: string): number => {
-    if (!productId) return 0;
+    if (!productId || !colorId) return 0;
     const opWorkers = assignedWorkers[operationId] ?? [];
     return opWorkers.reduce((acc, workerId) => {
       return acc + getAggregatedQuantity(sizeId, operationId, workerId);
@@ -296,19 +314,35 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ startDate, e
 
   return (
     <View style={styles.container}>
-      {/* Product Selector Bar */}
-      <View style={styles.selectorWrapper}>
-        <ProductSelector
-          products={PRODUCTS}
-          selectedProduct={selectedProduct}
-          onSelect={(product) => {
-            setSelectedProduct(product);
-            setActiveWorkerPickerOp(null);
-          }}
-        />
+      {/* Selectors Header Block with Hierarchical Layering */}
+      <View style={styles.selectorsContainer}>
+        <View style={[styles.selectorWrapper, styles.productSelectorLayer]}>
+          <ProductSelector
+            products={PRODUCTS}
+            selectedProduct={selectedProduct}
+            onSelect={(product) => {
+              setSelectedProduct(product);
+              setActiveWorkerPickerOp(null);
+            }}
+          />
+        </View>
+
+        {selectedProduct && (
+          <View style={[styles.selectorWrapper, styles.colorSelectorLayer]}>
+            <Text style={styles.selectorLabel}>Select Color</Text>
+            <ColorSelector
+              colors={productColors}
+              selectedColor={selectedColor}
+              onSelect={(color) => {
+                setSelectedColor(color);
+                setActiveWorkerPickerOp(null);
+              }}
+            />
+          </View>
+        )}
       </View>
 
-      {selectedProduct ? (
+      {selectedProduct && selectedColor ? (
         <View style={styles.tableContainer}>
           <View style={styles.cornerCell}>
             <Text style={styles.headerText}>Size</Text>
@@ -510,7 +544,11 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ startDate, e
         </View>
       ) : (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>Please select a product to view labor matrices.</Text>
+          <Text style={styles.emptyText}>
+            {!selectedProduct
+              ? 'Please select a product to view labor matrices.'
+              : 'Please select a color for this product.'}
+          </Text>
         </View>
       )}
     </View>
@@ -526,9 +564,25 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
   },
-  selectorWrapper: {
+  selectorsContainer: {
     marginBottom: 16,
+    gap: 12,
+  },
+  selectorWrapper: {
+    position: 'relative',
+  },
+  productSelectorLayer: {
+    zIndex: 200, // Keeps product dropdown rendering above everything when expanded
+  },
+  colorSelectorLayer: {
     zIndex: 100,
+  },
+  selectorLabel: {
+    fontSize: f(12),
+    fontWeight: '700',
+    color: '#687284',
+    marginBottom: 6,
+    textTransform: 'uppercase',
   },
   tableContainer: {
     flex: 1,
@@ -538,6 +592,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
     position: 'relative',
+    zIndex: 1,
   },
   tableContent: {
     ...StyleSheet.absoluteFill,

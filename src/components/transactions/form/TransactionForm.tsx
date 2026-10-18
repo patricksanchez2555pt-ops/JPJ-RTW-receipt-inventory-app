@@ -2,17 +2,17 @@ import { useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import ProductSelector from '@/components/common/ProductSelector';
+import { useColorStore } from '@/store/useColorStore';
+import { useCustomerPricingStore } from '@/store/useCustomerPricingStore';
+import { useCustomerStore } from '@/store/useCustomerStore';
+import { useProductStore } from '@/store/useProductStore';
+import { useSizeStore } from '@/store/useSizeStore';
+import { useTransactionStore } from '@/store/useTransactionStore';
+import type { Color, Customer, Product, Size, Transaction } from '@/types/localModels';
 import { f } from '@/utils/fontScale';
 
-import { useColorStore } from '../../../store/useColorStore';
-import { useCustomerPricingStore } from '../../../store/useCustomerPricingStore';
-import { useCustomerStore } from '../../../store/useCustomerStore';
-import { useProductStore } from '../../../store/useProductStore';
-import { useSizeStore } from '../../../store/useSizeStore';
-import { useTransactionStore } from '../../../store/useTransactionStore';
-import type { Color, Customer, Product, Size, Transaction } from '../../../types/localModels';
+import ColorSelector from '../../common/ColorSelector';
 import AddedItemsPanel from '../components/added-items-panel/AddedItemsPanel';
-import ColorSelector from './components/ColorSelector';
 import QuantitySelector from './components/QuantitySelector';
 import SizeSelector from './components/SizeSelector';
 import TransactionSummary from './components/TransactionSummary';

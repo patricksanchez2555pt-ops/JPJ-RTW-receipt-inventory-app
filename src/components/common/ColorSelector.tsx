@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import type { Color } from '@/types/localModels';
 import { f } from '@/utils/fontScale';
-
-import type { Color } from '../../../../types/localModels';
 
 type Props = {
   colors: Color[];

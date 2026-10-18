@@ -2,16 +2,18 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import type { Operation, Product, Size } from '@/types/localModels';
+import type { Color, Operation, Product, Size } from '@/types/localModels';
 import { f } from '@/utils/fontScale';
 import { formatNumber } from '@/utils/formatNumber';
 
-import ProductSelector from '../../../common/ProductSelector'; // Make sure the path matches your project structure
+import ColorSelector from '../../../common/ColorSelector';
+import ProductSelector from '../../../common/ProductSelector';
 
 interface AddLaborItemFormProps {
   products: Product[];
   operations: Operation[];
   sizes: Size[];
+  colors: Color[];
   initialDate: string;
   workerId: string;
   getLaborRate: (
@@ -23,6 +25,7 @@ interface AddLaborItemFormProps {
     productId: string;
     operationId: string;
     sizeId: string;
+    colorId: string;
     workerId: string;
     date: string;
     quantity: number;
@@ -35,6 +38,7 @@ export default function AddLaborItemForm({
   products,
   operations,
   sizes,
+  colors,
   initialDate,
   workerId,
   getLaborRate,
@@ -44,9 +48,13 @@ export default function AddLaborItemForm({
   const initialProduct = products.length > 0 ? products[0].id : '';
   const initialOps = operations.filter((op) => op.productId === initialProduct);
   const initialSizes = sizes.filter((sz) => sz.productId === initialProduct);
+  const initialColors = colors.filter((c) => c.productId === initialProduct);
 
   const [formDate, setFormDate] = useState(initialDate);
   const [formProductId, setFormProductId] = useState(initialProduct);
+  const [formColorId, setFormColorId] = useState(
+    initialColors.length > 0 ? initialColors[0].id : '',
+  );
   const [formOperationId, setFormOperationId] = useState(
     initialOps.length > 0 ? initialOps[0].id : '',
   );
@@ -54,6 +62,10 @@ export default function AddLaborItemForm({
   const [formQuantity, setFormQuantity] = useState('1');
 
   const selectedProductObj = products.find((p) => p.id === formProductId) || products[0];
+  const availableFormColors = colors.filter((c) => c.productId === formProductId);
+  const selectedColorObj =
+    availableFormColors.find((c) => c.id === formColorId) || availableFormColors[0] || null;
+
   const availableFormOps = operations.filter((op) => op.productId === formProductId);
   const availableFormSizes = sizes.filter((sz) => sz.productId === formProductId);
   const currentFormRate =
@@ -63,12 +75,15 @@ export default function AddLaborItemForm({
     setFormProductId(product.id);
     const prodOps = operations.filter((op) => op.productId === product.id);
     const prodSizes = sizes.filter((sz) => sz.productId === product.id);
+    const prodColors = colors.filter((c) => c.productId === product.id);
+
     setFormOperationId(prodOps.length > 0 ? prodOps[0].id : '');
     setFormSizeId(prodSizes.length > 0 ? prodSizes[0].id : '');
+    setFormColorId(prodColors.length > 0 ? prodColors[0].id : '');
   };
 
   const handleSave = () => {
-    if (!formProductId || !formOperationId || !formSizeId) return;
+    if (!formProductId || !formOperationId || !formSizeId || !formColorId) return;
 
     const qty = parseInt(formQuantity, 10);
     const parsedQty = isNaN(qty) || qty <= 0 ? 1 : qty;
@@ -76,6 +91,7 @@ export default function AddLaborItemForm({
     onSave({
       productId: formProductId,
       sizeId: formSizeId,
+      colorId: formColorId,
       operationId: formOperationId,
       workerId,
       date: formDate,
@@ -85,7 +101,7 @@ export default function AddLaborItemForm({
   };
 
   return (
-    <View style={styles.formCard}>
+    <ScrollView style={styles.formCard}>
       <Text style={styles.formTitle}>New Labor Entry</Text>
 
       <View style={styles.formGrid}>
@@ -107,6 +123,16 @@ export default function AddLaborItemForm({
             products={products}
             selectedProduct={selectedProductObj}
             onSelect={handleProductChange}
+          />
+        </View>
+
+        {/* Color Selector */}
+        <View style={styles.formGroup}>
+          <Text style={styles.formLabel}>Color Variant</Text>
+          <ColorSelector
+            colors={availableFormColors}
+            selectedColor={selectedColorObj}
+            onSelect={(color) => setFormColorId(color.id)}
           />
         </View>
 
@@ -174,7 +200,7 @@ export default function AddLaborItemForm({
           <Text style={styles.saveFormBtnText}>Save Entry</Text>
         </Pressable>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 

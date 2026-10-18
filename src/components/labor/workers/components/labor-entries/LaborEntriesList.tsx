@@ -10,14 +10,30 @@ import LaborProductGroup from './components/labor-product-group/LaborProductGrou
 
 type OperationOption = { id: string; name: string; productId: string };
 type SizeOption = { id: string; name: string; productId: string; price?: number };
-type PickerState = { itemId: string; type: 'operation' | 'size'; productId: string } | null;
+type ColorOption = { id: string; name: string; productId: string; hexValue: string };
+type PickerState = {
+  itemId: string;
+  type: 'operation' | 'size' | 'color';
+  productId: string;
+} | null;
+
+type ColorGroup = {
+  colorId: string;
+  colorName: string;
+  colorHex: string;
+  items: LaborItem[];
+  colorTotalPieces: number;
+  colorTotalEarned: number;
+};
+
 type ProductGroup = {
   productId: string;
   productName: string;
-  items: LaborItem[];
+  colors: ColorGroup[];
   productTotalPieces: number;
   productTotalEarned: number;
 };
+
 type DateGroup = {
   date: string;
   formattedLabel: string;
@@ -32,12 +48,14 @@ type Props = {
   groups: DateGroup[];
   operations: OperationOption[];
   sizes: SizeOption[];
+  colors: ColorOption[];
   operationById: Map<string, OperationOption>;
   sizeById: Map<string, SizeOption>;
+  colorById: Map<string, ColorOption>;
   activePicker: PickerState;
   setActivePicker: (value: PickerState) => void;
-  onAddEntry: (date: string, productId: string, sizeId: string) => void;
-  onSelect: (item: LaborItem, type: 'operation' | 'size', id: string) => void;
+  onAddEntry: (date: string, productId: string, colorId: string) => void;
+  onSelect: (item: LaborItem, type: 'operation' | 'size' | 'color', id: string) => void;
   onQuantityChange: (itemId: string, quantity: number) => void;
   onDelete: (itemId: string) => void;
   onAddDeduction: (deduction: {
@@ -45,6 +63,7 @@ type Props = {
     amount: number;
     label: string;
     date: string;
+    colorId?: string;
   }) => void;
   onDeleteDeduction: (id: string, date: string) => void;
   workerId: string;
@@ -55,8 +74,10 @@ export default function LaborEntriesList(props: Props) {
     groups,
     operations,
     sizes,
+    colors,
     operationById,
     sizeById,
+    colorById,
     activePicker,
     setActivePicker,
     onAddEntry,
@@ -165,7 +186,7 @@ export default function LaborEntriesList(props: Props) {
               {dateGroup.deductions.map((ded) => (
                 <View key={ded.id} style={styles.deductionItemRow}>
                   <Text style={styles.deductionItemLabel} numberOfLines={1}>
-                    • {ded.label}
+                    - {ded.label}
                   </Text>
                   <View style={styles.deductionItemRight}>
                     <Text style={styles.deductionItemAmount}>-₱{formatNumber(ded.amount)}</Text>
@@ -180,26 +201,56 @@ export default function LaborEntriesList(props: Props) {
               ))}
             </View>
 
-            {dateGroup.products.map((group) => (
-              <LaborProductGroup
-                key={group.productId}
-                productId={group.productId}
-                productName={group.productName}
-                items={group.items}
-                totalPieces={group.productTotalPieces}
-                totalEarned={group.productTotalEarned}
-                operations={operations}
-                sizes={sizes}
-                operationById={operationById}
-                sizeById={sizeById}
-                activePicker={activePicker}
-                setActivePicker={setActivePicker}
-                onAddEntry={(productId, sizeId) => onAddEntry(dateGroup.date, productId, sizeId)}
-                onSelect={onSelect}
-                onQuantityChange={onQuantityChange}
-                onDelete={onDelete}
-              />
-            ))}
+            {dateGroup.products.map((productGroup) => {
+              // Flatten or handle color groups inside the product view as needed
+              const allProductItems = productGroup.colors.flatMap((c) => c.colors);
+
+              return (
+                <View key={productGroup.productId} style={styles.productBlock}>
+                  <View style={styles.productHeaderRow}>
+                    <Text style={styles.productTitleText}>{productGroup.productName}</Text>
+                    <Text style={styles.productSubTotalText}>
+                      ₱{formatNumber(productGroup.productTotalEarned)} (
+                      {productGroup.productTotalPieces} pcs)
+                    </Text>
+                  </View>
+
+                  {productGroup.colors.map((colorGroup) => (
+                    <View key={colorGroup.colorId} style={styles.colorGroupCard}>
+                      <View style={styles.colorBadgeRow}>
+                        <View
+                          style={[
+                            styles.colorDot,
+                            { backgroundColor: colorGroup.colorHex || '#CBD5E1' },
+                          ]}
+                        />
+                        <Text style={styles.colorBadgeText}>{colorGroup.colorName}</Text>
+                      </View>
+
+                      <LaborProductGroup
+                        productId={productGroup.productId}
+                        productName={colorGroup.colorName}
+                        items={colorGroup.items}
+                        totalPieces={colorGroup.colorTotalPieces}
+                        totalEarned={colorGroup.colorTotalEarned}
+                        operations={operations}
+                        sizes={sizes}
+                        operationById={operationById}
+                        sizeById={sizeById}
+                        activePicker={activePicker}
+                        setActivePicker={setActivePicker}
+                        onAddEntry={(productId, sizeId) =>
+                          onAddEntry(dateGroup.date, productId, colorGroup.colorId)
+                        }
+                        onSelect={onSelect}
+                        onQuantityChange={onQuantityChange}
+                        onDelete={onDelete}
+                      />
+                    </View>
+                  ))}
+                </View>
+              );
+            })}
           </View>
         );
       }}
@@ -357,6 +408,53 @@ const styles = StyleSheet.create({
     color: '#DC2626',
     fontSize: f(12),
     fontWeight: '700',
+  },
+  productBlock: {
+    marginTop: 8,
+    marginBottom: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    paddingTop: 8,
+  },
+  productHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  productTitleText: {
+    fontSize: f(13),
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  productSubTotalText: {
+    fontSize: f(12),
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  colorGroupCard: {
+    marginBottom: 6,
+    paddingLeft: 8,
+    borderLeftWidth: 2,
+    borderLeftColor: '#CBD5E1',
+  },
+  colorBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  colorDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#94A3B8',
+  },
+  colorBadgeText: {
+    fontSize: f(11),
+    fontWeight: '700',
+    color: '#334155',
   },
   emptyState: {
     flexGrow: 1,

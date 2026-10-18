@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { f } from '@/utils/fontScale';
 
+import { useColorStore } from '../../../store/useColorStore';
 import { useDeductionStore } from '../../../store/useDeductionStore';
 import { useLaborItemStore } from '../../../store/useLaborItemStore';
 import { useLaborRateStore } from '../../../store/useLaborRateStore';
@@ -23,10 +24,19 @@ interface WorkerDirectoryViewProps {
   endDate: string;
 }
 
+interface GroupedColorEntry {
+  colorId: string;
+  colorName: string;
+  colorHex: string;
+  items: LaborItem[];
+  colorTotalPieces: number;
+  colorTotalEarned: number;
+}
+
 interface GroupedProductEntry {
   productId: string;
   productName: string;
-  items: LaborItem[];
+  colors: GroupedColorEntry[];
   productTotalPieces: number;
   productTotalEarned: number;
 }
@@ -43,7 +53,7 @@ interface GroupedDateEntry {
 
 type PickerState = {
   itemId: string;
-  type: 'operation' | 'size';
+  type: 'operation' | 'size' | 'color';
   productId: string;
 } | null;
 
@@ -102,6 +112,7 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
   const operations = useOperationStore((state) => state.operations);
   const products = useProductStore((state) => state.products);
   const sizes = useSizeStore((state) => state.sizes);
+  const colors = useColorStore((state) => state.colors);
   const getLaborRate = useLaborRateStore((state) => state.getLaborRate);
 
   const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
@@ -128,18 +139,22 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
     [operations],
   );
   const sizeById = useMemo(() => new Map(sizes.map((size) => [size.id, size])), [sizes]);
+  const colorById = useMemo(() => new Map(colors.map((color) => [color.id, color])), [colors]);
 
   const groupedWorkerEntries = useMemo((): GroupedDateEntry[] => {
     if (!selectedWorker) return [];
 
     const workerItems = allItems.filter((item) => item.workerId === selectedWorker.id);
-    const dateMap = new Map<string, Map<string, LaborItem[]>>();
+    const dateMap = new Map<string, Map<string, Map<string, LaborItem[]>>>();
 
     workerItems.forEach((item) => {
       if (!dateMap.has(item.date)) dateMap.set(item.date, new Map());
       const productMap = dateMap.get(item.date)!;
-      if (!productMap.has(item.productId)) productMap.set(item.productId, []);
-      productMap.get(item.productId)!.push(item);
+      if (!productMap.has(item.productId)) productMap.set(item.productId, new Map());
+      const colorMap = productMap.get(item.productId)!;
+      const colorKey = item.colorId || 'default';
+      if (!colorMap.has(colorKey)) colorMap.set(colorKey, []);
+      colorMap.get(colorKey)!.push(item);
     });
 
     activeRangeDates.forEach((dateStr) => {
@@ -161,20 +176,39 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
       let dateTotalPieces = 0;
       let dateTotalEarned = 0;
 
-      const productEntries = Array.from(productMap.entries()).map(([productId, items]) => {
-        const productTotalPieces = items.reduce((sum, item) => sum + item.quantity, 0);
-        const productTotalEarned = items.reduce((sum, item) => sum + item.subtotal, 0);
+      const productEntries = Array.from(productMap.entries()).map(([productId, colorMap]) => {
+        let productTotalPieces = 0;
+        let productTotalEarned = 0;
+
+        const colorEntries = Array.from(colorMap.entries()).map(([colorId, items]) => {
+          const colorTotalPieces = items.reduce((sum, item) => sum + item.quantity, 0);
+          const colorTotalEarned = items.reduce((sum, item) => sum + item.subtotal, 0);
+          productTotalPieces += colorTotalPieces;
+          productTotalEarned += colorTotalEarned;
+
+          const sortedItems = [...items].sort(
+            (a, b) => (sizeById.get(a.sizeId)?.price ?? 0) - (sizeById.get(b.sizeId)?.price ?? 0),
+          );
+
+          const colorObj = colorById.get(colorId);
+
+          return {
+            colorId,
+            colorName: colorObj?.name ?? 'Default Color',
+            colorHex: colorObj?.hexValue ?? '#CCCCCC',
+            items: sortedItems,
+            colorTotalPieces,
+            colorTotalEarned,
+          };
+        });
+
         dateTotalPieces += productTotalPieces;
         dateTotalEarned += productTotalEarned;
-
-        const sortedItems = [...items].sort(
-          (a, b) => (sizeById.get(a.sizeId)?.price ?? 0) - (sizeById.get(b.sizeId)?.price ?? 0),
-        );
 
         return {
           productId,
           productName: productById.get(productId)?.name ?? 'Unknown Product',
-          items: sortedItems,
+          colors: colorEntries,
           productTotalPieces,
           productTotalEarned,
         };
@@ -196,7 +230,15 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
         dateTotalDeductions,
       };
     });
-  }, [allItems, selectedWorker, productById, sizeById, deductionsByDate, activeRangeDates]);
+  }, [
+    allItems,
+    selectedWorker,
+    productById,
+    sizeById,
+    colorById,
+    deductionsByDate,
+    activeRangeDates,
+  ]);
 
   const getTotals = (workerId: string) => {
     const items = allItems.filter((item) => item.workerId === workerId);
@@ -220,20 +262,29 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
     };
   };
 
-  const handleAddLaborItemForProduct = (date: string, productId: string, sizeId: string) => {
+  const handleAddLaborItemForProduct = (
+    date: string,
+    productId: string,
+    sizeId: string,
+    colorId: string,
+  ) => {
     if (!selectedWorker) return;
 
     const productOperations = operations.filter((operation) => operation.productId === productId);
     const productSizes = sizes.filter((size) => size.productId === productId);
+    const productColors = colors.filter((color) => color.productId === productId);
+
     if (!productOperations.length || !productSizes.length) return;
 
     const operationId = productOperations[0].id;
     const targetSizeId = sizeId || productSizes[0].id;
+    const targetColorId = colorId || (productColors[0] ? productColors[0].id : '');
     const rate = getLaborRate(productId, targetSizeId, operationId);
 
     addLaborItem({
       productId,
       sizeId: targetSizeId,
+      colorId: targetColorId,
       operationId,
       workerId: selectedWorker.id,
       date,
@@ -244,15 +295,17 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
 
   const handleUpdateItemSelection = (
     item: LaborItem,
-    type: 'operation' | 'size',
+    type: 'operation' | 'size' | 'color',
     newId: string,
   ) => {
     const updates: Partial<LaborItem> = {};
     const newOperationId = type === 'operation' ? newId : item.operationId;
     const newSizeId = type === 'size' ? newId : item.sizeId;
+    const newColorId = type === 'color' ? newId : item.colorId;
 
     if (type === 'operation') updates.operationId = newId;
-    else updates.sizeId = newId;
+    else if (type === 'size') updates.sizeId = newId;
+    else if (type === 'color') updates.colorId = newId;
 
     const rate = getLaborRate(item.productId, newSizeId, newOperationId);
     if (rate) updates.ratePerUnit = rate.ratePerUnit;
@@ -324,6 +377,7 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
             products={products}
             operations={operations}
             sizes={sizes}
+            colors={colors}
             initialDate={activeRangeDates.length > 0 ? activeRangeDates[0] : startDate}
             workerId={selectedWorker.id}
             getLaborRate={getLaborRate}
@@ -351,11 +405,15 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
           groups={groupedWorkerEntries}
           operations={operations}
           sizes={sizes}
+          colors={colors}
           operationById={operationById}
           sizeById={sizeById}
+          colorById={colorById}
           activePicker={activePicker}
           setActivePicker={setActivePicker}
-          onAddEntry={(date, productId) => handleAddLaborItemForProduct(date, productId, '')}
+          onAddEntry={(date, productId, colorId) =>
+            handleAddLaborItemForProduct(date, productId, '', colorId)
+          }
           onSelect={handleUpdateItemSelection}
           onQuantityChange={(itemId, quantity) => updateLaborItem(itemId, { quantity })}
           onDelete={deleteLaborItem}

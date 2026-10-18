@@ -15,7 +15,7 @@ type Props = {
   productId: string;
   operationName: string;
   sizeName: string;
-  sizesOptions: SizeOption[];
+  sizesOptions: Record<string, string[]>;
   operations: OperationOption[];
   activePicker: PickerState;
   setActivePicker: (value: PickerState) => void;

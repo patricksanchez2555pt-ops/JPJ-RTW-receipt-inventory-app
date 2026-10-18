@@ -1,5 +1,5 @@
 export function formatNumber(value: number): string {
-  return value.toLocaleString('en-PH', {
+  return value?.toLocaleString('en-PH', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });

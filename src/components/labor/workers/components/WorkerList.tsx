@@ -6,9 +6,16 @@ import type { Worker } from '@/types/localModels';
 import { f } from '@/utils/fontScale';
 import { formatNumber } from '@/utils/formatNumber';
 
+type WorkerTotals = {
+  totalPieces: number;
+  totalEarned: number;
+  totalDeductions: number;
+  netTotal: number;
+};
+
 type Props = {
   workers: Worker[];
-  getTotals: (workerId: string) => { totalPieces: number; totalEarned: number };
+  getTotals: (workerId: string) => WorkerTotals;
   startDate: string;
   endDate: string;
   onSelectWorker: (worker: Worker) => void;
@@ -64,15 +71,26 @@ export default function WorkerList({
               </View>
               <Ionicons name="chevron-forward" size={18} color="#7A8494" />
             </View>
+
             <View style={styles.workerStats}>
               <View style={styles.statBox}>
-                <Text style={styles.statLabel}>Pieces Logged</Text>
+                <Text style={styles.statLabel}>Pieces</Text>
                 <Text style={styles.statValue}>{totals.totalPieces}</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statBox}>
-                <Text style={styles.statLabel}>Total Earned</Text>
+                <Text style={styles.statLabel}>Earned</Text>
                 <Text style={styles.earnedValue}>₱{formatNumber(totals.totalEarned)}</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statBox}>
+                <Text style={styles.statLabel}>Deductions</Text>
+                <Text style={styles.deductionValue}>-₱{formatNumber(totals.totalDeductions)}</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statBox}>
+                <Text style={styles.statLabel}>Net Total</Text>
+                <Text style={styles.netValue}>₱{formatNumber(totals.netTotal)}</Text>
               </View>
             </View>
           </Pressable>
@@ -187,6 +205,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingTop: 10,
     flexDirection: 'row',
+    alignItems: 'center',
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
   },
@@ -195,24 +214,37 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     color: '#64748B',
-    fontSize: f(11),
+    fontSize: f(10),
     fontWeight: '600',
   },
   statValue: {
     marginTop: 2,
     color: '#0F172A',
-    fontSize: f(15),
+    fontSize: f(13),
     fontWeight: '700',
   },
   earnedValue: {
     marginTop: 2,
     color: '#16A34A',
-    fontSize: f(15),
+    fontSize: f(13),
+    fontWeight: '700',
+  },
+  deductionValue: {
+    marginTop: 2,
+    color: '#DC2626',
+    fontSize: f(13),
+    fontWeight: '700',
+  },
+  netValue: {
+    marginTop: 2,
+    color: '#1745D1',
+    fontSize: f(13),
     fontWeight: '700',
   },
   statDivider: {
     width: 1,
-    marginHorizontal: 12,
+    height: 22,
+    marginHorizontal: 6,
     backgroundColor: '#E2E8F0',
   },
   emptyState: {

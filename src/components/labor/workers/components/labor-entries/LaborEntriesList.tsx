@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import type { LaborItem } from '@/types/localModels';
+import type { Deduction, LaborItem } from '@/types/localModels';
 import { f } from '@/utils/fontScale';
 import { formatNumber } from '@/utils/formatNumber';
 
@@ -24,6 +24,8 @@ type DateGroup = {
   products: ProductGroup[];
   dateTotalPieces: number;
   dateTotalEarned: number;
+  deductions: Deduction[];
+  dateTotalDeductions: number;
 };
 
 type Props = {
@@ -38,6 +40,14 @@ type Props = {
   onSelect: (item: LaborItem, type: 'operation' | 'size', id: string) => void;
   onQuantityChange: (itemId: string, quantity: number) => void;
   onDelete: (itemId: string) => void;
+  onAddDeduction: (deduction: {
+    workerId: string;
+    amount: number;
+    label: string;
+    date: string;
+  }) => void;
+  onDeleteDeduction: (id: string, date: string) => void;
+  workerId: string;
 };
 
 export default function LaborEntriesList(props: Props) {
@@ -53,7 +63,30 @@ export default function LaborEntriesList(props: Props) {
     onSelect,
     onQuantityChange,
     onDelete,
+    onAddDeduction,
+    onDeleteDeduction,
+    workerId,
   } = props;
+
+  const [addingForDate, setAddingForDate] = useState<string | null>(null);
+  const [deductionLabel, setDeductionLabel] = useState('');
+  const [deductionAmount, setDeductionAmount] = useState('');
+
+  const handleSaveDeduction = (date: string) => {
+    const amountNum = parseFloat(deductionAmount);
+    if (!deductionLabel.trim() || isNaN(amountNum) || amountNum <= 0) return;
+
+    onAddDeduction({
+      workerId,
+      label: deductionLabel.trim(),
+      amount: amountNum,
+      date,
+    });
+
+    setDeductionLabel('');
+    setDeductionAmount('');
+    setAddingForDate(null);
+  };
 
   return (
     <FlatList
@@ -61,40 +94,115 @@ export default function LaborEntriesList(props: Props) {
       data={groups}
       keyExtractor={(group) => group.date}
       contentContainerStyle={styles.entryListContent}
-      renderItem={({ item: dateGroup }) => (
-        <View style={styles.dateGroupContainer}>
-          <View style={styles.dateGroupHeader}>
-            <View style={styles.dateHeaderBadge}>
-              <Ionicons name="calendar-outline" size={13} color="#1745D1" />
-              <Text style={styles.dateHeaderText}>{dateGroup.formattedLabel}</Text>
-            </View>
-            <Text style={styles.dateHeaderSubtotal}>
-              ₱{formatNumber(dateGroup.dateTotalEarned)} ({dateGroup.dateTotalPieces} pcs)
-            </Text>
-          </View>
+      renderItem={({ item: dateGroup }) => {
+        const netDateEarned = dateGroup.dateTotalEarned - dateGroup.dateTotalDeductions;
+        const isAddingHere = addingForDate === dateGroup.date;
 
-          {dateGroup.products.map((group) => (
-            <LaborProductGroup
-              key={group.productId}
-              productId={group.productId}
-              productName={group.productName}
-              items={group.items}
-              totalPieces={group.productTotalPieces}
-              totalEarned={group.productTotalEarned}
-              operations={operations}
-              sizes={sizes}
-              operationById={operationById}
-              sizeById={sizeById}
-              activePicker={activePicker}
-              setActivePicker={setActivePicker}
-              onAddEntry={(productId, sizeId) => onAddEntry(dateGroup.date, productId, sizeId)}
-              onSelect={onSelect}
-              onQuantityChange={onQuantityChange}
-              onDelete={onDelete}
-            />
-          ))}
-        </View>
-      )}
+        return (
+          <View style={styles.dateGroupContainer}>
+            <View style={styles.dateGroupHeader}>
+              <View style={styles.dateHeaderBadge}>
+                <Ionicons name="calendar-outline" size={13} color="#1745D1" />
+                <Text style={styles.dateHeaderText}>{dateGroup.formattedLabel}</Text>
+              </View>
+              <View style={styles.dateHeaderRight}>
+                <Text style={styles.dateHeaderSubtotal}>
+                  Earned: ₱{formatNumber(dateGroup.dateTotalEarned)} ({dateGroup.dateTotalPieces}{' '}
+                  pcs)
+                </Text>
+                {dateGroup.dateTotalDeductions > 0 && (
+                  <Text style={styles.dateHeaderDeduction}>
+                    - Deductions: ₱{formatNumber(dateGroup.dateTotalDeductions)}
+                  </Text>
+                )}
+                <Text style={styles.dateHeaderNet}>Net: ₱{formatNumber(netDateEarned)}</Text>
+              </View>
+            </View>
+
+            {/* Deductions section inside date group */}
+            <View style={styles.deductionsContainer}>
+              <View style={styles.deductionsHeaderRow}>
+                <Text style={styles.deductionsTitle}>Deductions</Text>
+                <Pressable
+                  style={styles.addDeductionBtn}
+                  onPress={() => {
+                    setAddingForDate(isAddingHere ? null : dateGroup.date);
+                    setDeductionLabel('');
+                    setDeductionAmount('');
+                  }}
+                >
+                  <Ionicons name={isAddingHere ? 'close' : 'add'} size={12} color="#DC2626" />
+                  <Text style={styles.addDeductionBtnText}>
+                    {isAddingHere ? 'Cancel' : 'Add Deduction'}
+                  </Text>
+                </Pressable>
+              </View>
+
+              {isAddingHere && (
+                <View style={styles.deductionFormCard}>
+                  <TextInput
+                    style={[styles.deductionInput, { flex: 2 }]}
+                    placeholder="Reason (e.g. Cash Advance)"
+                    value={deductionLabel}
+                    onChangeText={setDeductionLabel}
+                  />
+                  <TextInput
+                    style={[styles.deductionInput, { flex: 1 }]}
+                    placeholder="Amount"
+                    keyboardType="numeric"
+                    value={deductionAmount}
+                    onChangeText={setDeductionAmount}
+                  />
+                  <Pressable
+                    style={styles.saveDeductionBtn}
+                    onPress={() => handleSaveDeduction(dateGroup.date)}
+                  >
+                    <Text style={styles.saveDeductionBtnText}>Save</Text>
+                  </Pressable>
+                </View>
+              )}
+
+              {dateGroup.deductions.map((ded) => (
+                <View key={ded.id} style={styles.deductionItemRow}>
+                  <Text style={styles.deductionItemLabel} numberOfLines={1}>
+                    • {ded.label}
+                  </Text>
+                  <View style={styles.deductionItemRight}>
+                    <Text style={styles.deductionItemAmount}>-₱{formatNumber(ded.amount)}</Text>
+                    <Pressable
+                      onPress={() => onDeleteDeduction(ded.id, dateGroup.date)}
+                      hitSlop={8}
+                    >
+                      <Ionicons name="trash-outline" size={13} color="#DC2626" />
+                    </Pressable>
+                  </View>
+                </View>
+              ))}
+            </View>
+
+            {dateGroup.products.map((group) => (
+              <LaborProductGroup
+                key={group.productId}
+                productId={group.productId}
+                productName={group.productName}
+                items={group.items}
+                totalPieces={group.productTotalPieces}
+                totalEarned={group.productTotalEarned}
+                operations={operations}
+                sizes={sizes}
+                operationById={operationById}
+                sizeById={sizeById}
+                activePicker={activePicker}
+                setActivePicker={setActivePicker}
+                onAddEntry={(productId, sizeId) => onAddEntry(dateGroup.date, productId, sizeId)}
+                onSelect={onSelect}
+                onQuantityChange={onQuantityChange}
+                onDelete={onDelete}
+              />
+            ))}
+          </View>
+        );
+      }}
       ListEmptyComponent={
         <View style={styles.emptyState}>
           <Text style={styles.emptyTitle}>No labor entries</Text>
@@ -115,12 +223,19 @@ const styles = StyleSheet.create({
   },
   dateGroupContainer: {
     marginBottom: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 10,
+    padding: 12,
   },
   dateGroupHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 8,
+    flexWrap: 'wrap',
+    gap: 6,
   },
   dateHeaderBadge: {
     flexDirection: 'row',
@@ -136,10 +251,112 @@ const styles = StyleSheet.create({
     fontSize: f(12),
     fontWeight: '700',
   },
+  dateHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
   dateHeaderSubtotal: {
     color: '#64748B',
-    fontSize: f(12),
+    fontSize: f(11),
     fontWeight: '600',
+  },
+  dateHeaderDeduction: {
+    color: '#DC2626',
+    fontSize: f(11),
+    fontWeight: '600',
+  },
+  dateHeaderNet: {
+    color: '#0F172A',
+    fontSize: f(11),
+    fontWeight: '700',
+  },
+  deductionsContainer: {
+    marginBottom: 10,
+    padding: 8,
+    backgroundColor: '#FEF2F2',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FEE2E2',
+  },
+  deductionsHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  deductionsTitle: {
+    color: '#991B1B',
+    fontSize: f(12),
+    fontWeight: '700',
+  },
+  addDeductionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#FEE2E2',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  addDeductionBtnText: {
+    color: '#DC2626',
+    fontSize: f(10),
+    fontWeight: '700',
+  },
+  deductionFormCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 6,
+    marginBottom: 6,
+  },
+  deductionInput: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    height: 30,
+    fontSize: f(12),
+    color: '#0F172A',
+  },
+  saveDeductionBtn: {
+    backgroundColor: '#DC2626',
+    paddingHorizontal: 10,
+    height: 30,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveDeductionBtnText: {
+    color: '#FFFFFF',
+    fontSize: f(11),
+    fontWeight: '700',
+  },
+  deductionItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: '#FEE2E2',
+  },
+  deductionItemLabel: {
+    color: '#7F1D1D',
+    fontSize: f(12),
+    flex: 1,
+  },
+  deductionItemRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  deductionItemAmount: {
+    color: '#DC2626',
+    fontSize: f(12),
+    fontWeight: '700',
   },
   emptyState: {
     flexGrow: 1,

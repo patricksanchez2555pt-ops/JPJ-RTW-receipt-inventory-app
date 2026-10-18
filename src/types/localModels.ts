@@ -124,3 +124,12 @@ export type LaborItem = {
   subtotal: number; // quantity * ratePerUnit
   date: string; // Date of work completion
 };
+
+export type Deduction = {
+  id: string;
+  workerId: string;
+  amount: number;
+  label: string;
+  date: string;
+  createdAt: string;
+};

@@ -4,13 +4,15 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { f } from '@/utils/fontScale';
 
+import { useDeductionStore } from '../../../store/useDeductionStore';
 import { useLaborItemStore } from '../../../store/useLaborItemStore';
 import { useLaborRateStore } from '../../../store/useLaborRateStore';
 import { useOperationStore } from '../../../store/useOperationStore';
 import { useProductStore } from '../../../store/useProductStore';
 import { useSizeStore } from '../../../store/useSizeStore';
 import { useWorkerStore } from '../../../store/useWorkerStore';
-import type { LaborItem, Worker } from '../../../types/localModels';
+import type { Deduction, LaborItem, Worker } from '../../../types/localModels';
+import AddDeductionForm from './components/AddDeductionForm';
 import AddLaborItemForm from './components/AddLaborItemForm';
 import LaborEntriesList from './components/labor-entries/LaborEntriesList';
 import WorkerDetailHeader from './components/WorkerDetailHeader';
@@ -35,6 +37,8 @@ interface GroupedDateEntry {
   products: GroupedProductEntry[];
   dateTotalPieces: number;
   dateTotalEarned: number;
+  deductions: Deduction[];
+  dateTotalDeductions: number;
 }
 
 type PickerState = {
@@ -42,6 +46,8 @@ type PickerState = {
   type: 'operation' | 'size';
   productId: string;
 } | null;
+
+type FormMode = 'none' | 'entry' | 'deduction';
 
 const parseDateString = (dateStr: string): Date => {
   const parts = dateStr.split('-');
@@ -89,6 +95,10 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
   const updateLaborItem = useLaborItemStore((state) => state.updateLaborItem);
   const deleteLaborItem = useLaborItemStore((state) => state.deleteLaborItem);
 
+  const deductionsByDate = useDeductionStore((state) => state.deductions);
+  const addDeduction = useDeductionStore((state) => state.addDeduction);
+  const deleteDeduction = useDeductionStore((state) => state.deleteDeduction);
+
   const operations = useOperationStore((state) => state.operations);
   const products = useProductStore((state) => state.products);
   const sizes = useSizeStore((state) => state.sizes);
@@ -96,7 +106,7 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
 
   const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
   const [activePicker, setActivePicker] = useState<PickerState>(null);
-  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [formMode, setFormMode] = useState<FormMode>('none');
 
   const activeRangeDates = useMemo(() => getDatesInRange(startDate, endDate), [startDate, endDate]);
   const activeDateSet = useMemo(() => new Set(activeRangeDates), [activeRangeDates]);
@@ -132,6 +142,16 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
       productMap.get(item.productId)!.push(item);
     });
 
+    activeRangeDates.forEach((dateStr) => {
+      const dateDeductionsObj = deductionsByDate[dateStr] || {};
+      const hasWorkerDeduction = Object.values(dateDeductionsObj).some(
+        (d) => d.workerId === selectedWorker.id,
+      );
+      if (hasWorkerDeduction && !dateMap.has(dateStr)) {
+        dateMap.set(dateStr, new Map());
+      }
+    });
+
     const sortedDates = Array.from(dateMap.keys()).sort(
       (a, b) => parseDateString(b).getTime() - parseDateString(a).getTime(),
     );
@@ -160,21 +180,43 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
         };
       });
 
+      const dateDeductionsMap = deductionsByDate[date] || {};
+      const workerDeductions = Object.values(dateDeductionsMap).filter(
+        (d) => d.workerId === selectedWorker.id,
+      );
+      const dateTotalDeductions = workerDeductions.reduce((sum, d) => sum + d.amount, 0);
+
       return {
         date,
         formattedLabel: getFormattedDateLabel(date),
         products: productEntries,
         dateTotalPieces,
         dateTotalEarned,
+        deductions: workerDeductions,
+        dateTotalDeductions,
       };
     });
-  }, [allItems, selectedWorker, productById, sizeById]);
+  }, [allItems, selectedWorker, productById, sizeById, deductionsByDate, activeRangeDates]);
 
   const getTotals = (workerId: string) => {
     const items = allItems.filter((item) => item.workerId === workerId);
+    const totalEarned = items.reduce((sum, item) => sum + item.subtotal, 0);
+
+    let totalDeductions = 0;
+    activeRangeDates.forEach((dateStr) => {
+      const dateDeductionsObj = deductionsByDate[dateStr] || {};
+      Object.values(dateDeductionsObj).forEach((d) => {
+        if (d.workerId === workerId) {
+          totalDeductions += d.amount;
+        }
+      });
+    });
+
     return {
       totalPieces: items.reduce((sum, item) => sum + item.quantity, 0),
-      totalEarned: items.reduce((sum, item) => sum + item.subtotal, 0),
+      totalEarned,
+      totalDeductions,
+      netTotal: totalEarned - totalDeductions,
     };
   };
 
@@ -220,9 +262,8 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
   };
 
   if (selectedWorker) {
+    const workerTotals = getTotals(selectedWorker.id);
     const workerItems = allItems.filter((item) => item.workerId === selectedWorker.id);
-    const totalPieces = workerItems.reduce((sum, item) => sum + item.quantity, 0);
-    const totalEarnings = workerItems.reduce((sum, item) => sum + item.subtotal, 0);
 
     return (
       <View style={styles.container}>
@@ -230,15 +271,18 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
           worker={selectedWorker}
           startDate={startDate}
           endDate={endDate}
-          totalPieces={totalPieces}
-          totalEarned={totalEarnings}
+          totalPieces={workerTotals.totalPieces}
+          totalEarned={workerTotals.totalEarned}
+          totalDeductions={workerTotals.totalDeductions}
+          netTotal={workerTotals.netTotal}
           onBack={() => {
             setSelectedWorker(null);
             setActivePicker(null);
-            setIsFormVisible(false);
+            setFormMode('none');
           }}
         />
 
+        {/* Section Header with Both Actions */}
         <View style={styles.sectionHeader}>
           <View style={styles.sectionHeaderLeft}>
             <Text style={styles.sectionTitle}>Labor Breakdown</Text>
@@ -246,19 +290,36 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
               <Text style={styles.entryCountText}>{workerItems.length} entries</Text>
             </View>
           </View>
-          <Pressable
-            style={({ pressed }) => [styles.addGlobalEntryBtn, pressed && styles.pressed]}
-            onPress={() => setIsFormVisible((prev) => !prev)}
-          >
-            <Ionicons name={isFormVisible ? 'close' : 'add'} size={14} color="#1745D1" />
-            <Text style={styles.addGlobalEntryBtnText}>
-              {isFormVisible ? 'Cancel' : 'Add Entry'}
-            </Text>
-          </Pressable>
+
+          <View style={styles.actionHeaderButtons}>
+            <Pressable
+              style={({ pressed }) => [styles.addDeductionHeaderBtn, pressed && styles.pressed]}
+              onPress={() => setFormMode((prev) => (prev === 'deduction' ? 'none' : 'deduction'))}
+            >
+              <Ionicons
+                name={formMode === 'deduction' ? 'close' : 'remove-circle-outline'}
+                size={14}
+                color="#DC2626"
+              />
+              <Text style={styles.addDeductionHeaderBtnText}>
+                {formMode === 'deduction' ? 'Cancel' : 'Add Deduction'}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) => [styles.addGlobalEntryBtn, pressed && styles.pressed]}
+              onPress={() => setFormMode((prev) => (prev === 'entry' ? 'none' : 'entry'))}
+            >
+              <Ionicons name={formMode === 'entry' ? 'close' : 'add'} size={14} color="#1745D1" />
+              <Text style={styles.addGlobalEntryBtnText}>
+                {formMode === 'entry' ? 'Cancel' : 'Add Entry'}
+              </Text>
+            </Pressable>
+          </View>
         </View>
 
-        {/* Separated Add Entry Form */}
-        {isFormVisible && (
+        {/* Conditional Add Forms */}
+        {formMode === 'entry' && (
           <AddLaborItemForm
             products={products}
             operations={operations}
@@ -268,9 +329,21 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
             getLaborRate={getLaborRate}
             onSave={(entry) => {
               addLaborItem(entry);
-              setIsFormVisible(false);
+              setFormMode('none');
             }}
-            onCancel={() => setIsFormVisible(false)}
+            onCancel={() => setFormMode('none')}
+          />
+        )}
+
+        {formMode === 'deduction' && (
+          <AddDeductionForm
+            workerId={selectedWorker.id}
+            initialDate={activeRangeDates.length > 0 ? activeRangeDates[0] : startDate}
+            onSave={(deduction) => {
+              addDeduction(deduction);
+              setFormMode('none');
+            }}
+            onCancel={() => setFormMode('none')}
           />
         )}
 
@@ -286,6 +359,9 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
           onSelect={handleUpdateItemSelection}
           onQuantityChange={(itemId, quantity) => updateLaborItem(itemId, { quantity })}
           onDelete={deleteLaborItem}
+          onAddDeduction={(deduction) => addDeduction(deduction)}
+          onDeleteDeduction={(id, date) => deleteDeduction(id, date)}
+          workerId={selectedWorker.id}
         />
       </View>
     );
@@ -339,18 +415,37 @@ const styles = StyleSheet.create({
     fontSize: f(11),
     fontWeight: '700',
   },
+  actionHeaderButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  addDeductionHeaderBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FEE2E2',
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  addDeductionHeaderBtnText: {
+    color: '#DC2626',
+    fontSize: f(11),
+    fontWeight: '700',
+  },
   addGlobalEntryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     backgroundColor: '#EEF2FF',
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 6,
     borderRadius: 8,
   },
   addGlobalEntryBtnText: {
     color: '#1745D1',
-    fontSize: f(12),
+    fontSize: f(11),
     fontWeight: '700',
   },
   pressed: {

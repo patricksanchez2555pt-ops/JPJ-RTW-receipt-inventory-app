@@ -12,6 +12,8 @@ type Props = {
   endDate: string;
   totalPieces: number;
   totalEarned: number;
+  totalDeductions: number;
+  netTotal: number;
   onBack: () => void;
 };
 
@@ -21,6 +23,8 @@ export default function WorkerDetailHeader({
   endDate,
   totalPieces,
   totalEarned,
+  totalDeductions,
+  netTotal,
   onBack,
 }: Props) {
   return (
@@ -65,6 +69,16 @@ export default function WorkerDetailHeader({
           <View style={styles.statBox}>
             <Text style={styles.statLabel}>Earned</Text>
             <Text style={styles.earnedValue}>₱{formatNumber(totalEarned)}</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statBox}>
+            <Text style={styles.statLabel}>Deductions</Text>
+            <Text style={styles.deductionValue}>-₱{formatNumber(totalDeductions)}</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statBox}>
+            <Text style={styles.statLabel}>Net Total</Text>
+            <Text style={styles.netValue}>₱{formatNumber(netTotal)}</Text>
           </View>
         </View>
       </View>
@@ -115,7 +129,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   workerIdentity: {
-    flex: 1.2,
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     paddingRight: 8,
@@ -163,19 +177,31 @@ const styles = StyleSheet.create({
   statValue: {
     marginTop: 1,
     color: '#0F172A',
-    fontSize: f(14),
+    fontSize: f(13),
     fontWeight: '700',
   },
   earnedValue: {
     marginTop: 1,
     color: '#16A34A',
-    fontSize: f(14),
+    fontSize: f(13),
+    fontWeight: '700',
+  },
+  deductionValue: {
+    marginTop: 1,
+    color: '#DC2626',
+    fontSize: f(13),
+    fontWeight: '700',
+  },
+  netValue: {
+    marginTop: 1,
+    color: '#2563EB',
+    fontSize: f(13),
     fontWeight: '700',
   },
   statDivider: {
     width: 1,
     height: 24,
-    marginHorizontal: 10,
+    marginHorizontal: 8,
     backgroundColor: '#E2E8F0',
   },
   pressed: {

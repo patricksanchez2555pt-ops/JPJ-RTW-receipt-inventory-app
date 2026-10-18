@@ -4,7 +4,6 @@ import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { seedInitialData } from '@/store/seedInitData';
 import { useColorStore } from '@/store/useColorStore';
 import { useCustomerPricingStore } from '@/store/useCustomerPricingStore';
 import { useCustomerStore } from '@/store/useCustomerStore';
@@ -171,32 +170,6 @@ export default function DataBackupSettings() {
     } finally {
       setIsImporting(false);
     }
-  }
-
-  function handleSeedData() {
-    Alert.alert(
-      'Seed Initial Data',
-      'This replaces the product, color, and size catalogs and resets seeded labor rates. Existing inventory and transactions will be kept.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Seed Data',
-          style: 'destructive',
-          onPress: () => {
-            try {
-              seedInitialData();
-              Alert.alert('Seed Complete', 'Initial catalog and labor data have been seeded.');
-            } catch (error) {
-              console.error('Seed data error:', error);
-              Alert.alert(
-                'Seed Failed',
-                error instanceof Error ? error.message : 'Unable to seed initial data.',
-              );
-            }
-          },
-        },
-      ],
-    );
   }
 
   function validateBackup(backup: Partial<BackupData>) {
@@ -369,18 +342,6 @@ export default function DataBackupSettings() {
           </Text>
         </Pressable>
       </View>
-
-      <Pressable
-        onPress={handleSeedData}
-        disabled={isExporting || isImporting}
-        style={({ pressed }) => [
-          styles.seedButton,
-          pressed && styles.pressed,
-          (isExporting || isImporting) && styles.disabled,
-        ]}
-      >
-        <Text style={styles.seedButtonText}>Seed Initial Data</Text>
-      </Pressable>
 
       <Text style={styles.warning}>
         Importing a backup replaces all data. Seeding resets product, color, and size catalogs.

@@ -73,6 +73,7 @@ const getDatesInRange = (startStr: string, endStr: string): string[] => {
 };
 
 export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ startDate, endDate }) => {
+  const [selectorsVisible, setSelectorsVisible] = useState(true);
   const PRODUCTS = useProductStore((state) => state.products);
   const [selectedProduct, setSelectedProduct] = useState(PRODUCTS[0] ?? null);
   const productId = selectedProduct?.id ?? '';
@@ -319,29 +320,44 @@ export const LaborMatrixTable: React.FC<LaborMatrixTableProps> = ({ startDate, e
   return (
     <View style={styles.container}>
       {/* Selectors Header Block with Hierarchical Layering */}
-      <View style={styles.selectorsContainer}>
-        <View style={[styles.selectorWrapper, styles.productSelectorLayer]}>
-          <ProductSelector
-            products={PRODUCTS}
-            selectedProduct={selectedProduct}
-            onSelect={(product) => {
-              setSelectedProduct(product);
-              setActiveWorkerPickerOp(null);
-            }}
-          />
-        </View>
+      <View style={styles.selectorSection}>
+        <TouchableOpacity
+          style={styles.selectorToggle}
+          onPress={() => setSelectorsVisible((visible) => !visible)}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.selectorToggleText}>
+            {selectorsVisible ? 'Hide Selectors' : 'Show Selectors'}
+          </Text>
 
-        {selectedProduct && (
-          <View style={[styles.selectorWrapper, styles.colorSelectorLayer]}>
-            <Text style={styles.selectorLabel}>Select Color</Text>
-            <ColorSelector
-              colors={productColors}
-              selectedColor={activeColor}
-              onSelect={(color) => {
-                setSelectedColor(color);
-                setActiveWorkerPickerOp(null);
-              }}
-            />
+          <Text style={styles.selectorToggleIcon}>{selectorsVisible ? '▲' : '▼'}</Text>
+        </TouchableOpacity>
+
+        {selectorsVisible && (
+          <View style={styles.selectorsContainer}>
+            <View style={[styles.selectorWrapper, styles.productSelectorLayer]}>
+              <ProductSelector
+                products={PRODUCTS}
+                selectedProduct={selectedProduct}
+                onSelect={(product) => {
+                  setSelectedProduct(product);
+                  setActiveWorkerPickerOp(null);
+                }}
+              />
+            </View>
+
+            {selectedProduct && (
+              <View style={[styles.selectorWrapper, styles.colorSelectorLayer]}>
+                <ColorSelector
+                  colors={productColors}
+                  selectedColor={activeColor}
+                  onSelect={(color) => {
+                    setSelectedColor(color);
+                    setActiveWorkerPickerOp(null);
+                  }}
+                />
+              </View>
+            )}
           </View>
         )}
       </View>
@@ -568,25 +584,50 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
   },
-  selectorsContainer: {
+
+  selectorSection: {
     marginBottom: 16,
+  },
+
+  selectorToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 10,
+    backgroundColor: '#F3F5F8',
+    borderWidth: 1,
+    borderColor: '#D9DEE8',
+    borderRadius: 8,
+  },
+
+  selectorToggleText: {
+    color: '#06132F',
+    fontSize: f(13),
+    fontWeight: '700',
+  },
+
+  selectorToggleIcon: {
+    color: '#596273',
+    fontSize: f(12),
+  },
+
+  selectorsContainer: {
     gap: 12,
   },
+
   selectorWrapper: {
     position: 'relative',
+    minWidth: 0,
   },
+
   productSelectorLayer: {
     zIndex: 200,
   },
+
   colorSelectorLayer: {
     zIndex: 100,
-  },
-  selectorLabel: {
-    fontSize: f(12),
-    fontWeight: '700',
-    color: '#687284',
-    marginBottom: 6,
-    textTransform: 'uppercase',
   },
   tableContainer: {
     flex: 1,

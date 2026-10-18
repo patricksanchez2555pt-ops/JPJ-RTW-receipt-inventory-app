@@ -1,6 +1,7 @@
 import { ScrollView, StyleSheet } from 'react-native';
 
 import DataBackupSettings from '@/components/settings/DataBackupSettings';
+import DataSeedingSettings from '@/components/settings/DataSeedingSettings';
 import FontScaleSettings from '@/components/settings/FontScaleSettings';
 import PrinterSettings from '@/components/settings/PrinterSettings';
 
@@ -10,6 +11,8 @@ export default function SettingsScreen() {
       <FontScaleSettings />
 
       <DataBackupSettings />
+
+      <DataSeedingSettings />
 
       <PrinterSettings />
     </ScrollView>

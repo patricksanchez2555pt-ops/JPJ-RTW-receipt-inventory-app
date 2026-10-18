@@ -99,6 +99,18 @@ const CONFIG = {
         name: 'Violet',
         hexValue: '#800080',
       },
+      {
+        id: 'jogging-pants-aqua-blue',
+        productId: 'jogging-pants',
+        name: 'Aqua blue',
+        hexValue: '#00FFFF',
+      },
+      {
+        id: 'jogging-pants-battle-green',
+        productId: 'jogging-pants',
+        name: 'Battle green',
+        hexValue: '#4B5320',
+      },
     ] satisfies Color[],
 
     SIZES: [
@@ -189,10 +201,197 @@ const CONFIG = {
     ] satisfies Size[],
   },
 
+  HIPHOP: {
+    PRODUCT: {
+      id: 'hiphop',
+      name: 'Hiphop',
+      createdAt: new Date().toISOString(),
+    } satisfies Product,
+
+    COLORS: [
+      {
+        id: 'hiphop-black',
+        productId: 'hiphop',
+        name: 'Black',
+        hexValue: '#000000',
+      },
+      {
+        id: 'hiphop-gray',
+        productId: 'hiphop',
+        name: 'Gray',
+        hexValue: 'rgb(92, 91, 91)',
+      },
+      {
+        id: 'hiphop-light-blue',
+        productId: 'hiphop',
+        name: 'Light Blue',
+        hexValue: '#64c8ea',
+      },
+      {
+        id: 'hiphop-royal-blue',
+        productId: 'hiphop',
+        name: 'Royal Blue',
+        hexValue: '#0000FF',
+      },
+      {
+        id: 'hiphop-navy-blue',
+        productId: 'hiphop',
+        name: 'Navy Blue',
+        hexValue: '#000080',
+      },
+      {
+        id: 'hiphop-orange',
+        productId: 'hiphop',
+        name: 'Orange',
+        hexValue: '#FA5000',
+      },
+      {
+        id: 'hiphop-red',
+        productId: 'hiphop',
+        name: 'Red',
+        hexValue: '#FF0000',
+      },
+      {
+        id: 'hiphop-maroon',
+        productId: 'hiphop',
+        name: 'Maroon',
+        hexValue: '#680000',
+      },
+      {
+        id: 'hiphop-white',
+        productId: 'hiphop',
+        name: 'White',
+        hexValue: '#FFFFFF',
+      },
+      {
+        id: 'hiphop-green',
+        productId: 'hiphop',
+        name: 'Green',
+        hexValue: '#008000',
+      },
+      {
+        id: 'hiphop-yellow',
+        productId: 'hiphop',
+        name: 'Yellow',
+        hexValue: '#FFFF00',
+      },
+      {
+        id: 'hiphop-pink',
+        productId: 'hiphop',
+        name: 'Pink',
+        hexValue: '#FFC0CB',
+      },
+      {
+        id: 'hiphop-violet',
+        productId: 'hiphop',
+        name: 'Violet',
+        hexValue: '#800080',
+      },
+      {
+        id: 'hiphop-aqua-blue',
+        productId: 'hiphop',
+        name: 'Aqua blue',
+        hexValue: '#00FFFF',
+      },
+      {
+        id: 'hiphop-battle-green',
+        productId: 'hiphop',
+        name: 'Battle green',
+        hexValue: '#4B5320',
+      },
+    ] satisfies Color[],
+
+    SIZES: [
+      {
+        id: 'hiphop-4',
+        productId: 'hiphop',
+        name: '4',
+        price: 75,
+      },
+      {
+        id: 'hiphop-6',
+        productId: 'hiphop',
+        name: '6',
+        price: 80,
+      },
+      {
+        id: 'hiphop-8',
+        productId: 'hiphop',
+        name: '8',
+        price: 85,
+      },
+      {
+        id: 'hiphop-10',
+        productId: 'hiphop',
+        name: '10',
+        price: 90,
+      },
+      {
+        id: 'hiphop-12',
+        productId: 'hiphop',
+        name: '12',
+        price: 95,
+      },
+      {
+        id: 'hiphop-14',
+        productId: 'hiphop',
+        name: '14',
+        price: 100,
+      },
+      {
+        id: 'hiphop-16',
+        productId: 'hiphop',
+        name: '16',
+        price: 105,
+      },
+      {
+        id: 'hiphop-18',
+        productId: 'hiphop',
+        name: '18',
+        price: 110,
+      },
+      {
+        id: 'hiphop-20',
+        productId: 'hiphop',
+        name: '20',
+        price: 115,
+      },
+      {
+        id: 'hiphop-s',
+        productId: 'hiphop',
+        name: 'S',
+        price: 125,
+      },
+      {
+        id: 'hiphop-m',
+        productId: 'hiphop',
+        name: 'M',
+        price: 130,
+      },
+      {
+        id: 'hiphop-l',
+        productId: 'hiphop',
+        name: 'L',
+        price: 135,
+      },
+      {
+        id: 'hiphop-xl',
+        productId: 'hiphop',
+        name: 'XL',
+        price: 140,
+      },
+      {
+        id: 'hiphop-2x',
+        productId: 'hiphop',
+        name: '2X',
+        price: 150,
+      },
+    ] satisfies Size[],
+  },
   LEOTARD_LONG: {
     PRODUCT: {
       id: 'leotard-long',
-      name: 'Leotard - Long Sleeves',
+      name: 'L/S',
       createdAt: new Date().toISOString(),
     } satisfies Product,
 
@@ -290,7 +489,7 @@ const CONFIG = {
   LEOTARD_SHORT: {
     PRODUCT: {
       id: 'leotard-short',
-      name: 'Leotard - Short Sleeves',
+      name: 'S/S',
       createdAt: new Date().toISOString(),
     } satisfies Product,
 
@@ -459,6 +658,104 @@ const CONFIG = {
     ] satisfies Size[],
   },
 
+  JEANS: {
+    PRODUCT: {
+      id: 'jeans',
+      name: 'Jeans',
+      createdAt: new Date().toISOString(),
+    } satisfies Product,
+
+    COLORS: [
+      {
+        id: 'jeans-black',
+        productId: 'jeans',
+        name: 'Black',
+        hexValue: '#000000',
+      },
+      {
+        id: 'jeans-white',
+        productId: 'jeans',
+        name: 'White',
+        hexValue: '#FFFFFF',
+      },
+      {
+        id: 'jeans-skin-tone',
+        productId: 'jeans',
+        name: 'Skin tone',
+        hexValue: '#F2C08E',
+      },
+    ] satisfies Color[],
+
+    SIZES: [
+      {
+        id: 'jeans-s',
+        productId: 'jeans',
+        name: 'S',
+        price: 65,
+      },
+      {
+        id: 'jeans-m',
+        productId: 'jeans',
+        name: 'M',
+        price: 70,
+      },
+      {
+        id: 'jeans-l',
+        productId: 'jeans',
+        name: 'L',
+        price: 75,
+      },
+      {
+        id: 'jeans-xl',
+        productId: 'jeans',
+        name: 'XL',
+        price: 80,
+      },
+      {
+        id: 'jeans-2x',
+        productId: 'jeans',
+        name: '2X',
+        price: 85,
+      },
+      {
+        id: 'jeans-a',
+        productId: 'jeans',
+        name: 'A',
+        price: 90,
+      },
+      {
+        id: 'jeans-adult-s',
+        productId: 'jeans',
+        name: 'A - S',
+        price: 90,
+      },
+      {
+        id: 'jeans-adult-m',
+        productId: 'jeans',
+        name: 'A - M',
+        price: 95,
+      },
+      {
+        id: 'jeans-adult-l',
+        productId: 'jeans',
+        name: 'A - L',
+        price: 100,
+      },
+      {
+        id: 'jeans-adult-xl',
+        productId: 'jeans',
+        name: 'A - XL',
+        price: 105,
+      },
+      {
+        id: 'jeans-adult-2x',
+        productId: 'jeans',
+        name: 'A - 2X',
+        price: 110,
+      },
+    ] satisfies Size[],
+  },
+
   TIGHTS_SAKBET: {
     PRODUCT: {
       id: 'tights-sakbet',
@@ -560,7 +857,7 @@ const CONFIG = {
   LEOTARD_SET_LONG: {
     PRODUCT: {
       id: 'leotard-set-long',
-      name: 'Leotard Set - Long Sleeves',
+      name: 'L/S - set',
       createdAt: new Date().toISOString(),
     } satisfies Product,
 
@@ -658,7 +955,7 @@ const CONFIG = {
   LEOTARD_SET_SHORT: {
     PRODUCT: {
       id: 'leotard-set-short',
-      name: 'Leotard Set - Short Sleeves',
+      name: 'S/S - set',
       createdAt: new Date().toISOString(),
     } satisfies Product,
 
@@ -754,19 +1051,94 @@ const CONFIG = {
   },
 } as const;
 
-const JOGGING_PANTS_LABOR_OPERATIONS = ['Highspeed', 'Edging', 'Piping', 'Gathering'] as const;
-const JOGGING_PANTS_WORKERS = ['Patrick', 'Joseph'] as const;
-const JOGGING_PANTS_LABOR_RATE = 5;
+type LaborOperationSeed = {
+  productId: string;
+  name: string;
+  rateForSize: (size: Size) => number | undefined;
+};
 
-// ==========================================
-// DERIVED DATA
-// ==========================================
+type LaborWorkerSeed = {
+  name: string;
+  operationNames: string[];
+};
 
-const PRODUCTS: Product[] = Object.values(CONFIG).map(({ PRODUCT }) => PRODUCT);
+const joggingPantsSizeRates = (kidsRate: number, adultRate: number) => (size: Size) => {
+  const numericSize = Number(size.name);
 
-const COLORS: Color[] = Object.values(CONFIG).flatMap(({ COLORS }) => COLORS);
+  if (/^\d+$/.test(size.name) && numericSize >= 4 && numericSize <= 20) {
+    return kidsRate;
+  }
 
-const SIZES: Size[] = Object.values(CONFIG).flatMap(({ SIZES }) => SIZES);
+  if (['S', 'M', 'L', 'XL', '2X'].includes(size.name)) {
+    return adultRate;
+  }
+
+  return undefined;
+};
+
+const fixedSizeRate = (rate: number) => (_size: Size) => rate;
+
+const LABOR_OPERATION_SEEDS: LaborOperationSeed[] = [
+  {
+    productId: 'jogging-pants',
+    name: 'Edging',
+    rateForSize: joggingPantsSizeRates(2.75, 3.5),
+  },
+
+  {
+    productId: 'jogging-pants',
+    name: 'Highspeed',
+    rateForSize: joggingPantsSizeRates(2.25, 1.5),
+  },
+  {
+    productId: 'jogging-pants',
+    name: 'Piping',
+    rateForSize: joggingPantsSizeRates(1.25, 1.25),
+  },
+  {
+    productId: 'hiphop',
+    name: 'Edging',
+    rateForSize: joggingPantsSizeRates(2.25, 2.25),
+  },
+  {
+    productId: 'hiphop',
+    name: 'Highspeed',
+    rateForSize: joggingPantsSizeRates(3, 2.25),
+  },
+  {
+    productId: 'hiphop',
+    name: 'Piping',
+    rateForSize: joggingPantsSizeRates(1.25, 1.25),
+  },
+  ...(['leotard-short', 'leotard-long'] as const).flatMap((productId) => [
+    { productId, name: 'Edging', rateForSize: fixedSizeRate(3) },
+    { productId, name: 'Highspeed', rateForSize: fixedSizeRate(1.25) },
+    { productId, name: 'Piping', rateForSize: fixedSizeRate(1.5) },
+  ]),
+  { productId: 'tights-sakbet', name: 'Edging', rateForSize: fixedSizeRate(2) },
+  { productId: 'tights-sakbet', name: 'Highspeed', rateForSize: fixedSizeRate(3) },
+  {
+    productId: 'jeans',
+    name: 'Edging',
+    rateForSize: fixedSizeRate(1.5),
+  },
+  {
+    productId: 'jeans',
+    name: 'Highspeed',
+    rateForSize: fixedSizeRate(2),
+  },
+];
+
+const LABOR_WORKER_SEEDS: LaborWorkerSeed[] = [
+  { name: 'Riza', operationNames: ['Edging'] },
+  { name: 'Alex', operationNames: ['Edging'] },
+  { name: 'Mel', operationNames: ['Edging'] },
+  { name: 'Xtin', operationNames: ['Edging'] },
+  { name: 'Jef', operationNames: ['Highspeed'] },
+  { name: 'Lani', operationNames: ['Highspeed'] },
+  { name: 'Ligaya', operationNames: ['Piping'] },
+  { name: 'Carmen', operationNames: ['Piping'] },
+];
 
 // ==========================================
 // CUSTOMER DATA
@@ -911,7 +1283,7 @@ const CUSTOMER_DATA = {
 // SEED CUSTOMERS
 // ==========================================
 
-function seedCustomers() {
+export function seedCustomers() {
   const customerStore = useCustomerStore.getState();
   const customerPricingStore = useCustomerPricingStore.getState();
 
@@ -950,27 +1322,33 @@ function seedCustomers() {
   });
 }
 
-function seedJoggingPantsLabor() {
+export function seedLaborData() {
   const operationStore = useOperationStore.getState();
-  const operationsByName = new Map(
-    operationStore
-      .getOperationsByProductId('jogging-pants')
-      .map((operation) => [operation.name, operation]),
-  );
+  const operationIdsByProductAndName = new Map<string, string>();
+  const operationIdsByName = new Map<string, string[]>();
 
-  const operations = JOGGING_PANTS_LABOR_OPERATIONS.map(
-    (name) =>
-      operationsByName.get(name) ??
+  LABOR_OPERATION_SEEDS.forEach(({ productId, name }) => {
+    const existingOperation = operationStore
+      .getOperationsByProductId(productId)
+      .find((operation) => operation.name.toLowerCase() === name.toLowerCase());
+    const operation =
+      existingOperation ??
       operationStore.addOperation({
-        productId: 'jogging-pants',
+        productId,
         name,
-      }),
-  );
-  const defaultOperations = operations.map((operation) => operation.id);
+      });
+    const nameKey = name.toLowerCase();
+
+    operationIdsByProductAndName.set(`${productId}:${nameKey}`, operation.id);
+    operationIdsByName.set(nameKey, [...(operationIdsByName.get(nameKey) ?? []), operation.id]);
+  });
 
   const workerStore = useWorkerStore.getState();
 
-  JOGGING_PANTS_WORKERS.forEach((name) => {
+  LABOR_WORKER_SEEDS.forEach(({ name, operationNames }) => {
+    const defaultOperations = operationNames.flatMap(
+      (operationName) => operationIdsByName.get(operationName.toLowerCase()) ?? [],
+    );
     const existingWorker = workerStore
       .getAllWorkers()
       .find((worker) => worker.name.toLowerCase() === name.toLowerCase());
@@ -985,15 +1363,25 @@ function seedJoggingPantsLabor() {
 
   const laborRateStore = useLaborRateStore.getState();
 
-  CONFIG.JOGGING_PANTS.SIZES.forEach((size) => {
-    operations.forEach((operation) => {
-      laborRateStore.addLaborRate({
-        productId: 'jogging-pants',
-        sizeId: size.id,
-        operationId: operation.id,
-        ratePerUnit: JOGGING_PANTS_LABOR_RATE,
+  const sizes = useSizeStore.getState().sizes;
+
+  LABOR_OPERATION_SEEDS.forEach(({ productId, name, rateForSize }) => {
+    const operationId = operationIdsByProductAndName.get(`${productId}:${name.toLowerCase()}`);
+    if (!operationId) return;
+
+    sizes
+      .filter((size) => size.productId === productId)
+      .forEach((size) => {
+        const ratePerUnit = rateForSize(size);
+        if (ratePerUnit === undefined) return;
+
+        laborRateStore.addLaborRate({
+          productId,
+          sizeId: size.id,
+          operationId,
+          ratePerUnit,
+        });
       });
-    });
   });
 }
 
@@ -1001,22 +1389,38 @@ function seedJoggingPantsLabor() {
 // SEED INITIAL DATA
 // ==========================================
 
+export type ProductConfigKey = keyof typeof CONFIG;
+
+export function seedProductConfig(configKey: ProductConfigKey) {
+  const config = CONFIG[configKey];
+  const product = config.PRODUCT;
+  const colors = config.COLORS;
+  const sizes = config.SIZES;
+
+  // Add or update only the selected product.
+  useProductStore.setState((state) => ({
+    products: [...state.products.filter((item) => item.id !== product.id), product],
+  }));
+
+  // Add or update only this product's colors.
+  useColorStore.setState((state) => ({
+    colors: [...state.colors.filter((item) => item.productId !== product.id), ...colors],
+  }));
+
+  // Add or update only this product's sizes.
+  useSizeStore.setState((state) => ({
+    sizes: [...state.sizes.filter((item) => item.productId !== product.id), ...sizes],
+  }));
+}
+
 export function seedInitialData() {
-  const productStore = useProductStore.getState();
-  const colorStore = useColorStore.getState();
-  const sizeStore = useSizeStore.getState();
+  // Seed every product configuration.
+  (Object.keys(CONFIG) as ProductConfigKey[]).forEach((configKey) => {
+    seedProductConfig(configKey);
+  });
 
-  // Seed products.
-  productStore.setAllProducts(PRODUCTS);
-
-  // Seed colors.
-  colorStore.setAllColors(COLORS);
-
-  // Seed sizes.
-  sizeStore.setAllSizes(SIZES);
-
-  // Seed Jogging Pants labor operations, workers, and rates.
-  seedJoggingPantsLabor();
+  // Seed labor operations, worker assignments, and labor rates.
+  seedLaborData();
 
   // Seed customers and customer-specific pricing.
   seedCustomers();

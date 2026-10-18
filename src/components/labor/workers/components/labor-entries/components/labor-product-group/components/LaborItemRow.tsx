@@ -70,7 +70,7 @@ export default function LaborItemRow({
           <Ionicons name={isSizeOpen ? 'chevron-up' : 'chevron-down'} size={10} color="#64748B" />
         </Pressable>
 
-        <View style={[styles.colRate, styles.editableQtyContainer]}>
+        <View style={[styles.colRate]}>
           <TextInput
             style={styles.quantityInput}
             keyboardType="number-pad"
@@ -156,13 +156,12 @@ const styles = StyleSheet.create({
     paddingRight: 6,
   },
   colSize: {
-    maxWidth: 75,
+    width: 150,
   },
   colRate: {
     flex: 2,
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
+    alignItems: 'flex-start',
     paddingRight: 6,
     gap: 4,
   },
@@ -204,9 +203,8 @@ const styles = StyleSheet.create({
     fontSize: f(11),
     fontWeight: '600',
   },
-  editableQtyContainer: {},
   quantityInput: {
-    width: 40,
+    width: 100,
     height: 32,
     textAlign: 'center',
     fontSize: f(13),

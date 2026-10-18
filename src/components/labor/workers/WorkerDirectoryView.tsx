@@ -1,5 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { f } from '@/utils/fontScale';
 
@@ -10,6 +11,7 @@ import { useProductStore } from '../../../store/useProductStore';
 import { useSizeStore } from '../../../store/useSizeStore';
 import { useWorkerStore } from '../../../store/useWorkerStore';
 import type { LaborItem, Worker } from '../../../types/localModels';
+import AddLaborItemForm from './components/AddLaborItemForm';
 import LaborEntriesList from './components/labor-entries/LaborEntriesList';
 import WorkerDetailHeader from './components/WorkerDetailHeader';
 import WorkerList from './components/WorkerList';
@@ -94,6 +96,7 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
 
   const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
   const [activePicker, setActivePicker] = useState<PickerState>(null);
+  const [isFormVisible, setIsFormVisible] = useState(false);
 
   const activeRangeDates = useMemo(() => getDatesInRange(startDate, endDate), [startDate, endDate]);
   const activeDateSet = useMemo(() => new Set(activeRangeDates), [activeRangeDates]);
@@ -183,11 +186,12 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
     if (!productOperations.length || !productSizes.length) return;
 
     const operationId = productOperations[0].id;
-    const rate = getLaborRate(productId, sizeId, operationId);
+    const targetSizeId = sizeId || productSizes[0].id;
+    const rate = getLaborRate(productId, targetSizeId, operationId);
 
     addLaborItem({
       productId,
-      sizeId,
+      sizeId: targetSizeId,
       operationId,
       workerId: selectedWorker.id,
       date,
@@ -231,15 +235,44 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
           onBack={() => {
             setSelectedWorker(null);
             setActivePicker(null);
+            setIsFormVisible(false);
           }}
         />
 
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Labor Breakdown</Text>
-          <View style={styles.entryCount}>
-            <Text style={styles.entryCountText}>{workerItems.length} entries</Text>
+          <View style={styles.sectionHeaderLeft}>
+            <Text style={styles.sectionTitle}>Labor Breakdown</Text>
+            <View style={styles.entryCount}>
+              <Text style={styles.entryCountText}>{workerItems.length} entries</Text>
+            </View>
           </View>
+          <Pressable
+            style={({ pressed }) => [styles.addGlobalEntryBtn, pressed && styles.pressed]}
+            onPress={() => setIsFormVisible((prev) => !prev)}
+          >
+            <Ionicons name={isFormVisible ? 'close' : 'add'} size={14} color="#1745D1" />
+            <Text style={styles.addGlobalEntryBtnText}>
+              {isFormVisible ? 'Cancel' : 'Add Entry'}
+            </Text>
+          </Pressable>
         </View>
+
+        {/* Separated Add Entry Form */}
+        {isFormVisible && (
+          <AddLaborItemForm
+            products={products}
+            operations={operations}
+            sizes={sizes}
+            initialDate={activeRangeDates.length > 0 ? activeRangeDates[0] : startDate}
+            workerId={selectedWorker.id}
+            getLaborRate={getLaborRate}
+            onSave={(entry) => {
+              addLaborItem(entry);
+              setIsFormVisible(false);
+            }}
+            onCancel={() => setIsFormVisible(false)}
+          />
+        )}
 
         <LaborEntriesList
           groups={groupedWorkerEntries}
@@ -249,7 +282,7 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
           sizeById={sizeById}
           activePicker={activePicker}
           setActivePicker={setActivePicker}
-          onAddEntry={handleAddLaborItemForProduct}
+          onAddEntry={(date, productId) => handleAddLaborItemForProduct(date, productId, '')}
           onSelect={handleUpdateItemSelection}
           onQuantityChange={(itemId, quantity) => updateLaborItem(itemId, { quantity })}
           onDelete={deleteLaborItem}
@@ -283,6 +316,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  sectionHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   sectionTitle: {
     color: '#0F172A',
     fontSize: f(15),
@@ -300,5 +338,22 @@ const styles = StyleSheet.create({
     color: '#475569',
     fontSize: f(11),
     fontWeight: '700',
+  },
+  addGlobalEntryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#EEF2FF',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  addGlobalEntryBtnText: {
+    color: '#1745D1',
+    fontSize: f(12),
+    fontWeight: '700',
+  },
+  pressed: {
+    opacity: 0.7,
   },
 });

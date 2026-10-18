@@ -4,7 +4,7 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-nativ
 import { f } from '@/utils/fontScale';
 
 import { LaborMatrixTable } from './LaborMatrixTable';
-import { WorkerDirectoryView } from './WorkerDirectoryView';
+import { WorkerDirectoryView } from './workers/WorkerDirectoryView';
 
 // Helper to format Date instance to MM-DD-YYYY string safely in local time
 const formatDateToMMDDYYYY = (date: Date): string => {
@@ -182,7 +182,7 @@ export default function LaborManagementScreen() {
         {activeTab === 'matrix' ? (
           <LaborMatrixTable startDate={startDate} endDate={endDate} />
         ) : (
-          <WorkerDirectoryView />
+          <WorkerDirectoryView startDate={startDate} endDate={endDate} />
         )}
       </View>
     </View>

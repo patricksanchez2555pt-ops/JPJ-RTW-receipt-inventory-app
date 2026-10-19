@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -15,10 +16,10 @@ export default function CustomerPricing({ customerId }: Props) {
   const sizes = useSizeStore((state) => state.sizes);
 
   /*
-   * Subscribe directly to the actual saved pricing state.
+- Subscribe directly to the actual saved pricing state.
    *
-   * This ensures the component re-renders immediately
-   * whenever a customer price is added, updated, or deleted.
+- This ensures the component re-renders immediately
+- whenever a customer price is added, updated, or deleted.
    */
   const customerPrices = useCustomerPricingStore((state) => state.customerPrices);
 
@@ -31,16 +32,28 @@ export default function CustomerPricing({ customerId }: Props) {
   const deleteCustomerPrice = useCustomerPricingStore((state) => state.deleteCustomerPrice);
 
   /*
-   * Stores values currently being edited.
+- Stores values currently being edited.
    *
-   * We intentionally keep these separate from the saved
-   * Zustand values so typing does not immediately modify
-   * the persisted store on every keystroke.
+- We intentionally keep these separate from the saved
+- Zustand values so typing does not immediately modify
+- the persisted store on every keystroke.
    */
   const [editingPrices, setEditingPrices] = useState<Record<string, string>>({});
 
   /*
-   * Get only the saved prices for this customer.
+- Track collapsed product sections by product ID.
+   */
+  const [collapsedProducts, setCollapsedProducts] = useState<Record<string, boolean>>({});
+
+  const toggleProductCollapse = (productId: string) => {
+    setCollapsedProducts((current) => ({
+      ...current,
+      [productId]: !current[productId],
+    }));
+  };
+
+  /*
+- Get only the saved prices for this customer.
    */
   const selectedCustomerPrices = useMemo(
     () => customerPrices.filter((customerPrice) => customerPrice.customerId === customerId),
@@ -48,10 +61,10 @@ export default function CustomerPricing({ customerId }: Props) {
   );
 
   /*
-   * Convert saved customer prices into a quick lookup map.
+- Convert saved customer prices into a quick lookup map.
    *
-   * productId + sizeId uniquely identifies a price
-   * for the selected customer.
+- productId + sizeId uniquely identifies a price
+- for the selected customer.
    */
   const customerPriceMap = useMemo(() => {
     const map: Record<string, number> = {};
@@ -64,7 +77,7 @@ export default function CustomerPricing({ customerId }: Props) {
   }, [selectedCustomerPrices]);
 
   /*
-   * Group sizes by product.
+- Group sizes by product.
    */
   const productSizes = useMemo(() => {
     return products.map((product) => ({
@@ -74,35 +87,35 @@ export default function CustomerPricing({ customerId }: Props) {
   }, [products, sizes]);
 
   /*
-   * Create a unique key for each input.
+- Create a unique key for each input.
    *
-   * customerId is included so values cannot be mixed
-   * when switching between customers.
+- customerId is included so values cannot be mixed
+- when switching between customers.
    */
   const getEditingKey = (productId: string, sizeId: string) => {
     return `${customerId}-${productId}-${sizeId}`;
   };
 
   /*
-   * Get the value that should currently be displayed
-   * inside the input.
+- Get the value that should currently be displayed
+- inside the input.
    */
   const getPriceValue = (productId: string, sizeId: string) => {
     const editingKey = getEditingKey(productId, sizeId);
 
     /*
-     * If the user is currently editing this field,
-     * always display the local editing value.
+- If the user is currently editing this field,
+- always display the local editing value.
      */
     if (editingKey in editingPrices) {
       return editingPrices[editingKey];
     }
 
     /*
-     * Otherwise display the saved customer price.
+- Otherwise display the saved customer price.
      *
-     * If there is no override, leave the input blank
-     * so the placeholder shows the default price.
+- If there is no override, leave the input blank
+- so the placeholder shows the default price.
      */
     const customerPrice = customerPriceMap[`${productId}-${sizeId}`];
 
@@ -110,16 +123,16 @@ export default function CustomerPricing({ customerId }: Props) {
   };
 
   /*
-   * Handle typing into the price input.
+- Handle typing into the price input.
    */
   const handlePriceChange = (productId: string, sizeId: string, value: string) => {
     /*
-     * Allow numbers and decimal points only.
+- Allow numbers and decimal points only.
      */
     const sanitized = value.replace(/[^0-9.]/g, '');
 
     /*
-     * Prevent multiple decimal points.
+- Prevent multiple decimal points.
      */
     const parts = sanitized.split('.');
 
@@ -134,7 +147,7 @@ export default function CustomerPricing({ customerId }: Props) {
   };
 
   /*
-   * Remove the local editing value for an input.
+- Remove the local editing value for an input.
    */
   const clearEditingPrice = (productId: string, sizeId: string) => {
     const editingKey = getEditingKey(productId, sizeId);
@@ -149,8 +162,8 @@ export default function CustomerPricing({ customerId }: Props) {
   };
 
   /*
-   * Reset the customer price back to the product's
-   * default price.
+- Reset the customer price back to the product's
+- default price.
    */
   const handleReset = (productId: string, sizeId: string) => {
     clearEditingPrice(productId, sizeId);
@@ -163,14 +176,14 @@ export default function CustomerPricing({ customerId }: Props) {
   };
 
   /*
-   * Save the price when the input loses focus.
+- Save the price when the input loses focus.
    */
   const handleBlur = (productId: string, sizeId: string, defaultPrice: number) => {
     const editingKey = getEditingKey(productId, sizeId);
 
     /*
-     * This input was not changed, so there is
-     * nothing to save.
+- This input was not changed, so there is
+- nothing to save.
      */
     if (!(editingKey in editingPrices)) {
       return;
@@ -183,7 +196,7 @@ export default function CustomerPricing({ customerId }: Props) {
     const existing = getCustomerPrice(customerId, productId, sizeId);
 
     /*
-     * Blank input means use the default price.
+- Blank input means use the default price.
      */
     if (!Number.isFinite(customPrice)) {
       if (existing) {
@@ -196,8 +209,8 @@ export default function CustomerPricing({ customerId }: Props) {
     }
 
     /*
-     * If the customer price matches the default,
-     * don't store an unnecessary override.
+- If the customer price matches the default,
+- don't store an unnecessary override.
      */
     if (customPrice === defaultPrice) {
       if (existing) {
@@ -210,7 +223,7 @@ export default function CustomerPricing({ customerId }: Props) {
     }
 
     /*
-     * Update an existing customer-specific price.
+- Update an existing customer-specific price.
      */
     if (existing) {
       updateCustomerPrice(existing.id, {
@@ -218,7 +231,7 @@ export default function CustomerPricing({ customerId }: Props) {
       });
     } else {
       /*
-       * Create a new customer-specific price.
+- Create a new customer-specific price.
        */
       addCustomerPrice({
         customerId,
@@ -229,11 +242,11 @@ export default function CustomerPricing({ customerId }: Props) {
     }
 
     /*
-     * Remove the temporary editing value.
+- Remove the temporary editing value.
      *
-     * The input will now get its value from
-     * customerPriceMap, which comes directly from
-     * the Zustand store.
+- The input will now get its value from
+- customerPriceMap, which comes directly from
+- the Zustand store.
      */
     clearEditingPrice(productId, sizeId);
   };
@@ -255,70 +268,86 @@ export default function CustomerPricing({ customerId }: Props) {
           <Text style={styles.emptyText}>Create products and sizes first.</Text>
         </View>
       ) : (
-        productSizes.map(({ product, sizes: productSizes }) => (
-          <View key={product.id} style={styles.productSection}>
-            <Text style={styles.productTitle}>{product.name}</Text>
+        productSizes.map(({ product, sizes: productSizes }) => {
+          const isCollapsed = !collapsedProducts[product.id];
 
-            {productSizes.length === 0 ? (
-              <Text style={styles.noSizes}>No sizes configured.</Text>
-            ) : (
-              <View style={styles.table}>
-                {/* TABLE HEADER */}
-                <View style={styles.tableHeader}>
-                  <Text style={[styles.headerText, styles.sizeColumn]}>Size</Text>
+          return (
+            <View key={product.id} style={styles.productSection}>
+              <Pressable
+                style={styles.productHeaderRow}
+                onPress={() => toggleProductCollapse(product.id)}
+              >
+                <Text style={styles.productTitle}>{product.name}</Text>
+                <Ionicons
+                  name={isCollapsed ? 'chevron-down' : 'chevron-up'}
+                  size={18}
+                  color="#4B5563"
+                />
+              </Pressable>
 
-                  <Text style={[styles.headerText, styles.defaultColumn]}>Default</Text>
+              {!isCollapsed &&
+                (productSizes.length === 0 ? (
+                  <Text style={styles.noSizes}>No sizes configured.</Text>
+                ) : (
+                  <View style={styles.table}>
+                    {/* TABLE HEADER */}
+                    <View style={styles.tableHeader}>
+                      <Text style={[styles.headerText, styles.sizeColumn]}>Size</Text>
 
-                  <Text style={[styles.headerText, styles.customColumn]}>Customer Price</Text>
+                      <Text style={[styles.headerText, styles.defaultColumn]}>Default</Text>
 
-                  <View style={styles.actionColumn} />
-                </View>
+                      <Text style={[styles.headerText, styles.customColumn]}>Customer Price</Text>
 
-                {/* SIZE ROWS */}
-                {productSizes.map((size) => {
-                  const savedPriceKey = `${product.id}-${size.id}`;
-
-                  const editingKey = getEditingKey(product.id, size.id);
-
-                  const value = getPriceValue(product.id, size.id);
-
-                  const hasCustomPrice =
-                    editingKey in editingPrices || customerPriceMap[savedPriceKey] !== undefined;
-
-                  return (
-                    <View key={size.id} style={styles.tableRow}>
-                      <Text style={styles.sizeText}>{size.name}</Text>
-
-                      <Text style={styles.defaultPrice}>₱{size.price.toFixed(2)}</Text>
-
-                      <View style={styles.priceInputWrapper}>
-                        <Text style={styles.currency}>₱</Text>
-
-                        <TextInput
-                          value={value}
-                          onChangeText={(text) => handlePriceChange(product.id, size.id, text)}
-                          onBlur={() => handleBlur(product.id, size.id, size.price)}
-                          placeholder={size.price.toFixed(2)}
-                          placeholderTextColor="#9AA2AF"
-                          keyboardType="decimal-pad"
-                          style={styles.priceInput}
-                        />
-                      </View>
-
-                      <View style={styles.actionColumn}>
-                        {hasCustomPrice ? (
-                          <Pressable onPress={() => handleReset(product.id, size.id)}>
-                            <Text style={styles.resetText}>Default</Text>
-                          </Pressable>
-                        ) : null}
-                      </View>
+                      <View style={styles.actionColumn} />
                     </View>
-                  );
-                })}
-              </View>
-            )}
-          </View>
-        ))
+
+                    {/* SIZE ROWS */}
+                    {productSizes.map((size) => {
+                      const savedPriceKey = `${product.id}-${size.id}`;
+
+                      const editingKey = getEditingKey(product.id, size.id);
+
+                      const value = getPriceValue(product.id, size.id);
+
+                      const hasCustomPrice =
+                        editingKey in editingPrices ||
+                        customerPriceMap[savedPriceKey] !== undefined;
+
+                      return (
+                        <View key={size.id} style={styles.tableRow}>
+                          <Text style={styles.sizeText}>{size.name}</Text>
+
+                          <Text style={styles.defaultPrice}>₱{size.price.toFixed(2)}</Text>
+
+                          <View style={styles.priceInputWrapper}>
+                            <Text style={styles.currency}>₱</Text>
+
+                            <TextInput
+                              value={value}
+                              onChangeText={(text) => handlePriceChange(product.id, size.id, text)}
+                              onBlur={() => handleBlur(product.id, size.id, size.price)}
+                              placeholder={size.price.toFixed(2)}
+                              placeholderTextColor="#9AA2AF"
+                              keyboardType="decimal-pad"
+                              style={styles.priceInput}
+                            />
+                          </View>
+
+                          <View style={styles.actionColumn}>
+                            {hasCustomPrice ? (
+                              <Pressable onPress={() => handleReset(product.id, size.id)}>
+                                <Text style={styles.resetText}>Default</Text>
+                              </Pressable>
+                            ) : null}
+                          </View>
+                        </View>
+                      );
+                    })}
+                  </View>
+                ))}
+            </View>
+          );
+        })
       )}
     </View>
   );
@@ -355,9 +384,16 @@ const styles = StyleSheet.create({
     marginTop: 18,
   },
 
-  productTitle: {
+  productHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 12,
+  },
+
+  productTitle: {
     fontSize: f(16),
+    fontWeight: '700',
     color: '#151A23',
   },
 

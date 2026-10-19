@@ -109,7 +109,12 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             return (
               <Pressable
                 key={item.label}
-                onPress={() => handleNavigation(item.route)}
+                onPress={() => {
+                  handleNavigation(item.route);
+                  if (!collapsed) {
+                    onToggle();
+                  }
+                }}
                 style={({ pressed }) => [
                   styles.navItem,
                   collapsed && styles.navItemCollapsed,

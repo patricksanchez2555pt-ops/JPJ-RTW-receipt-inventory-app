@@ -203,6 +203,7 @@ const styles = StyleSheet.create({
   },
 
   sizeButton: {
+    paddingHorizontal: 12,
     minWidth: 64,
     height: 48,
     borderWidth: 1,

@@ -43,7 +43,7 @@ export default function Products() {
             </Pressable>
           </View>
 
-          <View style={styles.listContent}>
+          <ScrollView style={styles.listContent}>
             <ProductList
               products={products}
               colors={colors}
@@ -58,7 +58,7 @@ export default function Products() {
                 setSelectedProductId(null);
               }}
             />
-          </View>
+          </ScrollView>
         </View>
       )}
 

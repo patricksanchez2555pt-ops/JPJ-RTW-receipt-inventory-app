@@ -5,6 +5,8 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 
 import type { LaborRate, Operation, Size } from '@/types/localModels';
 import { f } from '@/utils/fontScale';
 
+const COLUMN_WIDTH = 170;
+
 interface Props {
   productId: string;
   sizes: Size[];
@@ -191,10 +193,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   tableHeaderText: { fontWeight: '700', color: '#4D5665', fontSize: f(13) },
-  colSizeHeader: { width: 130, paddingRight: 10 },
+  colSizeHeader: { width: COLUMN_WIDTH, paddingRight: 10 },
   tableRowSizeText: { fontWeight: '700', color: '#151A23', fontSize: f(13) },
   colOpHeader: {
-    width: 130,
+    width: COLUMN_WIDTH,
     textAlign: 'center',
     fontWeight: '700',
     color: '#4D5665',
@@ -202,7 +204,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   colOpCell: {
-    width: 130,
+    width: COLUMN_WIDTH,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -224,6 +226,7 @@ const styles = StyleSheet.create({
   rateInput: {
     flex: 1,
     height: 36,
+    width: 100,
     paddingHorizontal: 4,
     color: '#151A23',
     textAlign: 'right',

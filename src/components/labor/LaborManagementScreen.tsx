@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { f } from '@/utils/fontScale';
@@ -18,7 +18,17 @@ export default function LaborManagementScreen() {
   const [activeTab, setActiveTab] = useState<'matrix' | 'workers'>('matrix');
 
   // Compute today's date dynamically
-  const today = useMemo(() => new Date(), []);
+  const [today, setToday] = useState(() => new Date());
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const timeNow = new Date();
+    if (formatDateToMMDDYYYY(timeNow) !== formatDateToMMDDYYYY(today)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setToday(timeNow);
+    }
+  });
+
   const todayStr = useMemo(() => formatDateToMMDDYYYY(today), [today]);
 
   // Initial range: today to today

@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { f } from '@/utils/fontScale';
@@ -43,6 +43,18 @@ export default function ProductEdit({ product, onDeleted }: Props) {
   const deleteOperation = useOperationStore((state) => state.deleteOperation);
 
   const addLaborRate = useLaborRateStore((state) => state.addLaborRate);
+
+  // Collapse states for each section
+  const [collapsedSections, setCollapsedSections] = useState({
+    sizes: true,
+    colors: true,
+    operations: true,
+    rates: true,
+  });
+
+  const toggleSection = (section: keyof typeof collapsedSections) => {
+    setCollapsedSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
 
   const productColors = useMemo(
     () => colors.filter((c) => c.productId === product.id),
@@ -96,56 +108,111 @@ export default function ProductEdit({ product, onDeleted }: Props) {
           onSave={(newName) => updateProduct(product.id, newName)}
         />
 
-        {/* 2. Sizes and Colors Columns */}
-        <View style={styles.editorColumns}>
-          <ProductSizesEditor
-            productId={product.id}
-            sizes={productSizes}
-            onAdd={() =>
-              addSize({
-                id: `size-${Date.now()}`,
-                productId: product.id,
-                name: 'New Size',
-                price: 0,
-              })
-            }
-            onSave={(id, name, price) => updateSize(id, name, price)}
-            onDelete={(id) => deleteSize(id)}
-          />
-
-          <ProductColorsEditor
-            colors={productColors}
-            onAdd={() =>
-              addColor({
-                id: `color-${Date.now()}`,
-                productId: product.id,
-                name: 'New Color',
-                hexValue: '#CCCCCC',
-              })
-            }
-            onSave={(id, name, hex) => updateColor(id, name, hex)}
-            onDelete={(id) => deleteColor(id)}
-          />
+        {/* 2. Sizes & Prices Section */}
+        <View style={styles.collapsibleCard}>
+          <Pressable style={styles.sectionHeader} onPress={() => toggleSection('sizes')}>
+            <Text style={styles.sectionTitle}>Sizes & Prices ({productSizes.length})</Text>
+            <Ionicons
+              name={collapsedSections.sizes ? 'chevron-down' : 'chevron-up'}
+              size={18}
+              color="#4B5563"
+            />
+          </Pressable>
+          {!collapsedSections.sizes && (
+            <View style={styles.sectionBody}>
+              <ProductSizesEditor
+                productId={product.id}
+                sizes={productSizes}
+                onAdd={() =>
+                  addSize({
+                    id: `size-${Date.now()}`,
+                    productId: product.id,
+                    name: 'New Size',
+                    price: 0,
+                  })
+                }
+                onSave={(id, name, price) => updateSize(id, name, price)}
+                onDelete={(id) => deleteSize(id)}
+              />
+            </View>
+          )}
         </View>
 
-        {/* 3. Operations Section */}
-        <ProductOperationsEditor
-          operations={productOperations}
-          onAdd={() => addOperation({ productId: product.id, name: 'New Operation' })}
-          onSave={(id, name) => updateOperation(id, { name })}
-          onDelete={(id) => deleteOperation(id)}
-        />
+        {/* 3. Colors Section */}
+        <View style={styles.collapsibleCard}>
+          <Pressable style={styles.sectionHeader} onPress={() => toggleSection('colors')}>
+            <Text style={styles.sectionTitle}>Colors ({productColors.length})</Text>
+            <Ionicons
+              name={collapsedSections.colors ? 'chevron-down' : 'chevron-up'}
+              size={18}
+              color="#4B5563"
+            />
+          </Pressable>
+          {!collapsedSections.colors && (
+            <View style={styles.sectionBody}>
+              <ProductColorsEditor
+                colors={productColors}
+                onAdd={() =>
+                  addColor({
+                    id: `color-${Date.now()}`,
+                    productId: product.id,
+                    name: 'New Color',
+                    hexValue: '#CCCCCC',
+                  })
+                }
+                onSave={(id, name, hex) => updateColor(id, name, hex)}
+                onDelete={(id) => deleteColor(id)}
+              />
+            </View>
+          )}
+        </View>
 
-        {/* 4. Labor Rates Matrix */}
-        <LaborRatesMatrix
-          productId={product.id}
-          sizes={productSizes}
-          operations={productOperations}
-          laborRates={laborRates}
-          onSaveRate={(sizeId, operationId, ratePerUnit) =>
-            addLaborRate({ productId: product.id, sizeId, operationId, ratePerUnit })
-          }
-        />
+        {/* 4. Operations Section */}
+        <View style={styles.collapsibleCard}>
+          <Pressable style={styles.sectionHeader} onPress={() => toggleSection('operations')}>
+            <Text style={styles.sectionTitle}>Operations ({productOperations.length})</Text>
+            <Ionicons
+              name={collapsedSections.operations ? 'chevron-down' : 'chevron-up'}
+              size={18}
+              color="#4B5563"
+            />
+          </Pressable>
+          {!collapsedSections.operations && (
+            <View style={styles.sectionBody}>
+              <ProductOperationsEditor
+                operations={productOperations}
+                onAdd={() => addOperation({ productId: product.id, name: 'New Operation' })}
+                onSave={(id, name) => updateOperation(id, { name })}
+                onDelete={(id) => deleteOperation(id)}
+              />
+            </View>
+          )}
+        </View>
+
+        {/* 5. Labor Rates Matrix Section */}
+        <View style={styles.collapsibleCard}>
+          <Pressable style={styles.sectionHeader} onPress={() => toggleSection('rates')}>
+            <Text style={styles.sectionTitle}>Labor Rates Matrix</Text>
+            <Ionicons
+              name={collapsedSections.rates ? 'chevron-down' : 'chevron-up'}
+              size={18}
+              color="#4B5563"
+            />
+          </Pressable>
+          {!collapsedSections.rates && (
+            <View style={styles.sectionBody}>
+              <LaborRatesMatrix
+                productId={product.id}
+                sizes={productSizes}
+                operations={productOperations}
+                laborRates={laborRates}
+                onSaveRate={(sizeId, operationId, ratePerUnit) =>
+                  addLaborRate({ productId: product.id, sizeId, operationId, ratePerUnit })
+                }
+              />
+            </View>
+          )}
+        </View>
       </ScrollView>
     </View>
   );
@@ -181,6 +248,30 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF5F5',
   },
   deleteText: { color: '#C62828', fontWeight: '700' },
-  editorColumns: { flexDirection: 'row', alignItems: 'flex-start', gap: 20 },
+  collapsibleCard: {
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 14,
+    backgroundColor: '#F8FAFC',
+  },
+  sectionTitle: {
+    fontSize: f(14),
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  sectionBody: {
+    padding: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+  },
   pressed: { opacity: 0.7 },
 });

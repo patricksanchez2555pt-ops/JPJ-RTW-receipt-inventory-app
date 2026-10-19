@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { f } from '@/utils/fontScale';
 
@@ -57,7 +57,7 @@ type PickerState = {
   productId: string;
 } | null;
 
-type FormMode = 'none' | 'entry' | 'deduction';
+type ViewMode = 'list' | 'entry' | 'deduction';
 
 const parseDateString = (dateStr: string): Date => {
   const parts = dateStr.split('-');
@@ -117,7 +117,7 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
 
   const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null);
   const [activePicker, setActivePicker] = useState<PickerState>(null);
-  const [formMode, setFormMode] = useState<FormMode>('none');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   const activeRangeDates = useMemo(() => getDatesInRange(startDate, endDate), [startDate, endDate]);
   const activeDateSet = useMemo(() => new Set(activeRangeDates), [activeRangeDates]);
@@ -317,8 +317,82 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
     const workerTotals = getTotals(selectedWorker.id);
     const workerItems = allItems.filter((item) => item.workerId === selectedWorker.id);
 
+    // Full View Mode: Add Labor Item Form
+    if (viewMode === 'entry') {
+      return (
+        <ScrollView style={styles.container}>
+          <WorkerDetailHeader
+            worker={selectedWorker}
+            startDate={startDate}
+            endDate={endDate}
+            totalPieces={workerTotals.totalPieces}
+            totalEarned={workerTotals.totalEarned}
+            totalDeductions={workerTotals.totalDeductions}
+            netTotal={workerTotals.netTotal}
+            onBack={() => {
+              setSelectedWorker(null);
+              setActivePicker(null);
+              setViewMode('list');
+            }}
+          />
+
+          <View style={styles.formScreenWrapper}>
+            <AddLaborItemForm
+              products={products}
+              operations={operations}
+              sizes={sizes}
+              colors={colors}
+              initialDate={activeRangeDates.length > 0 ? activeRangeDates[0] : startDate}
+              worker={selectedWorker}
+              getLaborRate={getLaborRate}
+              onSave={(entries) => {
+                entries.forEach((entry) => addLaborItem(entry));
+                setViewMode('list'); // Close form and return to list view on save
+              }}
+              onCancel={() => setViewMode('list')}
+            />
+          </View>
+        </ScrollView>
+      );
+    }
+
+    // Full View Mode: Add Deduction Form
+    if (viewMode === 'deduction') {
+      return (
+        <ScrollView style={styles.container}>
+          <WorkerDetailHeader
+            worker={selectedWorker}
+            startDate={startDate}
+            endDate={endDate}
+            totalPieces={workerTotals.totalPieces}
+            totalEarned={workerTotals.totalEarned}
+            totalDeductions={workerTotals.totalDeductions}
+            netTotal={workerTotals.netTotal}
+            onBack={() => {
+              setSelectedWorker(null);
+              setActivePicker(null);
+              setViewMode('list');
+            }}
+          />
+
+          <View style={styles.formScreenWrapper}>
+            <AddDeductionForm
+              workerId={selectedWorker.id}
+              initialDate={activeRangeDates.length > 0 ? activeRangeDates[0] : startDate}
+              onSave={(deduction) => {
+                addDeduction(deduction);
+                setViewMode('list');
+              }}
+              onCancel={() => setViewMode('list')}
+            />
+          </View>
+        </ScrollView>
+      );
+    }
+
+    // Default Worker Detail List View
     return (
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <WorkerDetailHeader
           worker={selectedWorker}
           startDate={startDate}
@@ -330,7 +404,7 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
           onBack={() => {
             setSelectedWorker(null);
             setActivePicker(null);
-            setFormMode('none');
+            setViewMode('list');
           }}
         />
 
@@ -346,59 +420,21 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
           <View style={styles.actionHeaderButtons}>
             <Pressable
               style={({ pressed }) => [styles.addDeductionHeaderBtn, pressed && styles.pressed]}
-              onPress={() => setFormMode((prev) => (prev === 'deduction' ? 'none' : 'deduction'))}
+              onPress={() => setViewMode('deduction')}
             >
-              <Ionicons
-                name={formMode === 'deduction' ? 'close' : 'remove-circle-outline'}
-                size={14}
-                color="#DC2626"
-              />
-              <Text style={styles.addDeductionHeaderBtnText}>
-                {formMode === 'deduction' ? 'Cancel' : 'Add Deduction'}
-              </Text>
+              <Ionicons name="remove-circle-outline" size={14} color="#DC2626" />
+              <Text style={styles.addDeductionHeaderBtnText}>Add Deduction</Text>
             </Pressable>
 
             <Pressable
               style={({ pressed }) => [styles.addGlobalEntryBtn, pressed && styles.pressed]}
-              onPress={() => setFormMode((prev) => (prev === 'entry' ? 'none' : 'entry'))}
+              onPress={() => setViewMode('entry')}
             >
-              <Ionicons name={formMode === 'entry' ? 'close' : 'add'} size={14} color="#1745D1" />
-              <Text style={styles.addGlobalEntryBtnText}>
-                {formMode === 'entry' ? 'Cancel' : 'Add Entry'}
-              </Text>
+              <Ionicons name="add" size={14} color="#1745D1" />
+              <Text style={styles.addGlobalEntryBtnText}>Add Entry</Text>
             </Pressable>
           </View>
         </View>
-
-        {/* Conditional Add Forms */}
-        {formMode === 'entry' && (
-          <AddLaborItemForm
-            products={products}
-            operations={operations}
-            sizes={sizes}
-            colors={colors}
-            initialDate={activeRangeDates.length > 0 ? activeRangeDates[0] : startDate}
-            workerId={selectedWorker.id}
-            getLaborRate={getLaborRate}
-            onSave={(entry) => {
-              addLaborItem(entry);
-              setFormMode('none');
-            }}
-            onCancel={() => setFormMode('none')}
-          />
-        )}
-
-        {formMode === 'deduction' && (
-          <AddDeductionForm
-            workerId={selectedWorker.id}
-            initialDate={activeRangeDates.length > 0 ? activeRangeDates[0] : startDate}
-            onSave={(deduction) => {
-              addDeduction(deduction);
-              setFormMode('none');
-            }}
-            onCancel={() => setFormMode('none')}
-          />
-        )}
 
         <LaborEntriesList
           groups={groupedWorkerEntries}
@@ -418,7 +454,7 @@ export const WorkerDirectoryView: React.FC<WorkerDirectoryViewProps> = ({ startD
           onDeleteDeduction={(id, date) => deleteDeduction(id, date)}
           workerId={selectedWorker.id}
         />
-      </View>
+      </ScrollView>
     );
   }
 
@@ -502,6 +538,9 @@ const styles = StyleSheet.create({
     color: '#1745D1',
     fontSize: f(11),
     fontWeight: '700',
+  },
+  formScreenWrapper: {
+    marginTop: 12,
   },
   pressed: {
     opacity: 0.7,

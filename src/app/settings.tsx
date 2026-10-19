@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, Text } from 'react-native';
 
 import DataBackupSettings from '@/components/settings/DataBackupSettings';
 import DataSeedingSettings from '@/components/settings/DataSeedingSettings';
@@ -15,6 +15,7 @@ export default function SettingsScreen() {
       <DataSeedingSettings />
 
       <PrinterSettings />
+      <Text>Version 1.1.1</Text>
     </ScrollView>
   );
 }

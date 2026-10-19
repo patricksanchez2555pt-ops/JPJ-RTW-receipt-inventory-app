@@ -2,7 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import type { Color, Operation, Product, Size } from '@/types/localModels';
+import QuantitySelector from '@/components/common/QuantitySelector'; // Update path if necessary
+import SizeSelector from '@/components/common/SizeSelector'; // Update path if necessary
+import type { Color, Operation, Product, Size, Worker } from '@/types/localModels';
 import { f } from '@/utils/fontScale';
 import { formatNumber } from '@/utils/formatNumber';
 
@@ -15,22 +17,24 @@ interface AddLaborItemFormProps {
   sizes: Size[];
   colors: Color[];
   initialDate: string;
-  workerId: string;
+  worker: Worker;
   getLaborRate: (
     productId: string,
     sizeId: string,
     operationId: string,
   ) => { ratePerUnit: number } | undefined;
-  onSave: (entry: {
-    productId: string;
-    operationId: string;
-    sizeId: string;
-    colorId: string;
-    workerId: string;
-    date: string;
-    quantity: number;
-    ratePerUnit: number;
-  }) => void;
+  onSave: (
+    entries: {
+      productId: string;
+      operationId: string;
+      sizeId: string;
+      colorId: string;
+      workerId: string;
+      date: string;
+      quantity: number;
+      ratePerUnit: number;
+    }[],
+  ) => void;
   onCancel: () => void;
 }
 
@@ -40,26 +44,41 @@ export default function AddLaborItemForm({
   sizes,
   colors,
   initialDate,
-  workerId,
+  worker,
   getLaborRate,
   onSave,
   onCancel,
 }: AddLaborItemFormProps) {
   const initialProduct = products.length > 0 ? products[0].id : '';
   const initialOps = operations.filter((op) => op.productId === initialProduct);
-  const initialSizes = sizes.filter((sz) => sz.productId === initialProduct);
   const initialColors = colors.filter((c) => c.productId === initialProduct);
 
   const [formDate, setFormDate] = useState(initialDate);
+  const [prevInitialDate, setPrevInitialDate] = useState(initialDate);
+
+  // Adjust state during render if initialDate prop changes from the parent (React-recommended pattern)
+  if (initialDate !== prevInitialDate) {
+    setPrevInitialDate(initialDate);
+    setFormDate(initialDate);
+  }
+
   const [formProductId, setFormProductId] = useState(initialProduct);
   const [formColorId, setFormColorId] = useState(
     initialColors.length > 0 ? initialColors[0].id : '',
   );
+
+  // Default to worker's default operation if available, otherwise fallback to the first operation
+  const defaultWorkerOpId = worker.defaultOperations?.[0];
   const [formOperationId, setFormOperationId] = useState(
-    initialOps.length > 0 ? initialOps[0].id : '',
+    defaultWorkerOpId && initialOps.some((op) => op.id === defaultWorkerOpId)
+      ? defaultWorkerOpId
+      : initialOps.length > 0
+        ? initialOps[0].id
+        : '',
   );
-  const [formSizeId, setFormSizeId] = useState(initialSizes.length > 0 ? initialSizes[0].id : '');
-  const [formQuantity, setFormQuantity] = useState('1');
+
+  const [selectedSizes, setSelectedSizes] = useState<Size[]>([]);
+  const [formQuantity, setFormQuantity] = useState<number>(0);
 
   const selectedProductObj = products.find((p) => p.id === formProductId) || products[0];
   const availableFormColors = colors.filter((c) => c.productId === formProductId);
@@ -68,8 +87,8 @@ export default function AddLaborItemForm({
 
   const availableFormOps = operations.filter((op) => op.productId === formProductId);
   const availableFormSizes = sizes.filter((sz) => sz.productId === formProductId);
-  const currentFormRate =
-    getLaborRate(formProductId, formSizeId, formOperationId)?.ratePerUnit ?? 0;
+
+  const workerId = worker?.id ?? '';
 
   const handleProductChange = (product: Product) => {
     setFormProductId(product.id);
@@ -77,32 +96,69 @@ export default function AddLaborItemForm({
     const prodSizes = sizes.filter((sz) => sz.productId === product.id);
     const prodColors = colors.filter((c) => c.productId === product.id);
 
-    setFormOperationId(prodOps.length > 0 ? prodOps[0].id : '');
-    setFormSizeId(prodSizes.length > 0 ? prodSizes[0].id : '');
+    // Pick worker's default operation if it exists for this product, otherwise pick the first operation
+    const matchingDefaultOp = prodOps.find((op) => worker.defaultOperations?.includes(op.id));
+    setFormOperationId(
+      matchingDefaultOp ? matchingDefaultOp.id : prodOps.length > 0 ? prodOps[0].id : '',
+    );
+
+    setSelectedSizes(prodSizes.length > 0 ? [prodSizes[0]] : []);
     setFormColorId(prodColors.length > 0 ? prodColors[0].id : '');
   };
 
-  const handleSave = () => {
-    if (!formProductId || !formOperationId || !formSizeId || !formColorId) return;
-
-    const qty = parseInt(formQuantity, 10);
-    const parsedQty = isNaN(qty) || qty <= 0 ? 1 : qty;
-
-    onSave({
-      productId: formProductId,
-      sizeId: formSizeId,
-      colorId: formColorId,
-      operationId: formOperationId,
-      workerId,
-      date: formDate,
-      quantity: parsedQty,
-      ratePerUnit: currentFormRate,
+  const handleToggleSize = (size: Size) => {
+    setSelectedSizes((current) => {
+      const exists = current.some((item) => item.id === size.id);
+      if (exists) {
+        if (current.length === 1) return current; // Keep at least one selected
+        return current.filter((item) => item.id !== size.id);
+      }
+      return [...current, size];
     });
   };
 
+  const handleSave = () => {
+    if (!formProductId || !formOperationId || selectedSizes.length === 0 || !formColorId) return;
+
+    const entries = selectedSizes.map((sz) => {
+      const rateObj = getLaborRate(formProductId, sz.id, formOperationId);
+      const ratePerUnit = rateObj?.ratePerUnit ?? 0;
+
+      return {
+        productId: formProductId,
+        sizeId: sz.id,
+        colorId: formColorId,
+        operationId: formOperationId,
+        workerId,
+        date: formDate,
+        quantity: formQuantity,
+        ratePerUnit,
+      };
+    });
+
+    onSave(entries);
+    setSelectedSizes([]);
+    setFormQuantity(0);
+  };
+
+  // Get preview rate using the first selected size for the summary display
+  const previewRate =
+    selectedSizes.length > 0
+      ? (getLaborRate(formProductId, selectedSizes[0].id, formOperationId)?.ratePerUnit ?? 0)
+      : 0;
+
   return (
     <ScrollView style={styles.formCard}>
-      <Text style={styles.formTitle}>New Labor Entry</Text>
+      <View style={styles.formHeaderRow}>
+        <Text style={styles.formTitle}>New Labor Entry</Text>
+        <Pressable
+          style={({ pressed }) => [styles.closeButton, pressed && styles.pressed]}
+          onPress={onCancel}
+          hitSlop={8}
+        >
+          <Ionicons name="close" size={18} color="#64748B" />
+        </Pressable>
+      </View>
 
       <View style={styles.formGrid}>
         {/* Date Field */}
@@ -128,7 +184,6 @@ export default function AddLaborItemForm({
 
         {/* Color Selector */}
         <View style={styles.formGroup}>
-          <Text style={styles.formLabel}>Color Variant</Text>
           <ColorSelector
             colors={availableFormColors}
             selectedColor={selectedColorObj}
@@ -154,39 +209,35 @@ export default function AddLaborItemForm({
           </ScrollView>
         </View>
 
-        {/* Size Selector */}
+        {/* Size Selector (Multi-select) */}
         <View style={styles.formGroup}>
-          <Text style={styles.formLabel}>Size</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-            {availableFormSizes.map((sz) => (
-              <Pressable
-                key={sz.id}
-                style={[styles.chip, formSizeId === sz.id && styles.chipActive]}
-                onPress={() => setFormSizeId(sz.id)}
-              >
-                <Text style={[styles.chipText, formSizeId === sz.id && styles.chipTextActive]}>
-                  {sz.name}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
+          <SizeSelector
+            sizes={availableFormSizes}
+            selectedSizes={selectedSizes}
+            onToggle={handleToggleSize}
+            onDeselectAll={() => {
+              if (availableFormSizes.length > 0) {
+                setSelectedSizes([]);
+              }
+            }}
+          />
         </View>
 
-        {/* Quantity & Computed Rate */}
-        <View style={styles.formRowInline}>
-          <View style={[styles.formGroup, { flex: 1 }]}>
-            <Text style={styles.formLabel}>Quantity</Text>
-            <TextInput
-              style={styles.formInput}
-              keyboardType="number-pad"
-              value={formQuantity}
-              onChangeText={setFormQuantity}
-            />
-          </View>
-          <View style={[styles.formGroup, { flex: 1, justifyContent: 'center' }]}>
-            <Text style={styles.formLabel}>Rate / Unit</Text>
-            <Text style={styles.rateDisplay}>₱{formatNumber(currentFormRate)}</Text>
-          </View>
+        {/* Quantity & Dozen Selector */}
+        <View style={styles.formGroup}>
+          <QuantitySelector
+            customQty={`${formQuantity}`}
+            onQtyButtonClicked={(qty) => {
+              setFormQuantity(formQuantity + qty);
+            }}
+            onCustomQtyChange={(qty) => setFormQuantity(Number(qty))}
+          />
+        </View>
+
+        {/* Rate Preview Display */}
+        <View style={styles.ratePreviewContainer}>
+          <Text style={styles.formLabel}>Rate / Unit (Preview)</Text>
+          <Text style={styles.rateDisplay}>₱{formatNumber(previewRate)}</Text>
         </View>
       </View>
 
@@ -197,7 +248,7 @@ export default function AddLaborItemForm({
         </Pressable>
         <Pressable style={styles.saveFormBtn} onPress={handleSave}>
           <Ionicons name="checkmark" size={16} color="#FFFFFF" />
-          <Text style={styles.saveFormBtnText}>Save Entry</Text>
+          <Text style={styles.saveFormBtnText}>Save Entries ({selectedSizes.length})</Text>
         </Pressable>
       </View>
     </ScrollView>
@@ -208,7 +259,7 @@ const styles = StyleSheet.create({
   formCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 10,
-    padding: 14,
+    padding: 50,
     borderWidth: 1,
     borderColor: '#CBD5E1',
     marginBottom: 14,
@@ -218,28 +269,36 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  formHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
   formTitle: {
     fontSize: f(14),
     fontWeight: '700',
     color: '#0F172A',
-    marginBottom: 10,
+  },
+  closeButton: {
+    padding: 4,
+    borderRadius: 6,
+    backgroundColor: '#F1F5F9',
+  },
+  pressed: {
+    opacity: 0.7,
   },
   formGrid: {
-    gap: 10,
+    gap: 14,
   },
   formGroup: {
+    marginBottom: 20,
     gap: 4,
   },
-  formRowInline: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
   formLabel: {
-    fontSize: f(11),
-    fontWeight: '600',
-    color: '#64748B',
-    textTransform: 'uppercase',
+    fontWeight: '700',
+    fontSize: f(15),
+    color: '#1A1A1A',
   },
   formInput: {
     borderWidth: 1,
@@ -252,10 +311,18 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     backgroundColor: '#F8FAFC',
   },
+  ratePreviewContainer: {
+    backgroundColor: '#F8FAFC',
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
   rateDisplay: {
     fontSize: f(14),
     fontWeight: '700',
     color: '#16A34A',
+    marginTop: 2,
   },
   chipScroll: {
     flexDirection: 'row',
@@ -283,14 +350,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   actionRow: {
-    marginTop: 12,
+    marginTop: 16,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
   cancelFormBtn: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
@@ -304,7 +371,7 @@ const styles = StyleSheet.create({
   saveFormBtn: {
     flex: 2,
     backgroundColor: '#1745D1',
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 6,
     flexDirection: 'row',
     alignItems: 'center',

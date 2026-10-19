@@ -1,6 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import type { LaborItem, Size } from '@/types/localModels';
 import { f } from '@/utils/fontScale';
@@ -48,6 +47,15 @@ export default function LaborProductGroup(props: Props) {
     onDelete,
   } = props;
 
+  // Group items by operationId
+  const itemsByOperation = items.reduce<Record<string, LaborItem[]>>((acc, item) => {
+    if (!acc[item.operationId]) {
+      acc[item.operationId] = [];
+    }
+    acc[item.operationId].push(item);
+    return acc;
+  }, {});
+
   const sizesInItemsPerOperation = items.reduce<Record<string, string[]>>((acc, item) => {
     if (!acc[item.operationId]) {
       acc[item.operationId] = [item.sizeId];
@@ -70,6 +78,9 @@ export default function LaborProductGroup(props: Props) {
     ? (sizesPerOperation[firstOperationId]?.[0]?.id ?? '')
     : '';
 
+  // Get all operations that actually have items, or fallback to all operations if empty
+  const activeOperationIds = Object.keys(itemsByOperation);
+
   return (
     <View style={styles.productGroupCard}>
       <View style={styles.productGroupHeader}>
@@ -78,7 +89,7 @@ export default function LaborProductGroup(props: Props) {
           <Text style={styles.productGroupSub}>
             {totalPieces} pcs · ₱{formatNumber(totalEarned)}
           </Text>
-          <Pressable
+          {/* <Pressable
             style={({ pressed }) => [styles.addEntryBtn, pressed && styles.pressed]}
             onPress={() => {
               onAddEntry(productId, defaultSizeId);
@@ -86,7 +97,7 @@ export default function LaborProductGroup(props: Props) {
           >
             <Ionicons name="add" size={13} color="#1745D1" />
             <Text style={styles.addEntryBtnText}>Add Entry</Text>
-          </Pressable>
+          </Pressable> */}
         </View>
       </View>
 
@@ -98,22 +109,40 @@ export default function LaborProductGroup(props: Props) {
         <View style={styles.colActionSpacer} />
       </View>
 
-      {items.map((item) => (
-        <LaborItemRow
-          key={item.id}
-          item={item}
-          productId={productId}
-          operationName={operationById.get(item.operationId)?.name ?? item.operationId}
-          sizeName={sizeById.get(item.sizeId)?.name ?? 'N/A'}
-          operations={operations}
-          sizesOptions={sizesPerOperation[item.operationId] ?? []}
-          activePicker={activePicker}
-          setActivePicker={setActivePicker}
-          onSelect={onSelect}
-          onQuantityChange={onQuantityChange}
-          onDelete={onDelete}
-        />
-      ))}
+      {activeOperationIds.map((opId) => {
+        const opItems = itemsByOperation[opId] || [];
+        const operationObj = operationById.get(opId);
+        const opTotalPieces = opItems.reduce((sum, item) => sum + item.quantity, 0);
+        const opTotalEarned = opItems.reduce((sum, item) => sum + item.subtotal, 0);
+
+        return (
+          <View key={opId} style={styles.operationSubGroup}>
+            <View style={styles.operationHeaderRow}>
+              <Text style={styles.operationHeaderText}>{operationObj?.name ?? opId}</Text>
+              <Text style={styles.operationHeaderSub}>
+                {opTotalPieces} pcs · ₱{formatNumber(opTotalEarned)}
+              </Text>
+            </View>
+
+            {opItems.map((item) => (
+              <LaborItemRow
+                key={item.id}
+                item={item}
+                productId={productId}
+                operationName={operationObj?.name ?? item.operationId}
+                sizeName={sizeById.get(item.sizeId)?.name ?? 'N/A'}
+                operations={operations}
+                sizesOptions={sizesPerOperation[item.operationId] ?? []}
+                activePicker={activePicker}
+                setActivePicker={setActivePicker}
+                onSelect={onSelect}
+                onQuantityChange={onQuantityChange}
+                onDelete={onDelete}
+              />
+            ))}
+          </View>
+        );
+      })}
     </View>
   );
 }
@@ -202,6 +231,33 @@ const styles = StyleSheet.create({
   colActionSpacer: {
     width: 24,
     alignItems: 'flex-end',
+  },
+  operationSubGroup: {
+    marginTop: 6,
+    marginBottom: 6,
+    borderTopWidth: 1,
+    borderTopColor: '#F8FAFC',
+    paddingTop: 4,
+  },
+  operationHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 6,
+    marginBottom: 4,
+  },
+  operationHeaderText: {
+    fontSize: f(12),
+    fontWeight: '700',
+    color: '#334155',
+  },
+  operationHeaderSub: {
+    fontSize: f(11),
+    fontWeight: '600',
+    color: '#64748B',
   },
   pressed: {
     opacity: 0.7,

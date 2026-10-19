@@ -1,14 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import type { Deduction, LaborItem, Size } from '@/types/localModels';
+import type { Deduction, LaborItem } from '@/types/localModels';
 import { f } from '@/utils/fontScale';
 import { formatNumber } from '@/utils/formatNumber';
 
 import LaborProductGroup from './components/labor-product-group/LaborProductGroup';
 
 type OperationOption = { id: string; name: string; productId: string };
+type SizeOption = { id: string; name: string; productId: string; price?: number };
+type ColorOption = { id: string; name: string; productId: string; hexValue: string };
 type PickerState = {
   itemId: string;
   type: 'operation' | 'size' | 'color';
@@ -45,9 +47,11 @@ type DateGroup = {
 type Props = {
   groups: DateGroup[];
   operations: OperationOption[];
-  sizes: Size[];
+  sizes: SizeOption[];
+  colors: ColorOption[];
   operationById: Map<string, OperationOption>;
-  sizeById: Map<string, Size>;
+  sizeById: Map<string, SizeOption>;
+  colorById: Map<string, ColorOption>;
   activePicker: PickerState;
   setActivePicker: (value: PickerState) => void;
   onAddEntry: (date: string, productId: string, colorId: string, sizeId: string) => void;
@@ -103,18 +107,23 @@ export default function LaborEntriesList(props: Props) {
     setAddingForDate(null);
   };
 
+  if (!groups || groups.length === 0) {
+    return (
+      <View style={styles.emptyState}>
+        <Text style={styles.emptyTitle}>No labor entries</Text>
+        <Text style={styles.emptyText}>No work was recorded for this worker in this period.</Text>
+      </View>
+    );
+  }
+
   return (
-    <FlatList
-      style={styles.entryList}
-      data={groups}
-      keyExtractor={(group) => group.date}
-      contentContainerStyle={styles.entryListContent}
-      renderItem={({ item: dateGroup }) => {
+    <View style={styles.entryContainer}>
+      {groups.map((dateGroup) => {
         const netDateEarned = dateGroup.dateTotalEarned - dateGroup.dateTotalDeductions;
         const isAddingHere = addingForDate === dateGroup.date;
 
         return (
-          <View style={styles.dateGroupContainer}>
+          <View key={dateGroup.date} style={styles.dateGroupContainer}>
             <View style={styles.dateGroupHeader}>
               <View style={styles.dateHeaderBadge}>
                 <Ionicons name="calendar-outline" size={13} color="#1745D1" />
@@ -195,73 +204,61 @@ export default function LaborEntriesList(props: Props) {
               ))}
             </View>
 
-            {dateGroup.products.map((productGroup) => {
-              return (
-                <View key={productGroup.productId} style={styles.productBlock}>
-                  <View style={styles.productHeaderRow}>
-                    <Text style={styles.productTitleText}>{productGroup.productName}</Text>
-                    <Text style={styles.productSubTotalText}>
-                      ₱{formatNumber(productGroup.productTotalEarned)} (
-                      {productGroup.productTotalPieces} pcs)
-                    </Text>
-                  </View>
-
-                  {productGroup.colors.map((colorGroup) => (
-                    <View key={colorGroup.colorId} style={styles.colorGroupCard}>
-                      <View style={styles.colorBadgeRow}>
-                        <View
-                          style={[
-                            styles.colorDot,
-                            { backgroundColor: colorGroup.colorHex || '#CBD5E1' },
-                          ]}
-                        />
-                        <Text style={styles.colorBadgeText}>{colorGroup.colorName}</Text>
-                      </View>
-
-                      <LaborProductGroup
-                        productId={productGroup.productId}
-                        productName={colorGroup.colorName}
-                        items={colorGroup.items}
-                        totalPieces={colorGroup.colorTotalPieces}
-                        totalEarned={colorGroup.colorTotalEarned}
-                        operations={operations}
-                        sizes={sizes}
-                        operationById={operationById}
-                        sizeById={sizeById}
-                        activePicker={activePicker}
-                        setActivePicker={setActivePicker}
-                        onAddEntry={(productId, sizeId) =>
-                          onAddEntry(dateGroup.date, productId, colorGroup.colorId, sizeId)
-                        }
-                        onSelect={onSelect}
-                        onQuantityChange={onQuantityChange}
-                        onDelete={onDelete}
-                      />
-                    </View>
-                  ))}
+            {dateGroup.products.map((productGroup) => (
+              <View key={productGroup.productId} style={styles.productBlock}>
+                <View style={styles.productHeaderRow}>
+                  <Text style={styles.productTitleText}>{productGroup.productName}</Text>
+                  <Text style={styles.productSubTotalText}>
+                    ₱{formatNumber(productGroup.productTotalEarned)} (
+                    {productGroup.productTotalPieces} pcs)
+                  </Text>
                 </View>
-              );
-            })}
+
+                {productGroup.colors.map((colorGroup) => (
+                  <View key={colorGroup.colorId} style={styles.colorGroupCard}>
+                    <View style={styles.colorBadgeRow}>
+                      <View
+                        style={[
+                          styles.colorDot,
+                          { backgroundColor: colorGroup.colorHex || '#CBD5E1' },
+                        ]}
+                      />
+                      <Text style={styles.colorBadgeText}>{colorGroup.colorName}</Text>
+                    </View>
+
+                    <LaborProductGroup
+                      productId={productGroup.productId}
+                      productName={colorGroup.colorName}
+                      items={colorGroup.items}
+                      totalPieces={colorGroup.colorTotalPieces}
+                      totalEarned={colorGroup.colorTotalEarned}
+                      operations={operations}
+                      sizes={sizes}
+                      operationById={operationById}
+                      sizeById={sizeById}
+                      activePicker={activePicker}
+                      setActivePicker={setActivePicker}
+                      onAddEntry={(productId, sizeId) =>
+                        onAddEntry(dateGroup.date, productId, colorGroup.colorId, sizeId)
+                      }
+                      onSelect={onSelect}
+                      onQuantityChange={onQuantityChange}
+                      onDelete={onDelete}
+                    />
+                  </View>
+                ))}
+              </View>
+            ))}
           </View>
         );
-      }}
-      ListEmptyComponent={
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyTitle}>No labor entries</Text>
-          <Text style={styles.emptyText}>No work was recorded for this worker in this period.</Text>
-        </View>
-      }
-    />
+      })}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  entryList: {
-    flex: 1,
-  },
-  entryListContent: {
+  entryContainer: {
     paddingBottom: 24,
-    flexGrow: 1,
   },
   dateGroupContainer: {
     marginBottom: 16,
@@ -448,7 +445,6 @@ const styles = StyleSheet.create({
     color: '#334155',
   },
   emptyState: {
-    flexGrow: 1,
     minHeight: 160,
     padding: 24,
     alignItems: 'center',

@@ -4,9 +4,12 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { f } from '@/utils/fontScale';
 
 type Props = {
-  quantity: number;
-  onChange: (quantity: number) => void;
-  addItems: (quantity?: number) => void;
+  quantity?: number;
+  customQty?: string;
+  onChange?: (quantity: number) => void;
+  onQtyButtonClicked?: (quantity: number) => void;
+  onCustomQtyChange?: (quantity: string) => void;
+  addItems?: (quantity?: number) => void;
 };
 
 const PER_PCS = Array.from({ length: 12 }, (_, index) => {
@@ -29,7 +32,14 @@ const PER_DZN = Array.from({ length: 12 }, (_, index) => {
 
 type QuantityMode = 'pcs' | 'dzn';
 
-export default function QuantitySelector({ quantity, onChange, addItems }: Props) {
+export default function QuantitySelector({
+  quantity = 0,
+  customQty,
+  onChange = () => {},
+  addItems = () => {},
+  onQtyButtonClicked,
+  onCustomQtyChange,
+}: Props) {
   const [customQuantity, setCustomQuantity] = useState('');
   const [clickedQuantity, setClickedQuantity] = useState<number | null>(null);
   const [quantityMode, setQuantityMode] = useState<QuantityMode>('pcs');
@@ -105,6 +115,8 @@ export default function QuantitySelector({ quantity, onChange, addItems }: Props
 
                 setCustomQuantity(quantityMode === 'dzn' ? String(value / 12) : String(value));
 
+                if (onQtyButtonClicked) onQtyButtonClicked(value);
+
                 setClickedQuantity(item.value);
 
                 addItems(value);
@@ -131,8 +143,11 @@ export default function QuantitySelector({ quantity, onChange, addItems }: Props
           </Text>
 
           <TextInput
-            value={customQuantity}
-            onChangeText={handleCustomQuantityChanged}
+            value={customQty === undefined ? customQuantity : customQty}
+            onChangeText={(text) => {
+              handleCustomQuantityChanged(text);
+              if (onCustomQtyChange) onCustomQtyChange(text);
+            }}
             placeholder={quantityMode === 'dzn' ? 'Dzns' : 'Qty'}
             placeholderTextColor="#9AA3B2"
             keyboardType="number-pad"

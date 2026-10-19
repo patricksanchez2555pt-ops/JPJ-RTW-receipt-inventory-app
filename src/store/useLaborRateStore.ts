@@ -14,7 +14,7 @@ const mmkvStorage = {
 
 type LaborRateStore = {
   laborRates: LaborRate[];
-  addLaborRate: (laborRate: Omit<LaborRate, 'id' | 'updatedAt'>) => LaborRate;
+  addLaborRate: (laborRate: Omit<LaborRate, 'id' | 'updatedAt'>, id?: string) => LaborRate;
   updateLaborRate: (id: string, ratePerUnit: number) => void;
   deleteLaborRate: (id: string) => void;
   setAllLaborRates: (laborRates: LaborRate[]) => void;
@@ -29,7 +29,7 @@ export const useLaborRateStore = create<LaborRateStore>()(
     (set, get) => ({
       laborRates: [],
 
-      addLaborRate: (laborRate) => {
+      addLaborRate: (laborRate, id) => {
         const existing = get().getLaborRate(
           laborRate.productId,
           laborRate.sizeId,
@@ -49,7 +49,7 @@ export const useLaborRateStore = create<LaborRateStore>()(
 
         const createdLaborRate: LaborRate = {
           ...laborRate,
-          id: `labor-rate-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          id: id ? id : `labor-rate-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
           updatedAt,
         };
 

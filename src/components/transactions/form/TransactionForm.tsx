@@ -12,9 +12,9 @@ import type { Color, Customer, Product, Size, Transaction } from '@/types/localM
 import { f } from '@/utils/fontScale';
 
 import ColorSelector from '../../common/ColorSelector';
+import QuantitySelector from '../../common/QuantitySelector';
+import SizeSelector from '../../common/SizeSelector';
 import AddedItemsPanel from '../components/added-items-panel/AddedItemsPanel';
-import QuantitySelector from './components/QuantitySelector';
-import SizeSelector from './components/SizeSelector';
 import TransactionSummary from './components/TransactionSummary';
 import type { AddedTransactionItem } from './types';
 

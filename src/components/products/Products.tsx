@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { useColorStore } from '../../store/useColorStore';
 import { useProductStore } from '../../store/useProductStore';
@@ -74,7 +74,11 @@ export default function Products() {
         </View>
       )}
 
-      <View style={styles.editorPanel}>
+      <ScrollView
+        style={styles.editorPanel}
+        contentContainerStyle={styles.editorContentContainer}
+        showsVerticalScrollIndicator={true}
+      >
         {creatingProduct ? (
           <ProductCreate
             onCancel={() => setCreatingProduct(false)}
@@ -92,7 +96,7 @@ export default function Products() {
             />
           )
         )}
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -152,6 +156,10 @@ const styles = StyleSheet.create({
 
   editorPanel: {
     flex: 1,
+  },
+
+  editorContentContainer: {
     minWidth: 0,
+    padding: 16, // Adjust padding if needed for your forms
   },
 });

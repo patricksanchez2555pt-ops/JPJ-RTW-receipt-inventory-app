@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     paddingRight: 6,
   },
   colSize: {
-    width: 150,
+    minWidth: 40,
   },
   colRate: {
     flex: 2,

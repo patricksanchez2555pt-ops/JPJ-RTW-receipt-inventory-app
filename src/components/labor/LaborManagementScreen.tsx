@@ -93,8 +93,6 @@ export default function LaborManagementScreen() {
 
       {/* Date Range Selector Bar */}
       <View style={styles.dateFilterBar}>
-        <Text style={styles.dateFilterLabel}>Date Range:</Text>
-
         <View style={styles.rangeInputContainer}>
           <TextInput
             style={styles.dateInput}
@@ -241,7 +239,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   dateInput: {
-    width: 110,
+    width: 140,
     height: 36,
     borderWidth: 1,
     borderColor: '#CBD2DE',

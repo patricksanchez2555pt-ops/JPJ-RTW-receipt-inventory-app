@@ -8,6 +8,15 @@ import {
   seedLaborData,
   seedProductConfig,
 } from '@/store/seedInitData';
+import { useColorStore } from '@/store/useColorStore';
+import { useCustomerStore } from '@/store/useCustomerStore';
+import { useDeductionStore } from '@/store/useDeductionStore';
+import { useLaborItemStore } from '@/store/useLaborItemStore';
+import { useLaborRateStore } from '@/store/useLaborRateStore';
+import { useOperationStore } from '@/store/useOperationStore';
+import { useProductStore } from '@/store/useProductStore';
+import { useSizeStore } from '@/store/useSizeStore';
+import { useWorkerStore } from '@/store/useWorkerStore';
 
 const PRODUCT_CONFIG_BUTTONS: {
   key: ProductConfigKey;
@@ -25,10 +34,15 @@ const PRODUCT_CONFIG_BUTTONS: {
 ];
 
 export default function DataSeedingSettings() {
-  const [isSeeding, setIsSeeding] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const runSeed = (title: string, message: string, action: () => void) => {
-    if (isSeeding) return;
+  const runAction = (
+    title: string,
+    message: string,
+    action: () => void,
+    successText = 'completed successfully.',
+  ) => {
+    if (isProcessing) return;
 
     Alert.alert(title, message, [
       {
@@ -36,23 +50,42 @@ export default function DataSeedingSettings() {
         style: 'cancel',
       },
       {
-        text: 'Seed Data',
+        text: 'Confirm',
         onPress: () => {
-          setIsSeeding(true);
+          setIsProcessing(true);
 
           try {
             action();
-            Alert.alert('Success', `${title} completed successfully.`);
+            Alert.alert('Success', `${title} ${successText}`);
           } catch (error) {
-            console.error(`Failed to seed ${title}:`, error);
+            console.error(`Failed during ${title}:`, error);
 
-            Alert.alert('Error', `Failed to seed ${title}. Check the console for details.`);
+            Alert.alert('Error', `Failed during ${title}. Check the console for details.`);
           } finally {
-            setIsSeeding(false);
+            setIsProcessing(false);
           }
         },
       },
     ]);
+  };
+
+  const handleClearAll = () => {
+    runAction(
+      'Clear All Stores',
+      'Are you sure you want to clear all data from every store? This action cannot be undone.',
+      () => {
+        useProductStore.setState({ products: [] });
+        useColorStore.setState({ colors: [] });
+        useSizeStore.setState({ sizes: [] });
+        useOperationStore.setState({ operations: [] });
+        useWorkerStore.setState({ workers: [] });
+        useLaborRateStore.setState({ laborRates: [] });
+        useLaborItemStore.setState({ laborItems: {} });
+        useCustomerStore.setState({ customers: [] });
+        useDeductionStore.setState({ deductions: {} });
+      },
+      'cleared successfully.',
+    );
   };
 
   return (
@@ -64,9 +97,9 @@ export default function DataSeedingSettings() {
         </View>
 
         <View style={styles.headerText}>
-          <Text style={styles.cardTitle}>Data Seeding</Text>
+          <Text style={styles.cardTitle}>Data Seeding & Maintenance</Text>
           <Text style={styles.cardSubtitle}>
-            Initialize product configurations, labor data, and customers.
+            Initialize or clear product configurations, labor data, and records.
           </Text>
         </View>
       </View>
@@ -82,16 +115,18 @@ export default function DataSeedingSettings() {
           {PRODUCT_CONFIG_BUTTONS.map(({ key, label }) => (
             <Pressable
               key={key}
-              disabled={isSeeding}
+              disabled={isProcessing}
               onPress={() =>
-                runSeed(`Seed ${label}`, `Seed the product, colors, and sizes for ${label}?`, () =>
-                  seedProductConfig(key),
+                runAction(
+                  `Seed ${label}`,
+                  `Seed the product, colors, and sizes for ${label}?`,
+                  () => seedProductConfig(key),
                 )
               }
               style={({ pressed }) => [
                 styles.productButton,
                 pressed && styles.pressed,
-                isSeeding && styles.disabled,
+                isProcessing && styles.disabled,
               ]}
             >
               <Text style={styles.productButtonText}>{label}</Text>
@@ -109,9 +144,9 @@ export default function DataSeedingSettings() {
 
         <View style={styles.actions}>
           <Pressable
-            disabled={isSeeding}
+            disabled={isProcessing}
             onPress={() =>
-              runSeed(
+              runAction(
                 'Seed Labor Data',
                 'Seed workers, operations, and labor rates?',
                 seedLaborData,
@@ -120,30 +155,30 @@ export default function DataSeedingSettings() {
             style={({ pressed }) => [
               styles.actionButton,
               pressed && styles.pressed,
-              isSeeding && styles.disabled,
+              isProcessing && styles.disabled,
             ]}
           >
             <Text style={styles.actionButtonText}>Seed Labor Data</Text>
           </Pressable>
 
           <Pressable
-            disabled={isSeeding}
+            disabled={isProcessing}
             onPress={() =>
-              runSeed('Seed Customers', 'Seed the initial customer data?', seedCustomers)
+              runAction('Seed Customers', 'Seed the initial customer data?', seedCustomers)
             }
             style={({ pressed }) => [
               styles.actionButton,
               pressed && styles.pressed,
-              isSeeding && styles.disabled,
+              isProcessing && styles.disabled,
             ]}
           >
             <Text style={styles.actionButtonText}>Seed Customers</Text>
           </Pressable>
 
           <Pressable
-            disabled={isSeeding}
+            disabled={isProcessing}
             onPress={() =>
-              runSeed(
+              runAction(
                 'Seed All Initial Data',
                 'Seed all product configurations, labor data, and customers?',
                 seedInitialData,
@@ -152,10 +187,178 @@ export default function DataSeedingSettings() {
             style={({ pressed }) => [
               styles.allButton,
               pressed && styles.pressed,
-              isSeeding && styles.disabled,
+              isProcessing && styles.disabled,
             ]}
           >
             <Text style={styles.allButtonText}>Seed All Initial Data</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      {/* Store Reset / Delete Section */}
+      <View style={styles.section}>
+        <Text style={styles.title}>Store Data Deletion</Text>
+        <Text style={styles.subtitle}>
+          Clear data for individual stores or wipe everything clean.
+        </Text>
+
+        <View style={styles.productGrid}>
+          <Pressable
+            disabled={isProcessing}
+            onPress={() =>
+              runAction('Clear Products', 'Clear all products?', () =>
+                useProductStore.setState({ products: [] }),
+              )
+            }
+            style={({ pressed }) => [
+              styles.deleteButton,
+              pressed && styles.pressed,
+              isProcessing && styles.disabled,
+            ]}
+          >
+            <Text style={styles.deleteButtonText}>Clear Products</Text>
+          </Pressable>
+
+          <Pressable
+            disabled={isProcessing}
+            onPress={() =>
+              runAction('Clear Colors', 'Clear all colors?', () =>
+                useColorStore.setState({ colors: [] }),
+              )
+            }
+            style={({ pressed }) => [
+              styles.deleteButton,
+              pressed && styles.pressed,
+              isProcessing && styles.disabled,
+            ]}
+          >
+            <Text style={styles.deleteButtonText}>Clear Colors</Text>
+          </Pressable>
+
+          <Pressable
+            disabled={isProcessing}
+            onPress={() =>
+              runAction('Clear Sizes', 'Clear all sizes?', () =>
+                useSizeStore.setState({ sizes: [] }),
+              )
+            }
+            style={({ pressed }) => [
+              styles.deleteButton,
+              pressed && styles.pressed,
+              isProcessing && styles.disabled,
+            ]}
+          >
+            <Text style={styles.deleteButtonText}>Clear Sizes</Text>
+          </Pressable>
+
+          <Pressable
+            disabled={isProcessing}
+            onPress={() =>
+              runAction('Clear Operations', 'Clear all operations?', () =>
+                useOperationStore.setState({ operations: [] }),
+              )
+            }
+            style={({ pressed }) => [
+              styles.deleteButton,
+              pressed && styles.pressed,
+              isProcessing && styles.disabled,
+            ]}
+          >
+            <Text style={styles.deleteButtonText}>Clear Operations</Text>
+          </Pressable>
+
+          <Pressable
+            disabled={isProcessing}
+            onPress={() =>
+              runAction('Clear Workers', 'Clear all workers?', () =>
+                useWorkerStore.setState({ workers: [] }),
+              )
+            }
+            style={({ pressed }) => [
+              styles.deleteButton,
+              pressed && styles.pressed,
+              isProcessing && styles.disabled,
+            ]}
+          >
+            <Text style={styles.deleteButtonText}>Clear Workers</Text>
+          </Pressable>
+
+          <Pressable
+            disabled={isProcessing}
+            onPress={() =>
+              runAction('Clear Labor Rates', 'Clear all labor rates?', () =>
+                useLaborRateStore.setState({ laborRates: [] }),
+              )
+            }
+            style={({ pressed }) => [
+              styles.deleteButton,
+              pressed && styles.pressed,
+              isProcessing && styles.disabled,
+            ]}
+          >
+            <Text style={styles.deleteButtonText}>Clear Labor Rates</Text>
+          </Pressable>
+
+          <Pressable
+            disabled={isProcessing}
+            onPress={() =>
+              runAction('Clear Labor Items', 'Clear all logged labor items?', () =>
+                useLaborItemStore.setState({ laborItems: {} }),
+              )
+            }
+            style={({ pressed }) => [
+              styles.deleteButton,
+              pressed && styles.pressed,
+              isProcessing && styles.disabled,
+            ]}
+          >
+            <Text style={styles.deleteButtonText}>Clear Labor Items</Text>
+          </Pressable>
+
+          <Pressable
+            disabled={isProcessing}
+            onPress={() =>
+              runAction('Clear Customers', 'Clear all customers?', () =>
+                useCustomerStore.setState({ customers: [] }),
+              )
+            }
+            style={({ pressed }) => [
+              styles.deleteButton,
+              pressed && styles.pressed,
+              isProcessing && styles.disabled,
+            ]}
+          >
+            <Text style={styles.deleteButtonText}>Clear Customers</Text>
+          </Pressable>
+
+          <Pressable
+            disabled={isProcessing}
+            onPress={() =>
+              runAction('Clear Deductions', 'Clear all deductions?', () =>
+                useDeductionStore.setState({ deductions: {} }),
+              )
+            }
+            style={({ pressed }) => [
+              styles.deleteButton,
+              pressed && styles.pressed,
+              isProcessing && styles.disabled,
+            ]}
+          >
+            <Text style={styles.deleteButtonText}>Clear Deductions</Text>
+          </Pressable>
+        </View>
+
+        <View style={{ marginTop: 12 }}>
+          <Pressable
+            disabled={isProcessing}
+            onPress={handleClearAll}
+            style={({ pressed }) => [
+              styles.dangerAllButton,
+              pressed && styles.pressed,
+              isProcessing && styles.disabled,
+            ]}
+          >
+            <Text style={styles.dangerAllButtonText}>Clear All Stores</Text>
           </Pressable>
         </View>
       </View>
@@ -164,8 +367,8 @@ export default function DataSeedingSettings() {
       <View style={styles.warningContainer}>
         <Text style={styles.warningIcon}>ⓘ</Text>
         <Text style={styles.warning}>
-          Seeding may update existing records. Review your seed functions before running them on
-          production data.
+          Seeding or clearing data directly affects persistent application stores. Use caution when
+          running these actions on production data.
         </Text>
       </View>
     </View>
@@ -263,6 +466,23 @@ const styles = StyleSheet.create({
     color: '#374151',
   },
 
+  // Delete store buttons
+  deleteButton: {
+    minHeight: 38,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FEF2F2',
+  },
+  deleteButtonText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#DC2626',
+  },
+
   // Other seed actions
   actions: {
     gap: 8,
@@ -292,6 +512,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#1745D1',
   },
   allButtonText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  dangerAllButton: {
+    minHeight: 44,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#DC2626',
+  },
+  dangerAllButtonText: {
     fontSize: 13,
     fontWeight: '700',
     color: '#FFFFFF',

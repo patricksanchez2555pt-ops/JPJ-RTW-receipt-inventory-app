@@ -201,6 +201,112 @@ const CONFIG = {
     ] satisfies Size[],
   },
 
+  BIG_J_PANTS_PUNYOS: {
+    PRODUCT: {
+      id: 'big-j-pants-punyos',
+      name: 'Big J.Pants Punyos',
+    },
+    COLORS: [
+      {
+        id: 'big-j-pants-punyos-black',
+        productId: 'big-j-pants-punyos',
+        name: 'Black',
+        hexValue: '#000000',
+      },
+      {
+        id: 'big-j-pants-punyos-gray',
+        productId: 'big-j-pants-punyos',
+        name: 'Gray',
+        hexValue: 'rgb(92, 91, 91)',
+      },
+      {
+        id: 'big-j-pants-punyos-light-blue',
+        productId: 'big-j-pants-punyos',
+        name: 'Light Blue',
+        hexValue: '#64c8ea',
+      },
+      {
+        id: 'big-j-pants-punyos-royal-blue',
+        productId: 'big-j-pants-punyos',
+        name: 'Royal Blue',
+        hexValue: '#0000FF',
+      },
+      {
+        id: 'big-j-pants-punyos-navy-blue',
+        productId: 'big-j-pants-punyos',
+        name: 'Navy Blue',
+        hexValue: '#000080',
+      },
+      {
+        id: 'big-j-pants-punyos-orange',
+        productId: 'big-j-pants-punyos',
+        name: 'Orange',
+        hexValue: '#FA5000',
+      },
+      {
+        id: 'big-j-pants-punyos-red',
+        productId: 'big-j-pants-punyos',
+        name: 'Red',
+        hexValue: '#FF0000',
+      },
+      {
+        id: 'big-j-pants-punyos-maroon',
+        productId: 'big-j-pants-punyos',
+        name: 'Maroon',
+        hexValue: '#680000',
+      },
+      {
+        id: 'big-j-pants-punyos-white',
+        productId: 'big-j-pants-punyos',
+        name: 'White',
+        hexValue: '#FFFFFF',
+      },
+      {
+        id: 'big-j-pants-punyos-green',
+        productId: 'big-j-pants-punyos',
+        name: 'Green',
+        hexValue: '#008000',
+      },
+      {
+        id: 'big-j-pants-punyos-yellow',
+        productId: 'big-j-pants-punyos',
+        name: 'Yellow',
+        hexValue: '#FFFF00',
+      },
+      {
+        id: 'big-j-pants-punyos-pink',
+        productId: 'big-j-pants-punyos',
+        name: 'Pink',
+        hexValue: '#FFC0CB',
+      },
+      {
+        id: 'big-j-pants-punyos-violet',
+        productId: 'big-j-pants-punyos',
+        name: 'Violet',
+        hexValue: '#800080',
+      },
+      {
+        id: 'big-j-pants-punyos-aqua-blue',
+        productId: 'big-j-pants-punyos',
+        name: 'Aqua blue',
+        hexValue: '#00FFFF',
+      },
+      {
+        id: 'big-j-pants-punyos-battle-green',
+        productId: 'big-j-pants-punyos',
+        name: 'Battle green',
+        hexValue: '#4B5320',
+      },
+    ] satisfies Color[],
+    SIZES: [
+      { id: 'big-j-pants-punyos-s', productId: 'big-j-pants-punyos', name: 'S', price: 120 },
+      { id: 'big-j-pants-punyos-m', productId: 'big-j-pants-punyos', name: 'M', price: 125 },
+      { id: 'big-j-pants-punyos-l', productId: 'big-j-pants-punyos', name: 'L', price: 130 },
+      { id: 'big-j-pants-punyos-xl', productId: 'big-j-pants-punyos', name: 'XL', price: 135 },
+      { id: 'big-j-pants-punyos-2x', productId: 'big-j-pants-punyos', name: '2X', price: 140 },
+    ],
+  },
+
   HIPHOP: {
     PRODUCT: {
       id: 'hiphop',
@@ -388,6 +494,7 @@ const CONFIG = {
       },
     ] satisfies Size[],
   },
+
   LEOTARD_LONG: {
     PRODUCT: {
       id: 'leotard-long',
@@ -1049,6 +1156,32 @@ const CONFIG = {
       },
     ] satisfies Size[],
   },
+  
+  TERNO: {
+    PRODUCT: {
+      id: 'terno',
+      name: 'Terno',
+    },
+    COLORS: [
+      {
+        id: 'terno-white',
+        productId: 'terno',
+        name: 'White',
+        hexValue: '#FFFFFF',
+      },
+    ],
+    SIZES: [
+      { id: 'terno-1', productId: 'terno', name: 'Terno 1', price: 320 },
+      { id: 'terno-2', productId: 'terno', name: 'Terno 2', price: 320 },
+      { id: 'terno-3', productId: 'terno', name: 'Terno 3', price: 320 },
+      { id: 'terno-n-dress', productId: 'terno', name: 'N dress', price: 320 },
+      { id: 'terno-m-dress', productId: 'terno', name: 'M dress', price: 320 },
+      { id: 'terno-spag-dress', productId: 'terno', name: 'Spag dress', price: 320 },
+      { id: 'terno-jumper-14', productId: 'terno', name: 'Jumper 14', price: 320 },
+      { id: 'terno-jumper-13', productId: 'terno', name: 'Jumper 13', price: 320 },
+      { id: 'terno-jumper-12', productId: 'terno', name: 'Jumper 12', price: 320 },
+    ],
+  },
 } as const;
 
 type LaborOperationSeed = {
@@ -1077,18 +1210,21 @@ const joggingPantsSizeRates = (kidsRate: number, adultRate: number) => (size: Si
 };
 
 const fixedSizeRate = (rate: number) => (_size: Size) => rate;
+const ternoSizeRates = (rates: Record<string, number>) => (size: Size) => {
+  return rates[size.name] ?? undefined;
+};
 
 const LABOR_OPERATION_SEEDS: LaborOperationSeed[] = [
   {
     productId: 'jogging-pants',
     name: 'Edging',
-    rateForSize: joggingPantsSizeRates(2.75, 3.5),
+    rateForSize: joggingPantsSizeRates(2.75, 2.25),
   },
 
   {
     productId: 'jogging-pants',
     name: 'Highspeed',
-    rateForSize: joggingPantsSizeRates(2.25, 1.5),
+    rateForSize: joggingPantsSizeRates(2.25, 2.25),
   },
   {
     productId: 'jogging-pants',
@@ -1126,6 +1262,52 @@ const LABOR_OPERATION_SEEDS: LaborOperationSeed[] = [
     productId: 'jeans',
     name: 'Highspeed',
     rateForSize: fixedSizeRate(2),
+  },
+
+  {
+    productId: 'terno',
+    name: 'Edging',
+    rateForSize: ternoSizeRates({
+      'Terno 1': 1.5,
+      'Terno 2': 1.5,
+      'Terno 3': 1.5,
+      'N dress': 1.75,
+      'M dress': 1.75,
+      'Spag dress': 1.5,
+      'Jumper 14': 1.75,
+      'Jumper 13': 1.75,
+      'Jumper 12': 1.5,
+    }),
+  },
+  {
+    productId: 'terno',
+    name: 'Highspeed',
+    rateForSize: ternoSizeRates({
+      'Terno 1': 1.5,
+      'Terno 2': 1.5,
+      'Terno 3': 2.5,
+      'N dress': 1.0,
+      'M dress': 1.0,
+      'Spag dress': 1.0,
+      'Jumper 14': 1.75,
+      'Jumper 13': 2.0,
+      'Jumper 12': 1.5,
+    }),
+  },
+  {
+    productId: 'terno',
+    name: 'Piping',
+    rateForSize: ternoSizeRates({
+      'Terno 1': 1.0,
+      'Terno 2': 1.75,
+      'Terno 3': 1.0,
+      'N dress': 1.0,
+      'M dress': 1.0,
+      'Spag dress': 1.0,
+      'Jumper 14': 1.5,
+      'Jumper 13': 1.5,
+      'Jumper 12': 1.5,
+    }),
   },
 ];
 

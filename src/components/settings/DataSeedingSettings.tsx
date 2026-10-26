@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -31,10 +32,26 @@ const PRODUCT_CONFIG_BUTTONS: {
   { key: 'TIGHTS_SAKBET', label: 'Tights / Sakbet' },
   { key: 'LEOTARD_SET_LONG', label: 'L/S Set' },
   { key: 'LEOTARD_SET_SHORT', label: 'S/S Set' },
+  { key: 'TERNO', label: 'Terno' },
+  { key: 'BIG_J_PANTS_PUNYOS', label: 'Big J Pants Punyos' },
 ];
 
 export default function DataSeedingSettings() {
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Track collapsed state for each section
+  const [collapsedSections, setCollapsedSections] = useState({
+    products: true,
+    other: true,
+    deletion: true,
+  });
+
+  const toggleSection = (section: keyof typeof collapsedSections) => {
+    setCollapsedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
 
   const runAction = (
     title: string,
@@ -104,263 +121,302 @@ export default function DataSeedingSettings() {
         </View>
       </View>
 
-      {/* Product Configurations */}
-      <View style={styles.section}>
-        <Text style={styles.title}>Seed Product Configuration</Text>
-        <Text style={styles.subtitle}>
-          Seed an individual product&apos;s catalog, colors, and sizes.
-        </Text>
+      {/* 1. Product Configurations */}
+      <View style={styles.sectionCard}>
+        <Pressable style={styles.sectionHeader} onPress={() => toggleSection('products')}>
+          <View style={styles.sectionTitleContainer}>
+            <Text style={styles.title}>Seed Product Configuration</Text>
+            <Text style={styles.subtitle}>
+              Seed an individual product&apos;s catalog, colors, and sizes.
+            </Text>
+          </View>
+          <Ionicons
+            name={collapsedSections.products ? 'chevron-down' : 'chevron-up'}
+            size={18}
+            color="#4B5563"
+          />
+        </Pressable>
 
-        <View style={styles.productGrid}>
-          {PRODUCT_CONFIG_BUTTONS.map(({ key, label }) => (
-            <Pressable
-              key={key}
-              disabled={isProcessing}
-              onPress={() =>
-                runAction(
-                  `Seed ${label}`,
-                  `Seed the product, colors, and sizes for ${label}?`,
-                  () => seedProductConfig(key),
-                )
-              }
-              style={({ pressed }) => [
-                styles.productButton,
-                pressed && styles.pressed,
-                isProcessing && styles.disabled,
-              ]}
-            >
-              <Text style={styles.productButtonText}>{label}</Text>
-            </Pressable>
-          ))}
-        </View>
+        {!collapsedSections.products && (
+          <View style={styles.sectionBody}>
+            <View style={styles.productGrid}>
+              {PRODUCT_CONFIG_BUTTONS.map(({ key, label }) => (
+                <Pressable
+                  key={key}
+                  disabled={isProcessing}
+                  onPress={() =>
+                    runAction(
+                      `Seed ${label}`,
+                      `Seed the product, colors, and sizes for ${label}?`,
+                      () => seedProductConfig(key),
+                    )
+                  }
+                  style={({ pressed }) => [
+                    styles.productButton,
+                    pressed && styles.pressed,
+                    isProcessing && styles.disabled,
+                  ]}
+                >
+                  <Text style={styles.productButtonText}>{label}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        )}
       </View>
 
-      {/* Other Seed Data */}
-      <View style={styles.section}>
-        <Text style={styles.title}>Other Seed Data</Text>
-        <Text style={styles.subtitle}>
-          Initialize supporting data used throughout the application.
-        </Text>
+      {/* 2. Other Seed Data */}
+      <View style={styles.sectionCard}>
+        <Pressable style={styles.sectionHeader} onPress={() => toggleSection('other')}>
+          <View style={styles.sectionTitleContainer}>
+            <Text style={styles.title}>Other Seed Data</Text>
+            <Text style={styles.subtitle}>
+              Initialize supporting data used throughout the application.
+            </Text>
+          </View>
+          <Ionicons
+            name={collapsedSections.other ? 'chevron-down' : 'chevron-up'}
+            size={18}
+            color="#4B5563"
+          />
+        </Pressable>
 
-        <View style={styles.actions}>
-          <Pressable
-            disabled={isProcessing}
-            onPress={() =>
-              runAction(
-                'Seed Labor Data',
-                'Seed workers, operations, and labor rates?',
-                seedLaborData,
-              )
-            }
-            style={({ pressed }) => [
-              styles.actionButton,
-              pressed && styles.pressed,
-              isProcessing && styles.disabled,
-            ]}
-          >
-            <Text style={styles.actionButtonText}>Seed Labor Data</Text>
-          </Pressable>
+        {!collapsedSections.other && (
+          <View style={styles.sectionBody}>
+            <View style={styles.actions}>
+              <Pressable
+                disabled={isProcessing}
+                onPress={() =>
+                  runAction(
+                    'Seed Labor Data',
+                    'Seed workers, operations, and labor rates?',
+                    seedLaborData,
+                  )
+                }
+                style={({ pressed }) => [
+                  styles.actionButton,
+                  pressed && styles.pressed,
+                  isProcessing && styles.disabled,
+                ]}
+              >
+                <Text style={styles.actionButtonText}>Seed Labor Data</Text>
+              </Pressable>
 
-          <Pressable
-            disabled={isProcessing}
-            onPress={() =>
-              runAction('Seed Customers', 'Seed the initial customer data?', seedCustomers)
-            }
-            style={({ pressed }) => [
-              styles.actionButton,
-              pressed && styles.pressed,
-              isProcessing && styles.disabled,
-            ]}
-          >
-            <Text style={styles.actionButtonText}>Seed Customers</Text>
-          </Pressable>
+              <Pressable
+                disabled={isProcessing}
+                onPress={() =>
+                  runAction('Seed Customers', 'Seed the initial customer data?', seedCustomers)
+                }
+                style={({ pressed }) => [
+                  styles.actionButton,
+                  pressed && styles.pressed,
+                  isProcessing && styles.disabled,
+                ]}
+              >
+                <Text style={styles.actionButtonText}>Seed Customers</Text>
+              </Pressable>
 
-          <Pressable
-            disabled={isProcessing}
-            onPress={() =>
-              runAction(
-                'Seed All Initial Data',
-                'Seed all product configurations, labor data, and customers?',
-                seedInitialData,
-              )
-            }
-            style={({ pressed }) => [
-              styles.allButton,
-              pressed && styles.pressed,
-              isProcessing && styles.disabled,
-            ]}
-          >
-            <Text style={styles.allButtonText}>Seed All Initial Data</Text>
-          </Pressable>
-        </View>
+              <Pressable
+                disabled={isProcessing}
+                onPress={() =>
+                  runAction(
+                    'Seed All Initial Data',
+                    'Seed all product configurations, labor data, and customers?',
+                    seedInitialData,
+                  )
+                }
+                style={({ pressed }) => [
+                  styles.allButton,
+                  pressed && styles.pressed,
+                  isProcessing && styles.disabled,
+                ]}
+              >
+                <Text style={styles.allButtonText}>Seed All Initial Data</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
       </View>
 
-      {/* Store Reset / Delete Section */}
-      <View style={styles.section}>
-        <Text style={styles.title}>Store Data Deletion</Text>
-        <Text style={styles.subtitle}>
-          Clear data for individual stores or wipe everything clean.
-        </Text>
+      {/* 3. Store Reset / Delete Section */}
+      <View style={styles.sectionCard}>
+        <Pressable style={styles.sectionHeader} onPress={() => toggleSection('deletion')}>
+          <View style={styles.sectionTitleContainer}>
+            <Text style={styles.title}>Store Data Deletion</Text>
+            <Text style={styles.subtitle}>
+              Clear data for individual stores or wipe everything clean.
+            </Text>
+          </View>
+          <Ionicons
+            name={collapsedSections.deletion ? 'chevron-down' : 'chevron-up'}
+            size={18}
+            color="#4B5563"
+          />
+        </Pressable>
 
-        <View style={styles.productGrid}>
-          <Pressable
-            disabled={isProcessing}
-            onPress={() =>
-              runAction('Clear Products', 'Clear all products?', () =>
-                useProductStore.setState({ products: [] }),
-              )
-            }
-            style={({ pressed }) => [
-              styles.deleteButton,
-              pressed && styles.pressed,
-              isProcessing && styles.disabled,
-            ]}
-          >
-            <Text style={styles.deleteButtonText}>Clear Products</Text>
-          </Pressable>
+        {!collapsedSections.deletion && (
+          <View style={styles.sectionBody}>
+            <View style={styles.productGrid}>
+              <Pressable
+                disabled={isProcessing}
+                onPress={() =>
+                  runAction('Clear Products', 'Clear all products?', () =>
+                    useProductStore.setState({ products: [] }),
+                  )
+                }
+                style={({ pressed }) => [
+                  styles.deleteButton,
+                  pressed && styles.pressed,
+                  isProcessing && styles.disabled,
+                ]}
+              >
+                <Text style={styles.deleteButtonText}>Clear Products</Text>
+              </Pressable>
 
-          <Pressable
-            disabled={isProcessing}
-            onPress={() =>
-              runAction('Clear Colors', 'Clear all colors?', () =>
-                useColorStore.setState({ colors: [] }),
-              )
-            }
-            style={({ pressed }) => [
-              styles.deleteButton,
-              pressed && styles.pressed,
-              isProcessing && styles.disabled,
-            ]}
-          >
-            <Text style={styles.deleteButtonText}>Clear Colors</Text>
-          </Pressable>
+              <Pressable
+                disabled={isProcessing}
+                onPress={() =>
+                  runAction('Clear Colors', 'Clear all colors?', () =>
+                    useColorStore.setState({ colors: [] }),
+                  )
+                }
+                style={({ pressed }) => [
+                  styles.deleteButton,
+                  pressed && styles.pressed,
+                  isProcessing && styles.disabled,
+                ]}
+              >
+                <Text style={styles.deleteButtonText}>Clear Colors</Text>
+              </Pressable>
 
-          <Pressable
-            disabled={isProcessing}
-            onPress={() =>
-              runAction('Clear Sizes', 'Clear all sizes?', () =>
-                useSizeStore.setState({ sizes: [] }),
-              )
-            }
-            style={({ pressed }) => [
-              styles.deleteButton,
-              pressed && styles.pressed,
-              isProcessing && styles.disabled,
-            ]}
-          >
-            <Text style={styles.deleteButtonText}>Clear Sizes</Text>
-          </Pressable>
+              <Pressable
+                disabled={isProcessing}
+                onPress={() =>
+                  runAction('Clear Sizes', 'Clear all sizes?', () =>
+                    useSizeStore.setState({ sizes: [] }),
+                  )
+                }
+                style={({ pressed }) => [
+                  styles.deleteButton,
+                  pressed && styles.pressed,
+                  isProcessing && styles.disabled,
+                ]}
+              >
+                <Text style={styles.deleteButtonText}>Clear Sizes</Text>
+              </Pressable>
 
-          <Pressable
-            disabled={isProcessing}
-            onPress={() =>
-              runAction('Clear Operations', 'Clear all operations?', () =>
-                useOperationStore.setState({ operations: [] }),
-              )
-            }
-            style={({ pressed }) => [
-              styles.deleteButton,
-              pressed && styles.pressed,
-              isProcessing && styles.disabled,
-            ]}
-          >
-            <Text style={styles.deleteButtonText}>Clear Operations</Text>
-          </Pressable>
+              <Pressable
+                disabled={isProcessing}
+                onPress={() =>
+                  runAction('Clear Operations', 'Clear all operations?', () =>
+                    useOperationStore.setState({ operations: [] }),
+                  )
+                }
+                style={({ pressed }) => [
+                  styles.deleteButton,
+                  pressed && styles.pressed,
+                  isProcessing && styles.disabled,
+                ]}
+              >
+                <Text style={styles.deleteButtonText}>Clear Operations</Text>
+              </Pressable>
 
-          <Pressable
-            disabled={isProcessing}
-            onPress={() =>
-              runAction('Clear Workers', 'Clear all workers?', () =>
-                useWorkerStore.setState({ workers: [] }),
-              )
-            }
-            style={({ pressed }) => [
-              styles.deleteButton,
-              pressed && styles.pressed,
-              isProcessing && styles.disabled,
-            ]}
-          >
-            <Text style={styles.deleteButtonText}>Clear Workers</Text>
-          </Pressable>
+              <Pressable
+                disabled={isProcessing}
+                onPress={() =>
+                  runAction('Clear Workers', 'Clear all workers?', () =>
+                    useWorkerStore.setState({ workers: [] }),
+                  )
+                }
+                style={({ pressed }) => [
+                  styles.deleteButton,
+                  pressed && styles.pressed,
+                  isProcessing && styles.disabled,
+                ]}
+              >
+                <Text style={styles.deleteButtonText}>Clear Workers</Text>
+              </Pressable>
 
-          <Pressable
-            disabled={isProcessing}
-            onPress={() =>
-              runAction('Clear Labor Rates', 'Clear all labor rates?', () =>
-                useLaborRateStore.setState({ laborRates: [] }),
-              )
-            }
-            style={({ pressed }) => [
-              styles.deleteButton,
-              pressed && styles.pressed,
-              isProcessing && styles.disabled,
-            ]}
-          >
-            <Text style={styles.deleteButtonText}>Clear Labor Rates</Text>
-          </Pressable>
+              <Pressable
+                disabled={isProcessing}
+                onPress={() =>
+                  runAction('Clear Labor Rates', 'Clear all labor rates?', () =>
+                    useLaborRateStore.setState({ laborRates: [] }),
+                  )
+                }
+                style={({ pressed }) => [
+                  styles.deleteButton,
+                  pressed && styles.pressed,
+                  isProcessing && styles.disabled,
+                ]}
+              >
+                <Text style={styles.deleteButtonText}>Clear Labor Rates</Text>
+              </Pressable>
 
-          <Pressable
-            disabled={isProcessing}
-            onPress={() =>
-              runAction('Clear Labor Items', 'Clear all logged labor items?', () =>
-                useLaborItemStore.setState({ laborItems: {} }),
-              )
-            }
-            style={({ pressed }) => [
-              styles.deleteButton,
-              pressed && styles.pressed,
-              isProcessing && styles.disabled,
-            ]}
-          >
-            <Text style={styles.deleteButtonText}>Clear Labor Items</Text>
-          </Pressable>
+              <Pressable
+                disabled={isProcessing}
+                onPress={() =>
+                  runAction('Clear Labor Items', 'Clear all logged labor items?', () =>
+                    useLaborItemStore.setState({ laborItems: {} }),
+                  )
+                }
+                style={({ pressed }) => [
+                  styles.deleteButton,
+                  pressed && styles.pressed,
+                  isProcessing && styles.disabled,
+                ]}
+              >
+                <Text style={styles.deleteButtonText}>Clear Labor Items</Text>
+              </Pressable>
 
-          <Pressable
-            disabled={isProcessing}
-            onPress={() =>
-              runAction('Clear Customers', 'Clear all customers?', () =>
-                useCustomerStore.setState({ customers: [] }),
-              )
-            }
-            style={({ pressed }) => [
-              styles.deleteButton,
-              pressed && styles.pressed,
-              isProcessing && styles.disabled,
-            ]}
-          >
-            <Text style={styles.deleteButtonText}>Clear Customers</Text>
-          </Pressable>
+              <Pressable
+                disabled={isProcessing}
+                onPress={() =>
+                  runAction('Clear Customers', 'Clear all customers?', () =>
+                    useCustomerStore.setState({ customers: [] }),
+                  )
+                }
+                style={({ pressed }) => [
+                  styles.deleteButton,
+                  pressed && styles.pressed,
+                  isProcessing && styles.disabled,
+                ]}
+              >
+                <Text style={styles.deleteButtonText}>Clear Customers</Text>
+              </Pressable>
 
-          <Pressable
-            disabled={isProcessing}
-            onPress={() =>
-              runAction('Clear Deductions', 'Clear all deductions?', () =>
-                useDeductionStore.setState({ deductions: {} }),
-              )
-            }
-            style={({ pressed }) => [
-              styles.deleteButton,
-              pressed && styles.pressed,
-              isProcessing && styles.disabled,
-            ]}
-          >
-            <Text style={styles.deleteButtonText}>Clear Deductions</Text>
-          </Pressable>
-        </View>
+              <Pressable
+                disabled={isProcessing}
+                onPress={() =>
+                  runAction('Clear Deductions', 'Clear all deductions?', () =>
+                    useDeductionStore.setState({ deductions: {} }),
+                  )
+                }
+                style={({ pressed }) => [
+                  styles.deleteButton,
+                  pressed && styles.pressed,
+                  isProcessing && styles.disabled,
+                ]}
+              >
+                <Text style={styles.deleteButtonText}>Clear Deductions</Text>
+              </Pressable>
+            </View>
 
-        <View style={{ marginTop: 12 }}>
-          <Pressable
-            disabled={isProcessing}
-            onPress={handleClearAll}
-            style={({ pressed }) => [
-              styles.dangerAllButton,
-              pressed && styles.pressed,
-              isProcessing && styles.disabled,
-            ]}
-          >
-            <Text style={styles.dangerAllButtonText}>Clear All Stores</Text>
-          </Pressable>
-        </View>
+            <View style={{ marginTop: 12 }}>
+              <Pressable
+                disabled={isProcessing}
+                onPress={handleClearAll}
+                style={({ pressed }) => [
+                  styles.dangerAllButton,
+                  pressed && styles.pressed,
+                  isProcessing && styles.disabled,
+                ]}
+              >
+                <Text style={styles.dangerAllButtonText}>Clear All Stores</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
       </View>
 
       {/* Warning */}
@@ -427,9 +483,30 @@ const styles = StyleSheet.create({
     color: '#707A8A',
   },
 
-  // Sections
-  section: {
-    marginBottom: 20,
+  // Section Cards
+  sectionCard: {
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 14,
+    backgroundColor: '#F8FAFC',
+  },
+  sectionTitleContainer: {
+    flex: 1,
+    paddingRight: 8,
+  },
+  sectionBody: {
+    padding: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
   },
   title: {
     fontSize: 14,
@@ -437,8 +514,7 @@ const styles = StyleSheet.create({
     color: '#252B35',
   },
   subtitle: {
-    marginTop: 4,
-    marginBottom: 12,
+    marginTop: 2,
     fontSize: 12,
     lineHeight: 18,
     color: '#707A8A',
@@ -486,7 +562,6 @@ const styles = StyleSheet.create({
   // Other seed actions
   actions: {
     gap: 8,
-    marginTop: 4,
   },
   actionButton: {
     minHeight: 42,

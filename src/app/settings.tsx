@@ -15,7 +15,7 @@ export default function SettingsScreen() {
       <DataSeedingSettings />
 
       <PrinterSettings />
-      <Text>Version 1.1.1</Text>
+      <Text>Version 1.1.2</Text>
     </ScrollView>
   );
 }

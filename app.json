@@ -50,9 +50,7 @@
       [
         "react-native-ble-plx",
         {
-          "modes": [
-            "central"
-          ],
+          "modes": ["central"],
           "bluetoothAlwaysPermission": "Allow JPJ RTW to connect to the receipt printer."
         }
       ],

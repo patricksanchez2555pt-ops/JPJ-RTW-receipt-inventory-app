@@ -1156,7 +1156,7 @@ const CONFIG = {
       },
     ] satisfies Size[],
   },
-  
+
   TERNO: {
     PRODUCT: {
       id: 'terno',

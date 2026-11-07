@@ -3,6 +3,8 @@ rm -rf ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles
 npx expo prebuild --platform ios && npx expo run:ios --configuration Release --device
 open ios/JPJRTW.xcworkspace
 
+node ./scripts/remove-ios-signing-team.js && rm -rf ~/Library/Developer/Xcode/UserData/Provisioning\ Profiles && npx expo prebuild --platform ios && npx expo run:ios --configuration Release --device && open ios/JPJRTW.xcworkspace
+
 Prebuild now configures the iOS scene lifecycle required by current iOS SDKs. Rebuild and reinstall the app after this change; an already-installed build will still fail to launch.
 
 In Xcode

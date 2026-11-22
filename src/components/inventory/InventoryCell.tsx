@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { f } from '@/utils/fontScale';
 
 import { getInventoryKey, useInventoryStore } from '../../store/useInventoryStore';
+import type { InventoryLocation } from '../../types/localModels';
 import { COLOR_COLUMN_WIDTH, ROW_HEIGHT } from './constants';
 import { getSubtleBgColor } from './utils';
 
@@ -13,6 +14,7 @@ type InventoryCellProps = {
   colorId: string;
   hexValue: string;
   quantityMode: 'pcs' | 'dzn';
+  location: InventoryLocation;
 };
 
 export function InventoryCell({
@@ -21,16 +23,17 @@ export function InventoryCell({
   colorId,
   hexValue,
   quantityMode,
+  location,
 }: InventoryCellProps) {
   // Derive key for direct dictionary access
-  const key = getInventoryKey(productId, colorId, sizeId);
+  const key = getInventoryKey(productId, colorId, sizeId, location);
 
   // Subscribe strictly to THIS cell's quantity
   const quantity = useInventoryStore((state) => state.getQuantity(key));
   const setQuantity = useInventoryStore((state) => state.setQuantity);
 
   const handleUpdate = (nextQty: number) => {
-    setQuantity(productId, colorId, sizeId, Math.max(0, nextQty));
+    setQuantity(productId, colorId, sizeId, Math.max(0, nextQty), location);
   };
 
   const handleChangeText = (text: string) => {

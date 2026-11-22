@@ -3,10 +3,11 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 // import { supabase } from '@/lib/supabase';
-import type { Transaction, TransactionItem } from '../types/localModels';
+import type { InventoryLocation, Transaction, TransactionItem } from '../types/localModels';
 import { getInventoryKey, useInventoryStore } from './useInventoryStore';
 
 const mmkv = createMMKV();
+const TRANSACTION_INVENTORY_LOCATION: InventoryLocation = 'store';
 
 const mmkvStorage = {
   setItem: (name: string, value: string) => mmkv.set(name, value),
@@ -25,7 +26,7 @@ function getTransactionInventoryQuantities(items: TransactionItem[] = []) {
   const quantities = new Map<string, InventoryQuantity>();
 
   const addQuantity = (productId: string, colorId: string, sizeId: string, quantity: number) => {
-    const key = getInventoryKey(productId, colorId, sizeId);
+    const key = getInventoryKey(productId, colorId, sizeId, TRANSACTION_INVENTORY_LOCATION);
     const existing = quantities.get(key);
 
     quantities.set(key, {
@@ -80,6 +81,7 @@ function updateInventoryForTransactionChange(
         previous.colorId,
         previous.sizeId,
         Math.max(0, currentQty + quantityChange),
+        TRANSACTION_INVENTORY_LOCATION,
       );
     }
   }
@@ -95,6 +97,7 @@ function updateInventoryForTransactionChange(
       next.colorId,
       next.sizeId,
       Math.max(0, currentQty - next.quantity),
+      TRANSACTION_INVENTORY_LOCATION,
     );
   }
 }

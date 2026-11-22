@@ -8,7 +8,7 @@ import { f } from '@/utils/fontScale';
 import { useColorStore } from '../../store/useColorStore';
 import { getInventoryKey } from '../../store/useInventoryStore';
 import { useSizeStore } from '../../store/useSizeStore';
-import type { Color } from '../../types/localModels';
+import type { Color, InventoryLocation } from '../../types/localModels';
 import { ROW_HEIGHT, SIZE_COLUMN_WIDTH } from './constants';
 import { DraggableColorHeader } from './DraggableColorHeader';
 import { InventoryCell } from './InventoryCell';
@@ -16,9 +16,10 @@ import { InventoryCell } from './InventoryCell';
 type InventoryTableProps = {
   productId: string;
   quantityMode: 'pcs' | 'dzn';
+  location: InventoryLocation;
 };
 
-export default function InventoryTable({ productId, quantityMode }: InventoryTableProps) {
+export default function InventoryTable({ productId, quantityMode, location }: InventoryTableProps) {
   const rawColors = useColorStore(
     useShallow((state) => state.colors.filter((color) => color.productId === productId)),
   );
@@ -188,12 +189,13 @@ export default function InventoryTable({ productId, quantityMode }: InventoryTab
                   <View key={size.id} style={styles.row}>
                     {columnOrder.map((color) => (
                       <InventoryCell
-                        key={getInventoryKey(productId, color.id, size.id)}
+                        key={getInventoryKey(productId, color.id, size.id, location)}
                         productId={productId}
                         sizeId={size.id}
                         colorId={color.id}
                         hexValue={color.hexValue}
                         quantityMode={quantityMode}
+                        location={location}
                       />
                     ))}
                   </View>

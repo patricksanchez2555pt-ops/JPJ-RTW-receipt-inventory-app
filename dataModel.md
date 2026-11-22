@@ -27,6 +27,7 @@ product_id
 color_id
 size_id
 quantity
+location (defaults to store for existing inventory)
 updated_at
 
 TRANSACTION

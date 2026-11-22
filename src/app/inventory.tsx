@@ -7,13 +7,14 @@ import ProductSelector from '../components/common/ProductSelector';
 import InventoryAdjustmentForm from '../components/inventory/InventoryAdjustmentForm';
 import InventoryTable from '../components/inventory/InventoryTable';
 import { useProductStore } from '../store/useProductStore';
-import type { Product } from '../types/localModels';
+import type { InventoryLocation, Product } from '../types/localModels';
 
 export default function InventoryView() {
   const products = useProductStore((state) => state.products);
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(products[0] ?? null);
   const [quantityMode, setQuantityMode] = useState<'pcs' | 'dzn'>('pcs');
+  const [inventoryLocation, setInventoryLocation] = useState<InventoryLocation>('store');
   const [adjustmentType, setAdjustmentType] = useState<'in' | 'out' | null>(null);
 
   return (
@@ -60,6 +61,41 @@ export default function InventoryView() {
                 </Pressable>
               </View>
 
+              <View style={styles.locationContainer}>
+                <Pressable
+                  onPress={() => setInventoryLocation('store')}
+                  style={[
+                    styles.locationButton,
+                    inventoryLocation === 'store' && styles.locationButtonSelected,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.locationText,
+                      inventoryLocation === 'store' && styles.locationTextSelected,
+                    ]}
+                  >
+                    Store
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => setInventoryLocation('warehouse')}
+                  style={[
+                    styles.locationButton,
+                    inventoryLocation === 'warehouse' && styles.locationButtonSelected,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.locationText,
+                      inventoryLocation === 'warehouse' && styles.locationTextSelected,
+                    ]}
+                  >
+                    Warehouse
+                  </Text>
+                </Pressable>
+              </View>
+
               <Pressable
                 style={({ pressed }) => [styles.stockInButton, pressed && styles.pressed]}
                 onPress={() => setAdjustmentType('in')}
@@ -81,6 +117,7 @@ export default function InventoryView() {
             key={adjustmentType}
             type={adjustmentType}
             initialProduct={selectedProduct}
+            location={inventoryLocation}
             onCancel={() => setAdjustmentType(null)}
             onSave={(product) => {
               if (product) setSelectedProduct(product);
@@ -89,7 +126,11 @@ export default function InventoryView() {
           />
         ) : (
           selectedProduct && (
-            <InventoryTable productId={selectedProduct.id} quantityMode={quantityMode} />
+            <InventoryTable
+              productId={selectedProduct.id}
+              quantityMode={quantityMode}
+              location={inventoryLocation}
+            />
           )
         )}
       </View>
@@ -159,6 +200,37 @@ const styles = StyleSheet.create({
   },
 
   modeTextSelected: {
+    color: '#1745D1',
+    fontWeight: '700',
+  },
+
+  locationContainer: {
+    flexDirection: 'row',
+    height: 44,
+    borderWidth: 1,
+    borderColor: '#D9DEE8',
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+  },
+
+  locationButton: {
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  locationButtonSelected: {
+    backgroundColor: '#EEF3FF',
+  },
+
+  locationText: {
+    fontSize: f(13),
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+
+  locationTextSelected: {
     color: '#1745D1',
     fontWeight: '700',
   },

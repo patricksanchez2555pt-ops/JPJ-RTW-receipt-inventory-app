@@ -9,7 +9,7 @@ import { useColorStore } from '@/store/useColorStore';
 import { getInventoryKey, useInventoryStore } from '@/store/useInventoryStore';
 import { useProductStore } from '@/store/useProductStore';
 import { useSizeStore } from '@/store/useSizeStore';
-import type { Color, Product, Size } from '@/types/localModels';
+import type { Color, InventoryLocation, Product, Size } from '@/types/localModels';
 import { f } from '@/utils/fontScale';
 
 import AddedItemsPanel from '../transactions/components/added-items-panel/AddedItemsPanel';
@@ -20,11 +20,18 @@ type AdjustmentType = 'in' | 'out';
 type Props = {
   type: AdjustmentType;
   initialProduct: Product | null;
+  location: InventoryLocation;
   onCancel: () => void;
   onSave: (product: Product | null) => void;
 };
 
-export default function InventoryAdjustmentForm({ type, initialProduct, onCancel, onSave }: Props) {
+export default function InventoryAdjustmentForm({
+  type,
+  initialProduct,
+  location,
+  onCancel,
+  onSave,
+}: Props) {
   const products = useProductStore((state) => state.products);
   const colors = useColorStore((state) => state.colors);
   const sizes = useSizeStore((state) => state.sizes);
@@ -151,7 +158,7 @@ export default function InventoryAdjustmentForm({ type, initialProduct, onCancel
 
     if (!isStockIn) {
       const insufficientItem = items.find((item) => {
-        const key = getInventoryKey(item.productId, item.colorId, item.sizeId);
+        const key = getInventoryKey(item.productId, item.colorId, item.sizeId, location);
         return item.quantity > getQuantity(key);
       });
 
@@ -160,6 +167,7 @@ export default function InventoryAdjustmentForm({ type, initialProduct, onCancel
           insufficientItem.productId,
           insufficientItem.colorId,
           insufficientItem.sizeId,
+          location,
         );
         Alert.alert(
           'Insufficient Inventory',
@@ -170,11 +178,11 @@ export default function InventoryAdjustmentForm({ type, initialProduct, onCancel
     }
 
     items.forEach((item) => {
-      const key = getInventoryKey(item.productId, item.colorId, item.sizeId);
+      const key = getInventoryKey(item.productId, item.colorId, item.sizeId, location);
       const currentQuantity = getQuantity(key);
       const updatedQuantity = currentQuantity + (isStockIn ? item.quantity : -item.quantity);
 
-      setQuantity(item.productId, item.colorId, item.sizeId, updatedQuantity);
+      setQuantity(item.productId, item.colorId, item.sizeId, updatedQuantity, location);
     });
 
     onSave(selectedProduct);
@@ -186,7 +194,7 @@ export default function InventoryAdjustmentForm({ type, initialProduct, onCancel
         <View>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.subtitle}>
-            {isStockIn ? 'Add items to inventory.' : 'Deduct items from inventory.'}
+            {isStockIn ? 'Add items to' : 'Deduct items from'} {location} inventory.
           </Text>
         </View>
         <Pressable onPress={onCancel} style={styles.cancelButton}>

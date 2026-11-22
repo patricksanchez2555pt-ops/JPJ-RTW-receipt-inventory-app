@@ -42,11 +42,14 @@ export type CustomerPrice = {
 // INVENTORY
 // ==========================================
 
+export type InventoryLocation = 'store' | 'warehouse';
+
 export type Inventory = {
   productId: string;
   colorId: string;
   sizeId: string;
   quantity: number;
+  location?: InventoryLocation;
   updatedAt?: string;
 };
 

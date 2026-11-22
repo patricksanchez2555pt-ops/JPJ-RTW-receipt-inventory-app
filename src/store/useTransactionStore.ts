@@ -14,6 +14,91 @@ const mmkvStorage = {
   removeItem: (name: string) => mmkv.remove(name),
 };
 
+type InventoryQuantity = {
+  productId: string;
+  colorId: string;
+  sizeId: string;
+  quantity: number;
+};
+
+function getTransactionInventoryQuantities(items: TransactionItem[] = []) {
+  const quantities = new Map<string, InventoryQuantity>();
+
+  const addQuantity = (productId: string, colorId: string, sizeId: string, quantity: number) => {
+    const key = getInventoryKey(productId, colorId, sizeId);
+    const existing = quantities.get(key);
+
+    quantities.set(key, {
+      productId,
+      colorId,
+      sizeId,
+      quantity: (existing?.quantity ?? 0) + quantity,
+    });
+  };
+
+  items.forEach((item) => {
+    if (item.productId === 'leotard-set-long' || item.productId === 'leotard-set-short') {
+      const topProductId = item.productId.replace('-set', '');
+      const topColorId = item.colorId.replace('-set', '');
+      const topSizeId = item.sizeId.replace('-set', '');
+
+      addQuantity(topProductId, topColorId, topSizeId, item.quantity);
+
+      const bottomColorId = item.colorId
+        .replace('leotard-set-long', 'tights-sakbet')
+        .replace('leotard-set-short', 'tights-sakbet');
+      const bottomSizeId = item.sizeId
+        .replace('leotard-set-long', 'tights-sakbet')
+        .replace('leotard-set-short', 'tights-sakbet');
+
+      addQuantity('tights-sakbet', bottomColorId, bottomSizeId, item.quantity);
+      return;
+    }
+
+    addQuantity(item.productId, item.colorId, item.sizeId, item.quantity);
+  });
+
+  return quantities;
+}
+
+function updateInventoryForTransactionChange(
+  previousItems: TransactionItem[] = [],
+  nextItems: TransactionItem[] = [],
+) {
+  const previousQuantities = getTransactionInventoryQuantities(previousItems);
+  const nextQuantities = getTransactionInventoryQuantities(nextItems);
+  const inventoryStore = useInventoryStore.getState();
+
+  for (const [key, previous] of previousQuantities) {
+    const next = nextQuantities.get(key);
+    const quantityChange = previous.quantity - (next?.quantity ?? 0);
+
+    if (quantityChange !== 0) {
+      const currentQty = inventoryStore.getQuantity(key);
+      inventoryStore.setQuantity(
+        previous.productId,
+        previous.colorId,
+        previous.sizeId,
+        Math.max(0, currentQty + quantityChange),
+      );
+    }
+  }
+
+  for (const [key, next] of nextQuantities) {
+    if (previousQuantities.has(key)) {
+      continue;
+    }
+
+    const currentQty = inventoryStore.getQuantity(key);
+    inventoryStore.setQuantity(
+      next.productId,
+      next.colorId,
+      next.sizeId,
+      Math.max(0, currentQty - next.quantity),
+    );
+  }
+}
+
 type TransactionStore = {
   transactions: Transaction[];
 
@@ -70,48 +155,7 @@ export const useTransactionStore = create<TransactionStore>()(
           // createdBy: userId,
         };
 
-        // 1. DEDUCT SOLD QUANTITIES FROM GLOBAL INVENTORY STORE
-        const inventoryStore = useInventoryStore.getState();
-        items.forEach((item: TransactionItem) => {
-          // TODO: remove once bundle handling is implemented
-          if (item.productId === 'leotard-set-long' || item.productId === 'leotard-set-short') {
-            const topProductId = item.productId.replace('-set', '');
-            const topColorId = item.colorId.replace('-set', '');
-            const topSizeId = item.sizeId.replace('-set', '');
-            const topKey = getInventoryKey(topProductId, topColorId, topSizeId);
-
-            const currentQty = inventoryStore.getQuantity(topKey);
-            const updatedQty = Math.max(0, currentQty - item.quantity);
-
-            inventoryStore.setQuantity(topProductId, topColorId, topSizeId, updatedQty);
-
-            const bottomProductId = 'tights-sakbet';
-            const bottomColorId = item.colorId
-              .replace('leotard-set-long', 'tights-sakbet')
-              .replace('leotard-set-short', 'tights-sakbet');
-            const bottomSizeId = item.sizeId
-              .replace('leotard-set-long', 'tights-sakbet')
-              .replace('leotard-set-short', 'tights-sakbet');
-            const bottomKey = getInventoryKey(bottomProductId, bottomColorId, bottomSizeId);
-
-            const currentBottomQty = inventoryStore.getQuantity(bottomKey);
-            const updatedBottomQty = Math.max(0, currentBottomQty - item.quantity);
-
-            inventoryStore.setQuantity(
-              bottomProductId,
-              bottomColorId,
-              bottomSizeId,
-              updatedBottomQty,
-            );
-          } else {
-            const key = getInventoryKey(item.productId, item.colorId, item.sizeId);
-
-            const currentQty = inventoryStore.getQuantity(key);
-            const updatedQty = Math.max(0, currentQty - item.quantity);
-
-            inventoryStore.setQuantity(item.productId, item.colorId, item.sizeId, updatedQty);
-          }
-        });
+        updateInventoryForTransactionChange([], items);
 
         // 2. SAVE TRANSACTION LOCALLY (Latest transactions first)
         set((state) => ({
@@ -122,20 +166,31 @@ export const useTransactionStore = create<TransactionStore>()(
       },
 
       updateTransaction: (data) => {
-        const updatedTransaction = get().transactions.find((t) => t.id === data?.id);
-        if (!updatedTransaction) return undefined;
+        const previousTransaction = get().transactions.find((t) => t.id === data?.id);
+        if (!previousTransaction) return undefined;
+
+        const updatedTransaction = { ...previousTransaction, ...data };
+        updateInventoryForTransactionChange(previousTransaction.items, updatedTransaction.items);
 
         set((state) => ({
-          transactions: state.transactions.map((t) => (t.id === data.id ? { ...t, ...data } : t)),
+          transactions: state.transactions.map((t) => (t.id === data.id ? updatedTransaction : t)),
         }));
 
-        return { ...updatedTransaction, ...data };
+        return updatedTransaction;
       },
 
-      deleteTransaction: (id) =>
+      deleteTransaction: (id) => {
+        const transaction = get().transactions.find((t) => t.id === id);
+        if (!transaction) {
+          return;
+        }
+
+        updateInventoryForTransactionChange(transaction.items, []);
+
         set((state) => ({
           transactions: state.transactions.filter((t) => t.id !== id),
-        })),
+        }));
+      },
 
       setAllTransactions: (transactions) => set({ transactions }),
 

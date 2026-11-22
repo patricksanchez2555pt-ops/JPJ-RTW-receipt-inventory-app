@@ -15,9 +15,10 @@ import { InventoryCell } from './InventoryCell';
 
 type InventoryTableProps = {
   productId: string;
+  quantityMode: 'pcs' | 'dzn';
 };
 
-export default function InventoryTable({ productId }: InventoryTableProps) {
+export default function InventoryTable({ productId, quantityMode }: InventoryTableProps) {
   const rawColors = useColorStore(
     useShallow((state) => state.colors.filter((color) => color.productId === productId)),
   );
@@ -192,6 +193,7 @@ export default function InventoryTable({ productId }: InventoryTableProps) {
                         sizeId={size.id}
                         colorId={color.id}
                         hexValue={color.hexValue}
+                        quantityMode={quantityMode}
                       />
                     ))}
                   </View>

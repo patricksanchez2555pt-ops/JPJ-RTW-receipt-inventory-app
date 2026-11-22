@@ -12,6 +12,7 @@ export default function InventoryView() {
   const products = useProductStore((state) => state.products);
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(products[0] ?? null);
+  const [quantityMode, setQuantityMode] = useState<'pcs' | 'dzn'>('pcs');
 
   return (
     <View style={styles.container}>
@@ -25,6 +26,25 @@ export default function InventoryView() {
             />
           </View>
 
+          <View style={styles.modeContainer}>
+            <Pressable
+              onPress={() => setQuantityMode('pcs')}
+              style={[styles.modeButton, quantityMode === 'pcs' && styles.modeButtonSelected]}
+            >
+              <Text style={[styles.modeText, quantityMode === 'pcs' && styles.modeTextSelected]}>
+                Piece
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setQuantityMode('dzn')}
+              style={[styles.modeButton, quantityMode === 'dzn' && styles.modeButtonSelected]}
+            >
+              <Text style={[styles.modeText, quantityMode === 'dzn' && styles.modeTextSelected]}>
+                Dozen
+              </Text>
+            </Pressable>
+          </View>
+
           <Pressable
             style={({ pressed }) => [styles.saveButton, pressed && styles.pressed]}
             onPress={() => {
@@ -35,7 +55,9 @@ export default function InventoryView() {
           </Pressable>
         </View>
 
-        {selectedProduct && <InventoryTable productId={selectedProduct.id} />}
+        {selectedProduct && (
+          <InventoryTable productId={selectedProduct.id} quantityMode={quantityMode} />
+        )}
       </View>
     </View>
   );
@@ -61,6 +83,38 @@ const styles = StyleSheet.create({
 
   productSelectorContainer: {
     flex: 1,
+  },
+
+  modeContainer: {
+    flexDirection: 'row',
+    height: 44,
+    borderWidth: 1,
+    borderColor: '#D9DEE8',
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+  },
+
+  modeButton: {
+    minWidth: 72,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  modeButtonSelected: {
+    backgroundColor: '#EEF3FF',
+  },
+
+  modeText: {
+    fontSize: f(13),
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+
+  modeTextSelected: {
+    color: '#1745D1',
+    fontWeight: '700',
   },
 
   saveButton: {

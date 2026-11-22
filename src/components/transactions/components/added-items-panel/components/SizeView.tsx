@@ -15,6 +15,7 @@ type Props = {
   highlightedSet: Set<string>;
   showColors: boolean;
   showUnitPrice: boolean;
+  showAmounts?: boolean;
   itemLayoutsRef: React.RefObject<Record<string, number>>;
   isViewOnly?: boolean;
   onIncrease: (itemId: string) => void;
@@ -27,6 +28,7 @@ export default function SizeView({
   highlightedSet,
   showColors,
   showUnitPrice,
+  showAmounts = true,
   itemLayoutsRef,
   isViewOnly = false,
   onIncrease,
@@ -47,13 +49,15 @@ export default function SizeView({
                 <Text style={styles.readOnlyLabel}>Total by size</Text>
               </View>
 
-              <View style={styles.productHeaderTotal}>
-                <Text style={styles.productHeaderTotalLabel}>Product Total</Text>
+              {showAmounts && (
+                <View style={styles.productHeaderTotal}>
+                  <Text style={styles.productHeaderTotalLabel}>Product Total</Text>
 
-                <Text style={styles.productHeaderTotalValue}>
-                  ₱{formatNumber(productGroup.subTotal)}
-                </Text>
-              </View>
+                  <Text style={styles.productHeaderTotalValue}>
+                    ₱{formatNumber(productGroup.subTotal)}
+                  </Text>
+                </View>
+              )}
 
               <View style={styles.readOnlyBadge}>
                 <Text style={styles.readOnlyBadgeText}>Read only</Text>
@@ -67,7 +71,7 @@ export default function SizeView({
                     <Text style={styles.sizeGroupName}>{group.name}</Text>
                   </View>
 
-                  {showUnitPrice && (
+                  {showAmounts && showUnitPrice && (
                     <View style={styles.sizePriceContainer}>
                       <Text style={styles.sizeHeaderLabel}>Price</Text>
 
@@ -81,11 +85,13 @@ export default function SizeView({
                     <Text style={styles.sizeHeaderValue}>{group.quantity} pcs</Text>
                   </View>
 
-                  <View style={styles.sizeSubtotalContainer}>
-                    <Text style={styles.sizeHeaderLabel}>Subtotal</Text>
+                  {showAmounts && (
+                    <View style={styles.sizeSubtotalContainer}>
+                      <Text style={styles.sizeHeaderLabel}>Subtotal</Text>
 
-                    <Text style={styles.sizeHeaderValue}>₱{formatNumber(group.subTotal)}</Text>
-                  </View>
+                      <Text style={styles.sizeHeaderValue}>₱{formatNumber(group.subTotal)}</Text>
+                    </View>
+                  )}
                 </View>
 
                 {showColors &&
@@ -95,6 +101,7 @@ export default function SizeView({
                       item={item}
                       highlighted={highlightedSet.has(item.id)}
                       showUnitPrice={false}
+                      showAmounts={showAmounts}
                       itemLayoutsRef={itemLayoutsRef}
                       label={item.color?.name ?? 'Unknown Color'}
                       colorHex={item.color?.hexValue ?? '#000000'}

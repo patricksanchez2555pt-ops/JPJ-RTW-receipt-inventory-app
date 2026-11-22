@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { f } from '@/utils/fontScale';
 
 import ProductSelector from '../components/common/ProductSelector';
+import InventoryAdjustmentForm from '../components/inventory/InventoryAdjustmentForm';
 import InventoryTable from '../components/inventory/InventoryTable';
 import { useProductStore } from '../store/useProductStore';
 import type { Product } from '../types/localModels';
@@ -13,50 +14,83 @@ export default function InventoryView() {
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(products[0] ?? null);
   const [quantityMode, setQuantityMode] = useState<'pcs' | 'dzn'>('pcs');
+  const [adjustmentType, setAdjustmentType] = useState<'in' | 'out' | null>(null);
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.topBar}>
-          <View style={styles.productSelectorContainer}>
-            <ProductSelector
-              products={products}
-              selectedProduct={selectedProduct}
-              onSelect={(product) => setSelectedProduct(product)}
-            />
-          </View>
-
-          <View style={styles.modeContainer}>
+          {adjustmentType ? (
             <Pressable
-              onPress={() => setQuantityMode('pcs')}
-              style={[styles.modeButton, quantityMode === 'pcs' && styles.modeButtonSelected]}
+              onPress={() => setAdjustmentType(null)}
+              style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
             >
-              <Text style={[styles.modeText, quantityMode === 'pcs' && styles.modeTextSelected]}>
-                Piece
-              </Text>
+              <Text style={styles.backButtonText}>‹ Inventory</Text>
             </Pressable>
-            <Pressable
-              onPress={() => setQuantityMode('dzn')}
-              style={[styles.modeButton, quantityMode === 'dzn' && styles.modeButtonSelected]}
-            >
-              <Text style={[styles.modeText, quantityMode === 'dzn' && styles.modeTextSelected]}>
-                Dozen
-              </Text>
-            </Pressable>
-          </View>
+          ) : (
+            <>
+              <View style={styles.productSelectorContainer}>
+                <ProductSelector
+                  products={products}
+                  selectedProduct={selectedProduct}
+                  onSelect={(product) => setSelectedProduct(product)}
+                />
+              </View>
 
-          <Pressable
-            style={({ pressed }) => [styles.saveButton, pressed && styles.pressed]}
-            onPress={() => {
-              console.log(`Inventory saved locally for ${selectedProduct?.name}`);
-            }}
-          >
-            <Text style={styles.saveButtonText}>Save</Text>
-          </Pressable>
+              <View style={styles.modeContainer}>
+                <Pressable
+                  onPress={() => setQuantityMode('pcs')}
+                  style={[styles.modeButton, quantityMode === 'pcs' && styles.modeButtonSelected]}
+                >
+                  <Text
+                    style={[styles.modeText, quantityMode === 'pcs' && styles.modeTextSelected]}
+                  >
+                    Piece
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => setQuantityMode('dzn')}
+                  style={[styles.modeButton, quantityMode === 'dzn' && styles.modeButtonSelected]}
+                >
+                  <Text
+                    style={[styles.modeText, quantityMode === 'dzn' && styles.modeTextSelected]}
+                  >
+                    Dozen
+                  </Text>
+                </Pressable>
+              </View>
+
+              <Pressable
+                style={({ pressed }) => [styles.stockInButton, pressed && styles.pressed]}
+                onPress={() => setAdjustmentType('in')}
+              >
+                <Text style={styles.stockInButtonText}>In</Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [styles.stockOutButton, pressed && styles.pressed]}
+                onPress={() => setAdjustmentType('out')}
+              >
+                <Text style={styles.stockOutButtonText}>Out</Text>
+              </Pressable>
+            </>
+          )}
         </View>
 
-        {selectedProduct && (
-          <InventoryTable productId={selectedProduct.id} quantityMode={quantityMode} />
+        {adjustmentType ? (
+          <InventoryAdjustmentForm
+            key={adjustmentType}
+            type={adjustmentType}
+            initialProduct={selectedProduct}
+            onCancel={() => setAdjustmentType(null)}
+            onSave={(product) => {
+              if (product) setSelectedProduct(product);
+              setAdjustmentType(null);
+            }}
+          />
+        ) : (
+          selectedProduct && (
+            <InventoryTable productId={selectedProduct.id} quantityMode={quantityMode} />
+          )
         )}
       </View>
     </View>
@@ -83,6 +117,18 @@ const styles = StyleSheet.create({
 
   productSelectorContainer: {
     flex: 1,
+  },
+
+  backButton: {
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+
+  backButtonText: {
+    color: '#1745D1',
+    fontSize: f(16),
+    fontWeight: '700',
   },
 
   modeContainer: {
@@ -117,16 +163,33 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  saveButton: {
+  stockInButton: {
     height: 44,
-    paddingHorizontal: 28,
+    minWidth: 64,
+    paddingHorizontal: 18,
     borderRadius: 8,
-    backgroundColor: '#1745D1',
+    backgroundColor: '#15803D',
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  saveButtonText: {
+  stockInButtonText: {
+    color: '#FFFFFF',
+    fontSize: f(15),
+    fontWeight: '700',
+  },
+
+  stockOutButton: {
+    height: 44,
+    minWidth: 64,
+    paddingHorizontal: 18,
+    borderRadius: 8,
+    backgroundColor: '#DC2626',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  stockOutButtonText: {
     color: '#FFFFFF',
     fontSize: f(15),
     fontWeight: '700',

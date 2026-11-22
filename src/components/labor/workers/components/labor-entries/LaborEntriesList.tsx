@@ -2,14 +2,13 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import type { Deduction, LaborItem } from '@/types/localModels';
+import type { Deduction, LaborItem, Size } from '@/types/localModels';
 import { f } from '@/utils/fontScale';
 import { formatNumber } from '@/utils/formatNumber';
 
 import LaborProductGroup from './components/labor-product-group/LaborProductGroup';
 
 type OperationOption = { id: string; name: string; productId: string };
-type SizeOption = { id: string; name: string; productId: string; price?: number };
 type ColorOption = { id: string; name: string; productId: string; hexValue: string };
 type PickerState = {
   itemId: string;
@@ -47,14 +46,14 @@ type DateGroup = {
 type Props = {
   groups: DateGroup[];
   operations: OperationOption[];
-  sizes: SizeOption[];
+  sizes: Size[];
   colors: ColorOption[];
   operationById: Map<string, OperationOption>;
-  sizeById: Map<string, SizeOption>;
+  sizeById: Map<string, Size>;
   colorById: Map<string, ColorOption>;
   activePicker: PickerState;
   setActivePicker: (value: PickerState) => void;
-  onAddEntry: (date: string, productId: string, colorId: string, sizeId: string) => void;
+  // onAddEntry: (date: string, productId: string, colorId: string, sizeId: string) => void;
   onSelect: (item: LaborItem, type: 'operation' | 'size' | 'color', id: string) => void;
   onQuantityChange: (itemId: string, quantity: number) => void;
   onDelete: (itemId: string) => void;
@@ -78,7 +77,7 @@ export default function LaborEntriesList(props: Props) {
     sizeById,
     activePicker,
     setActivePicker,
-    onAddEntry,
+    // onAddEntry,
     onSelect,
     onQuantityChange,
     onDelete,
@@ -238,9 +237,9 @@ export default function LaborEntriesList(props: Props) {
                       sizeById={sizeById}
                       activePicker={activePicker}
                       setActivePicker={setActivePicker}
-                      onAddEntry={(productId, sizeId) =>
-                        onAddEntry(dateGroup.date, productId, colorGroup.colorId, sizeId)
-                      }
+                      // onAddEntry={(productId, sizeId) =>
+                      //   onAddEntry(dateGroup.date, productId, colorGroup.colorId, sizeId)
+                      // }
                       onSelect={onSelect}
                       onQuantityChange={onQuantityChange}
                       onDelete={onDelete}

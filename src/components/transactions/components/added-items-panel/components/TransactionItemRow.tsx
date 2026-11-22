@@ -15,6 +15,7 @@ type Props = {
   label: string;
   colorHex?: string;
   isViewOnly?: boolean;
+  showAmounts?: boolean;
   onIncrease: (itemId: string) => void;
   onDecrease: (itemId: string) => void;
   onRemove: (itemId: string) => void;
@@ -28,6 +29,7 @@ export default function TransactionItemRow({
   label,
   colorHex,
   isViewOnly = false,
+  showAmounts = true,
   onIncrease,
   onDecrease,
   onRemove,
@@ -67,15 +69,17 @@ export default function TransactionItemRow({
         )}
       </View>
 
-      {showUnitPrice && (
+      {showAmounts && showUnitPrice && (
         <View style={styles.unitPriceContainer}>
           <Text style={styles.unitPrice}>₱{formatNumber(unitPrice)}</Text>
         </View>
       )}
 
-      <View style={styles.rowTotalContainer}>
-        <Text style={styles.rowTotal}>₱{formatNumber(rowTotal)}</Text>
-      </View>
+      {showAmounts && (
+        <View style={styles.rowTotalContainer}>
+          <Text style={styles.rowTotal}>₱{formatNumber(rowTotal)}</Text>
+        </View>
+      )}
 
       {isViewOnly ? (
         <View style={styles.rowQuantityContainer}>

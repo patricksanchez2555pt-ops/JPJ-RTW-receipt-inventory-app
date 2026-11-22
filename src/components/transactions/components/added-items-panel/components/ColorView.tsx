@@ -13,6 +13,7 @@ type Props = {
   productGroups: ColorProductGroup[];
   highlightedSet: Set<string>;
   showUnitPrice: boolean;
+  showAmounts?: boolean;
   itemLayoutsRef: React.RefObject<Record<string, number>>;
   isViewOnly?: boolean;
   onIncrease: (itemId: string) => void;
@@ -25,6 +26,7 @@ export default function ColorView({
   productGroups,
   highlightedSet,
   showUnitPrice,
+  showAmounts = true,
   itemLayoutsRef,
   isViewOnly = false,
   onIncrease,
@@ -46,13 +48,15 @@ export default function ColorView({
                 <Text style={styles.productSubtitle}>By color</Text>
               </View>
 
-              <View style={styles.productHeaderTotal}>
-                <Text style={styles.productHeaderTotalLabel}>Product Total</Text>
+              {showAmounts && (
+                <View style={styles.productHeaderTotal}>
+                  <Text style={styles.productHeaderTotalLabel}>Product Total</Text>
 
-                <Text style={styles.productHeaderTotalValue}>
-                  ₱{formatNumber(productGroup.subTotal)}
-                </Text>
-              </View>
+                  <Text style={styles.productHeaderTotalValue}>
+                    ₱{formatNumber(productGroup.subTotal)}
+                  </Text>
+                </View>
+              )}
             </View>
 
             {groups.map((group) => (
@@ -77,11 +81,13 @@ export default function ColorView({
                     <Text style={styles.colorHeaderValue}>{group.quantity} pcs</Text>
                   </View>
 
-                  <View style={styles.colorTotalContainer}>
-                    <Text style={styles.colorHeaderLabel}>Color Total</Text>
+                  {showAmounts && (
+                    <View style={styles.colorTotalContainer}>
+                      <Text style={styles.colorHeaderLabel}>Color Total</Text>
 
-                    <Text style={styles.colorHeaderValue}>₱{formatNumber(group.subTotal)}</Text>
-                  </View>
+                      <Text style={styles.colorHeaderValue}>₱{formatNumber(group.subTotal)}</Text>
+                    </View>
+                  )}
 
                   {isViewOnly ? null : (
                     <Pressable
@@ -99,6 +105,7 @@ export default function ColorView({
                     item={item}
                     highlighted={highlightedSet.has(item.id)}
                     showUnitPrice={showUnitPrice}
+                    showAmounts={showAmounts}
                     itemLayoutsRef={itemLayoutsRef}
                     label={item.size?.name ?? 'Unknown Size'}
                     isViewOnly={isViewOnly}

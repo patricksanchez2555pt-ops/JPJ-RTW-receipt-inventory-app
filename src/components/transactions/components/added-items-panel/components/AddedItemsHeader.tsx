@@ -11,6 +11,9 @@ type Props = {
   onShowColorsChange: (value: boolean) => void;
   onShowUnitPriceChange: (value: boolean) => void;
   onPrint: () => void;
+  showPrintButton?: boolean;
+  showPriceToggle?: boolean;
+  showViewModeSelector?: boolean;
 };
 
 const FONT_SCALE = 1.25;
@@ -25,6 +28,9 @@ export default function AddedItemsHeader({
   onShowColorsChange,
   onShowUnitPriceChange,
   onPrint,
+  showPrintButton = true,
+  showPriceToggle = true,
+  showViewModeSelector = true,
 }: Props) {
   return (
     <View style={styles.header}>
@@ -35,23 +41,27 @@ export default function AddedItemsHeader({
         contentContainerStyle={styles.headerRight}
         bounces={false}
       >
-        <Pressable
-          onPress={onPrint}
-          style={({ pressed }) => [styles.button, styles.printButton, pressed && styles.pressed]}
-        >
-          <Text style={[styles.buttonText, styles.printButtonText]}>Print</Text>
-        </Pressable>
+        {showPrintButton && (
+          <Pressable
+            onPress={onPrint}
+            style={({ pressed }) => [styles.button, styles.printButton, pressed && styles.pressed]}
+          >
+            <Text style={[styles.buttonText, styles.printButtonText]}>Print</Text>
+          </Pressable>
+        )}
 
-        <Pressable
-          onPress={() => onShowUnitPriceChange(!showUnitPrice)}
-          style={({ pressed }) => [
-            styles.button,
-            showUnitPrice && styles.buttonActive,
-            pressed && styles.pressed,
-          ]}
-        >
-          <Text style={[styles.buttonText, showUnitPrice && styles.buttonTextActive]}>Price</Text>
-        </Pressable>
+        {showPriceToggle && (
+          <Pressable
+            onPress={() => onShowUnitPriceChange(!showUnitPrice)}
+            style={({ pressed }) => [
+              styles.button,
+              showUnitPrice && styles.buttonActive,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={[styles.buttonText, showUnitPrice && styles.buttonTextActive]}>Price</Text>
+          </Pressable>
+        )}
 
         {viewMode === 'size' && (
           <Pressable
@@ -67,27 +77,31 @@ export default function AddedItemsHeader({
         )}
       </ScrollView>
 
-      <View style={styles.modeSelector}>
-        <Pressable
-          onPress={() => onViewModeChange('color')}
-          style={[styles.modeButton, viewMode === 'color' && styles.modeButtonActive]}
-        >
-          <Text
-            style={[styles.modeButtonText, viewMode === 'color' && styles.modeButtonTextActive]}
+      {showViewModeSelector && (
+        <View style={styles.modeSelector}>
+          <Pressable
+            onPress={() => onViewModeChange('color')}
+            style={[styles.modeButton, viewMode === 'color' && styles.modeButtonActive]}
           >
-            By Color
-          </Text>
-        </Pressable>
+            <Text
+              style={[styles.modeButtonText, viewMode === 'color' && styles.modeButtonTextActive]}
+            >
+              By Color
+            </Text>
+          </Pressable>
 
-        <Pressable
-          onPress={() => onViewModeChange('size')}
-          style={[styles.modeButton, viewMode === 'size' && styles.modeButtonActive]}
-        >
-          <Text style={[styles.modeButtonText, viewMode === 'size' && styles.modeButtonTextActive]}>
-            By Size
-          </Text>
-        </Pressable>
-      </View>
+          <Pressable
+            onPress={() => onViewModeChange('size')}
+            style={[styles.modeButton, viewMode === 'size' && styles.modeButtonActive]}
+          >
+            <Text
+              style={[styles.modeButtonText, viewMode === 'size' && styles.modeButtonTextActive]}
+            >
+              By Size
+            </Text>
+          </Pressable>
+        </View>
+      )}
 
       <View style={styles.count}>
         <Text style={styles.countText}>{itemCount}</Text>

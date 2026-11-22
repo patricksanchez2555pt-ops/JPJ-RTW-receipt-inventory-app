@@ -7,7 +7,11 @@ import { f } from '@/utils/fontScale';
 import { formatNumber } from '@/utils/formatNumber';
 
 type OperationOption = { id: string; name: string; productId: string };
-type PickerState = { itemId: string; type: 'operation' | 'size'; productId: string } | null;
+type PickerState = {
+  itemId: string;
+  type: 'operation' | 'size' | 'color';
+  productId: string;
+} | null;
 
 type Props = {
   item: LaborItem;

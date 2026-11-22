@@ -8,7 +8,11 @@ import { formatNumber } from '@/utils/formatNumber';
 import LaborItemRow from './components/LaborItemRow';
 
 type OperationOption = { id: string; name: string; productId: string };
-type PickerState = { itemId: string; type: 'operation' | 'size'; productId: string } | null;
+type PickerState = {
+  itemId: string;
+  type: 'operation' | 'size' | 'color';
+  productId: string;
+} | null;
 
 type Props = {
   productId: string;
@@ -41,7 +45,7 @@ export default function LaborProductGroup(props: Props) {
     sizeById,
     activePicker,
     setActivePicker,
-    onAddEntry,
+    // onAddEntry,
     onSelect,
     onQuantityChange,
     onDelete,
@@ -73,10 +77,10 @@ export default function LaborProductGroup(props: Props) {
   }, {});
 
   // Fallback size ID for adding an entry
-  const firstOperationId = operations[0]?.id;
-  const defaultSizeId = firstOperationId
-    ? (sizesPerOperation[firstOperationId]?.[0]?.id ?? '')
-    : '';
+  // const firstOperationId = operations[0]?.id;
+  // const defaultSizeId = firstOperationId
+  //   ? (sizesPerOperation[firstOperationId]?.[0]?.id ?? '')
+  //   : '';
 
   // Get all operations that actually have items, or fallback to all operations if empty
   const activeOperationIds = Object.keys(itemsByOperation);

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { formatPrintGroupedItems } from '@/helpers/printerFormatters';
 import { printerService } from '@/service/printerService';
@@ -17,6 +17,11 @@ type Props = {
   transactionDate?: string;
   buyersName?: string;
   total?: number;
+  showAmounts?: boolean;
+  showPrintButton?: boolean;
+  showPriceToggle?: boolean;
+  showViewModeSelector?: boolean;
+  emptyMessage?: string;
   onIncrease?: (itemId: string) => void;
   onDecrease?: (itemId: string) => void;
   onRemove?: (itemId: string) => void;
@@ -30,13 +35,18 @@ export default function AddedItemsPanel({
   isViewOnly = false,
   transactionDate,
   buyersName,
+  showAmounts = true,
+  showPrintButton = true,
+  showPriceToggle = true,
+  showViewModeSelector = true,
+  emptyMessage,
   onIncrease = () => undefined,
   onDecrease = () => undefined,
   onRemove = () => undefined,
 }: Props) {
   const [viewMode, setViewMode] = useState<ViewMode>('color');
   const [showColors, setShowColors] = useState(false);
-  const [showUnitPrice, setShowUnitPrice] = useState(true);
+  const [showUnitPrice, setShowUnitPrice] = useState(showAmounts);
 
   const { colorProductGroups, productSizeGroups } = useMemo(() => computeGroups(items), [items]);
 
@@ -179,6 +189,9 @@ export default function AddedItemsPanel({
         onShowColorsChange={setShowColors}
         onShowUnitPriceChange={setShowUnitPrice}
         onPrint={printTransaction}
+        showPrintButton={showPrintButton}
+        showPriceToggle={showPriceToggle}
+        showViewModeSelector={showViewModeSelector}
       />
 
       <ScrollView
@@ -193,11 +206,14 @@ export default function AddedItemsPanel({
           viewportHeight.current = event.nativeEvent.layout.height;
         }}
       >
-        {viewMode === 'color' ? (
+        {items.length === 0 && emptyMessage ? (
+          <Text style={styles.emptyMessage}>{emptyMessage}</Text>
+        ) : viewMode === 'color' ? (
           <ColorView
             productGroups={colorProductGroups}
             highlightedSet={highlightedSet}
             showUnitPrice={showUnitPrice}
+            showAmounts={showAmounts}
             itemLayoutsRef={itemLayouts}
             isViewOnly={isViewOnly}
             onIncrease={onIncrease}
@@ -211,6 +227,7 @@ export default function AddedItemsPanel({
             highlightedSet={highlightedSet}
             showColors={showColors}
             showUnitPrice={showUnitPrice}
+            showAmounts={showAmounts}
             itemLayoutsRef={itemLayouts}
             isViewOnly={isViewOnly}
             onIncrease={onIncrease}
@@ -240,5 +257,11 @@ const styles = StyleSheet.create({
     padding: 12,
     paddingBottom: 32,
     gap: 12,
+  },
+  emptyMessage: {
+    color: '#64748B',
+    fontSize: 14,
+    paddingVertical: 12,
+    textAlign: 'center',
   },
 });
